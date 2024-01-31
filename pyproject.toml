@@ -1,0 +1,18 @@
+[project]
+name = "Stricto"
+version = "0.0.1"
+authors = [
+  { name="Bertrand Wallrich", email="Bertrand.Wallrich@inria.fr" },
+]
+description = "Strict Dict Dictures with schema validation embedded"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/bwallrich/stricto"
+Issues = "https://github.com/bwallrich/stricto/issues"
