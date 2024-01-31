@@ -5,7 +5,7 @@ class Dict(GenericType):
     """
     A Dict Type
     """
-    def __init__(self, type : dict = {}, **kwargs):
+    def __init__(self, schema : dict = {}, **kwargs):
         """
         
         
@@ -13,10 +13,10 @@ class Dict(GenericType):
         GenericType.__init__( self, **kwargs )
         self._keys = []
         
-        for key in type.keys():
-            m = type.get(key)
+        for key in schema.keys():
+            m = schema.get(key)
             if isinstance(m, GenericType) == False:
-                raise Error(ERRORTYPE.NOTATYPE,"Not a type")
+                raise Error(ERRORTYPE.NOTATYPE,"Not a schema")
             mm = m.__copy__()
             setattr(self, key, mm)
             self._keys.append(key)
@@ -135,7 +135,7 @@ class Dict(GenericType):
     def getValue( self ):
         a={}
         for key in self._keys:
-            a[key] = getattr( self, key )
+            a[key] = getattr( self, key ).getValue()
         return a
 
     def get(self, key : str, default = None):
@@ -179,7 +179,7 @@ class Dict(GenericType):
         self.checkConstraints( value  )
         
         # check reccursively subtypes
-        if type(value) == dict:
+        if schema(value) == dict:
             for key in self._keys:
                 subValue = value.get(key)
                 self.__dict__[key].check(subValue)
@@ -190,7 +190,7 @@ class Dict(GenericType):
                     raise Error(ERRORTYPE.UNKNOWNCONTENT,"Unknown content", self.pathName()+f".{key}")
             return
         
-        if type(value) == Dict:
+        if schema(value) == Dict:
             for key in self._keys:
                 subValue = value.get(key).getValue()
                 self.__dict__[key].check(subValue)
@@ -200,10 +200,10 @@ class Dict(GenericType):
         """
         check if conplain to model or raise an 
         """
-        if type(value) == dict:
+        if schema(value) == dict:
             return True
                     
-        if type(value) == Dict:
+        if schema(value) == Dict:
             return True
         
         raise Error(ERRORTYPE.NOTALIST,"Must be a dict", self.pathName())

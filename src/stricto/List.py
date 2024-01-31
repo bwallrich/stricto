@@ -224,7 +224,10 @@ class List(GenericType):
                 i=i+1
 
     def getValue( self ):
-        return self._value
+        a=[]
+        for element in self._value:
+            a.append( element.getValue() )
+        return a
     
     def checkType( self, value):
         """

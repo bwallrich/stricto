@@ -2,8 +2,9 @@
 #
 import unittest
 import context
+import json
 
-from stricto import String, Int, Dict, Error
+from stricto import String, Int, Dict, List, Error
 
 
 class test_Dict(unittest.TestCase):
@@ -65,3 +66,18 @@ class test_Dict(unittest.TestCase):
         self.assertEqual(a, d)
         a.b = 22
         self.assertNotEqual(a, d)
+
+    def test_json(self):
+        model={
+            "b" : Int(),
+            "c" : Int(),
+            "e" : List( String())
+        }
+        a=Dict(model)
+        b=Dict(model)
+        a.set({ "b" : 1, "c" : 2 , "e" : [ "aa", "bb"]})
+        
+        sa = json.dumps(a.getValue())
+        b.set( json.loads(sa) )
+        self.assertEqual(b, a)
+

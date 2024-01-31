@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = [
   { name="Bertrand Wallrich", email="Bertrand.Wallrich@inria.fr" },
 ]
-description = "Strict Dict Dictures with schema validation embedded"
+description = "Strict Dict with schema validation embedded"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
