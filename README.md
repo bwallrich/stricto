@@ -78,7 +78,7 @@ a = "the number of the beast" # works ! the affectation of "a" change. Now it is
 ## json
 
 
-use ```.getvalue()``` to extract a dict from a Dict and do th json.dumps like usual.
+use ```.getvalue()``` to extract a dict from a Dict and do the *json.dumps* like usual.
 
 
 ```python
@@ -170,17 +170,17 @@ available specific options for Int() ares :
 Examples
 
 ```python
-a=String( patern='^A' )
+a=String( pattern='^A' )
 a.set('Foo')        # -> raise an error
 a.set('AZERTY')     # OK
 
 # list of regexp
-a=String( paterns=[ '^A', r'.*Z$' ] )
+a=String( patterns=[ '^A', r'.*Z$' ] )
 a.set('Allo')        # -> raise an error
 a.set('AtoZ')        # OK
 
 # function return a regexp
-a=String( patern= lambda a,b : r'.*Z$')
+a=String( pattern=lambda self, value, root : r'.*Z$')
 a.set('Allo')        # -> raise an error
 a.set('AtoZ')        # OK
 
@@ -250,3 +250,9 @@ a.set{ "age" : 1, "size" : 32 } # -> raise an error
 a.set{ "age" : 3, "size" : 32 } # -> Ok
 ```
 
+## Tests
+
+```bash
+cd tests/
+python -m unittest -v
+```

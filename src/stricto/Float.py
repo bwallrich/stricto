@@ -1,5 +1,5 @@
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class Float(GenericType):
     """
@@ -14,7 +14,7 @@ class Float(GenericType):
     def checkType( self, value):
         if type(value) == float or type(value) == Float:
             return True
-        raise Error(ERRORTYPE.WRONGTYPE, 'Must be a float', self.pathName())
+        raise Error(ErrorType.WRONGTYPE, 'Must be a float', self.pathName())
         
     def checkConstraints( self, value):
         GenericType.checkConstraints( self, value )

@@ -1,5 +1,5 @@
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class Bool(GenericType):
     """
@@ -16,7 +16,7 @@ class Bool(GenericType):
     def checkType( self, value):
         if type(value) == bool or type(value) == Bool:
             return True
-        raise Error(ERRORTYPE.WRONGTYPE, 'Must be a bool', self.pathName())
+        raise Error(ErrorType.WRONGTYPE, 'Must be a bool', self.pathName())
         
     def checkConstraints( self, value):
 

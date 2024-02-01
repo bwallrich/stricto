@@ -1,5 +1,5 @@
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class In(GenericType):
     """
@@ -25,4 +25,4 @@ class In(GenericType):
                 if self._model.check( value ) == True: return
             except Error as r:
                 continue
-        raise Error(ERRORTYPE.WRONGTYPE,"Match no model", self.pathName())
+        raise Error(ErrorType.WRONGTYPE,"Match no model", self.pathName())

@@ -1,21 +1,24 @@
 
-import logging
-SUFFIX = "MODEL_"
+from enum import Enum, auto
 
-class ERRORTYPE:
-    WRONGTYPE = SUFFIX+'WRONGTYPE'
-    NOTALIST = SUFFIX+'NOTALIST'
-    NOTADict = SUFFIX+'NOTADict'
-    NOTONEOF = SUFFIX+'NOTONEOF'
-    NULL = SUFFIX+'NULL'
-    NOTATYPE = SUFFIX+'NOTATYPE'
-    UNKNOWNCONTENT = SUFFIX+'UNKNOWNCONTENT'
-    NOTCALLABLE = SUFFIX+'NOTCALLABLE'
-    CONSTRAINT = SUFFIX+'CONSTRAINT'
-    UNION = SUFFIX+'UNION'
-    REGEXP = SUFFIX+'REGEXP'
-    LENGTH = SUFFIX+'LENGTH'
-    DUP = SUFFIX+'DUP'
+PREFIX = "MODEL_"
+class ErrorType(Enum):
+    WRONGTYPE = auto()
+    NOTALIST = auto()
+    NOTADICT = auto()
+    NOTONEOF = auto()
+    NULL = auto()
+    NOTATYPE = auto()
+    UNKNOWNCONTENT = auto()
+    NOTCALLABLE = auto()
+    CONSTRAINT = auto()
+    UNION = auto()
+    REGEXP = auto()
+    LENGTH = auto()
+    DUP = auto()
+
+    def __repr__(self):
+        return PREFIX + self.name
 
 
 class Error(TypeError):

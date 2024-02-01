@@ -1,5 +1,5 @@
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class TimeStamp(GenericType):
     """
@@ -15,7 +15,7 @@ class TimeStamp(GenericType):
     def checkType( self, value):
         if type(value) == int or type(value) == TimeStamp:
             return True
-        raise Error(ERRORTYPE.WRONGTYPE, 'Timestamp must be a timestamp', self.pathName())
+        raise Error(ErrorType.WRONGTYPE, 'Timestamp must be a timestamp', self.pathName())
         
     def checkConstraints( self, value):
         GenericType.checkConstraints( self, value )

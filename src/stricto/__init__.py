@@ -7,4 +7,4 @@ from .In import In
 from .Bool import Bool
 from .Float import Float
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType

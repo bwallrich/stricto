@@ -1,5 +1,5 @@
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class List(GenericType):
     """
@@ -19,6 +19,10 @@ class List(GenericType):
         self._max = kwargs.pop('max', None)
         self._uniq = kwargs.pop('uniq', None)
 
+    def __len__( self ):
+        if type(self._value) != list:
+            return 0
+        return self._value.__len__()
 
     def setRoot( self, root, parent, name ):
         self._root = root
@@ -31,9 +35,6 @@ class List(GenericType):
         for item in self._value:
             item.setRoot( self._root, self, f"{self._name}[{i}]" )
             i=i+1
-
-    def len( self ):
-        return len ( self._value )
     
     def __repr__( self ):
         a=[]
@@ -42,7 +43,7 @@ class List(GenericType):
         return a.__repr__()
 
     def __getitem__(self, index):
-        return self._value(self, index)
+        return self._value[index]
 
     def __copy__(self):
         cls = self.__class__
@@ -53,28 +54,6 @@ class List(GenericType):
             result._value.append( i.copy() )
         return result
 
-    def __add__(self, other):
-        """
-        add two List operator
-        """
-        print(f"add {other}")
-
-        # Duplicate and check
-        a=self.duplicateInList()
-
-        models=[]
-        i=len( self._value )
-        for v in other:
-            model = self._type.__copy__()
-            model.setRoot( self._root, self, f"{self._name}[{i}]")
-            model.set(v)
-            models.append(model)
-            i=i+1
-
-        a.extend( models )
-        self.check(a)
-        self._value.extend( models )
-
     def copy(self):
         return self.__copy__()
 
@@ -84,12 +63,14 @@ class List(GenericType):
 
     def duplicateInList(self):
         a=[]
+        if type(self._value) != list:
+            return a
+        
         for v in self._value:
             a.append(v.copy())
         return a
 
     def insert(self, key, value):
-        print(f"insert {type(key)} = {value}")
 
         # Duplicate and check
         a=self.duplicateInList()
@@ -98,10 +79,13 @@ class List(GenericType):
         model.set(value)
         a.insert(key, model)
         self.check(a)
+        
+        if type(self._value) != list:
+            self._value = []
+        
         self._value.insert(key, model)
 
     def __setitem__(self, key, value):
-        print(f"setItem {type(key)} = {value}")
         
         # Duplicate and check
         a=self.duplicateInList()
@@ -115,6 +99,10 @@ class List(GenericType):
                 models.append(model)
             a.__setitem__( key, models)
             self.check(a)
+            
+            if type(self._value) != list:
+                self._value = []
+
             self._value.__setitem__(  key, models )
             self.setSubRoot()
         else:
@@ -123,12 +111,14 @@ class List(GenericType):
             model.set(value)
             a[key].set( value )
             self.check(a)
+
+            if type(self._value) != list:
+                self._value = []
+
             self._value.__setitem__( key, model)
 
 
-    def __delitem__(self, key):
-        print(f"__delitem__ {key}")
-        
+    def __delitem__(self, key):        
         # Duplicate and check
         a=self.duplicateInList()
         a.__delitem__( key )
@@ -136,6 +126,19 @@ class List(GenericType):
 
         self._value.__delitem__(key)
         self.setSubRoot()
+        
+        
+    def sort( self, **kwarg):
+        
+        # Duplicate and check            
+        a=self.duplicateInList()
+        a.sort( **kwarg )
+        self.check(a)
+
+        if type(self._value) != list:
+            self._value = []
+
+        return self._value.sort( **kwarg )
         
     def pop(self, key = -1):
 
@@ -150,7 +153,6 @@ class List(GenericType):
         return popped
         
     def remove(self, value):
-        print(f"remove {value}")
         
         # Duplicate and check            
         a=self.duplicateInList()
@@ -163,21 +165,26 @@ class List(GenericType):
 
 
     def append(self, value):
+                
         model = self._type.__copy__()
-        model.setRoot( self._root, self, f"[{len(self._value)}]")
+        model.setRoot( self._root, self, f"[{self.__len__()}]")
         model.set(value)
         
         # Duplicate and check            
         a=self.duplicateInList()
         a.append(model)
-        self.check(a)        
+        self.check(a)
+        
+        if type(self._value) != list:
+            self._value = []
+
         self._value.append(model)
 
-    def extend(self, list ):        
+    def extend(self, list ):
         # Duplicate and check            
         a=self.duplicateInList()
         models=[]
-        i=len(self._value)
+        i=self.__len__()
         for value in list:
             model = self._type.__copy__()
             model.setRoot( self._root, self, f"[{i}]")
@@ -186,6 +193,9 @@ class List(GenericType):
             models.append( model)
             i=i+1
         self.check(a)
+
+        if type(self._value) != list:
+            self._value = []
 
         self._value.extend( models )
 
@@ -196,6 +206,10 @@ class List(GenericType):
         return self.setWithoutCheck( value )
     
     def setWithoutCheck(self, value):
+        if value is None:
+            self._value = None
+            return
+        
         self._value.clear()
         i=0
         for v in value:
@@ -206,8 +220,9 @@ class List(GenericType):
             i=i+1
 
     def check( self, value):
-        self.checkType( value )
-        self.checkConstraints( value )
+        GenericType.check( self, value )
+        # self.checkType( value )
+        # self.checkConstraints( value )
         
         # check all values
         if type(value) == list:
@@ -239,7 +254,7 @@ class List(GenericType):
         if type(value) == List:
             return True
 
-        raise Error(ERRORTYPE.NOTALIST,"Must be a list", self.pathName())
+        raise Error(ErrorType.NOTALIST,"Must be a list", self.pathName())
         
 
     def checkConstraints( self, value):
@@ -247,15 +262,15 @@ class List(GenericType):
 
         if self._min is not None:
             if len(value) < self._min:
-                raise Error(ERRORTYPE.LENGTH, 'Must be above Minimal', self.pathName())
+                raise Error(ErrorType.LENGTH, 'Must be above Minimal', self.pathName())
         if self._max is not None:
             if len(value) > self._max:
-                raise Error(ERRORTYPE.LENGTH, 'Must be below Maximal', self.pathName())
+                raise Error(ErrorType.LENGTH, 'Must be below Maximal', self.pathName())
             
         if self._uniq is True:
             for x in value:
                 if value.count(x) > 1:
-                    raise Error(ERRORTYPE.DUP, 'duplicate value in list', self.pathName())
+                    raise Error(ErrorType.DUP, 'duplicate value in list', self.pathName())
 
         return True
         

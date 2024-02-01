@@ -1,4 +1,4 @@
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class GenericType:
     """
@@ -242,7 +242,7 @@ class GenericType:
         # handle the None value
         if correctedValue is None:
             if self._notNull == True:
-                raise Error(ERRORTYPE.NULL, 'Cannot be empty', self.pathName())
+                raise Error(ErrorType.NULL, 'Cannot be empty', self.pathName())
             return True
         
         # Check correct type or raise an Error
@@ -264,18 +264,18 @@ class GenericType:
         if self._union:
             l = self.getArgOrExecute( self._union, value)
             if type(l) is not list:
-                raise Error(ERRORTYPE.UNION, 'Union constraint not list', self.pathName())                
+                raise Error(ErrorType.UNION, 'Union constraint not list', self.pathName())                
             if value not in l:
-                raise Error(ERRORTYPE.UNION, 'not in list', self.pathName())
+                raise Error(ErrorType.UNION, 'not in list', self.pathName())
 
         
         # ---- constraints as functions
         for constraint in self._constraints:
             if callable( constraint ) is not True:
-                raise Error(ERRORTYPE.NOTCALLABLE, 'constraint not callable', self.pathName())
+                raise Error(ErrorType.NOTCALLABLE, 'constraint not callable', self.pathName())
             r = constraint(value, self._root)
             if r is False:
-                raise Error(ERRORTYPE.CONSTRAINT, 'constraint not validated', self.pathName())                
+                raise Error(ErrorType.CONSTRAINT, 'constraint not validated', self.pathName())                
         return True
         
 

@@ -66,7 +66,7 @@ class test_String(unittest.TestCase):
         a.set('AtoZ')
 
         # function return a regexp
-        a=String( regexp= lambda a,b : r'.*Z$')
+        a=String( regexp= lambda self, value, root : r'.*Z$')
         with self.assertRaises(Error) as e:
             a.set('Foo')
         self.assertEqual(e.exception._message, 'Dont match regexp')

@@ -1,5 +1,5 @@
 from .GenericType import GenericType
-from .Error import Error, ERRORTYPE
+from .Error import Error, ErrorType
 
 class Dict(GenericType):
     """
@@ -16,7 +16,7 @@ class Dict(GenericType):
         for key in schema.keys():
             m = schema.get(key)
             if isinstance(m, GenericType) == False:
-                raise Error(ERRORTYPE.NOTATYPE,"Not a schema")
+                raise Error(ErrorType.NOTATYPE,"Not a schema")
             mm = m.__copy__()
             setattr(self, key, mm)
             self._keys.append(key)
@@ -77,7 +77,7 @@ class Dict(GenericType):
             
         if locked:
             if name not in keys:
-                raise Error(ERRORTYPE.NOTALIST,"locked", f"{name}")
+                raise Error(ErrorType.NOTALIST,"locked", f"{name}")
             if isinstance( value, GenericType):
                 self.__dict__[f"{name}"].check( value)
                 self.__dict__[f"{name}"]=value
@@ -187,7 +187,7 @@ class Dict(GenericType):
             # check if a non-described value
             for key in value:
                 if key not in self._keys:
-                    raise Error(ERRORTYPE.UNKNOWNCONTENT,"Unknown content", self.pathName()+f".{key}")
+                    raise Error(ErrorType.UNKNOWNCONTENT,"Unknown content", self.pathName()+f".{key}")
             return
         
         if type(value) == Dict:
@@ -206,7 +206,7 @@ class Dict(GenericType):
         if type(value) == Dict:
             return True
         
-        raise Error(ERRORTYPE.NOTALIST,"Must be a dict", self.pathName())
+        raise Error(ErrorType.NOTALIST,"Must be a dict", self.pathName())
         
 
     def checkConstraints( self, value):
