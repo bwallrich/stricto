@@ -4,7 +4,9 @@ Strict Dict with schema validation embedded
 
 ## Installation
 
-Soon
+> [!TIP]
+> Soon
+
 
 ## Quick start
 
