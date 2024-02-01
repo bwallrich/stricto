@@ -38,7 +38,7 @@ class Dict(GenericType):
         self.__dict__["_locked"] = True
         
         
-    def removeModel( self, key,):
+    def removeModel( self, key ):
         """
         remove a key Model to the model 
         """
@@ -179,7 +179,7 @@ class Dict(GenericType):
         self.checkConstraints( value  )
         
         # check reccursively subtypes
-        if schema(value) == dict:
+        if type(value) == dict:
             for key in self._keys:
                 subValue = value.get(key)
                 self.__dict__[key].check(subValue)
@@ -190,7 +190,7 @@ class Dict(GenericType):
                     raise Error(ERRORTYPE.UNKNOWNCONTENT,"Unknown content", self.pathName()+f".{key}")
             return
         
-        if schema(value) == Dict:
+        if type(value) == Dict:
             for key in self._keys:
                 subValue = value.get(key).getValue()
                 self.__dict__[key].check(subValue)
@@ -200,10 +200,10 @@ class Dict(GenericType):
         """
         check if conplain to model or raise an 
         """
-        if schema(value) == dict:
+        if type(value) == dict:
             return True
                     
-        if schema(value) == Dict:
+        if type(value) == Dict:
             return True
         
         raise Error(ERRORTYPE.NOTALIST,"Must be a dict", self.pathName())

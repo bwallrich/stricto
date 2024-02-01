@@ -12,7 +12,7 @@ class String(GenericType):
         
         """
         GenericType.__init__( self, **kwargs )
-        regexp = kwargs.pop('regexp', [])
+        regexp = kwargs.pop('regexp', kwargs.pop('pattern', kwargs.pop('patterns', [])))
         self._regexps = regexp if type(regexp) is list else [ regexp ]
 
     def checkType( self, value):

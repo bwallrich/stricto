@@ -14,8 +14,8 @@ class Int(GenericType):
         
         """
         GenericType.__init__( self, **kwargs )
-        self._min = kwargs.pop('min', None)
-        self._max = kwargs.pop('max', None)
+        self._min = kwargs.pop('min', kwargs.pop('minimum', None))
+        self._max = kwargs.pop('max', kwargs.pop('maximum', None))
 
     def checkType( self, value,):
         if type(value) == int or type(value) == Int:

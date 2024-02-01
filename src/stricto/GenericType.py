@@ -19,14 +19,14 @@ class GenericType:
         self._descrition = kwargs.pop('description', None)
         self._default = kwargs.pop('default', None)
         self._value=self._default
-        self._notNull = kwargs.pop('notNull', False)
-        self._union = kwargs.pop('union', None)
+        self._notNull = kwargs.pop('notNull', kwargs.pop('required', False))
+        self._union = kwargs.pop('union', kwargs.pop('in', None))
         
-        constraint = kwargs.pop('constraint', [])
+        constraint = kwargs.pop('constraint', kwargs.pop('constraints', []))
         self._constraints = constraint if type(constraint) is list else [ constraint ]
         
         self._transform = kwargs.pop('transform', None)
-        self._onChange = kwargs.pop('onChange', None)
+        self._onChange = kwargs.pop('onChange', kwargs.pop('onchange', None))
 
     def setRoot(self, root, parent, name ):
         self._root = root

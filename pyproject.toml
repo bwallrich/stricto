@@ -1,10 +1,10 @@
 [project]
-name = "Stricto"
+name = "stricto"
 version = "0.0.1"
 authors = [
   { name="Bertrand Wallrich", email="Bertrand.Wallrich@inria.fr" },
 ]
-description = "Strict Dict with schema validation embedded"
+description = "Strict Dict (json) with schema validation embedded"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -16,3 +16,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/bwallrich/stricto"
 Issues = "https://github.com/bwallrich/stricto/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

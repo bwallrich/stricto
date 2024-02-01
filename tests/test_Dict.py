@@ -21,6 +21,8 @@ class test_Dict(unittest.TestCase):
         self.assertEqual(a.b, 1)
         self.assertEqual(a.c, 2)
         self.assertEqual(a.b + a.c, 3)
+        with self.assertRaises(AttributeError) as e:
+            a.d
 
     def test_Error_Type(self):
         a=Dict({
@@ -31,7 +33,22 @@ class test_Dict(unittest.TestCase):
         with self.assertRaises(Error) as e:
             a.d = 22
         self.assertEqual(e.exception._message, 'locked')
-        
+    
+    def test_modify_schema(self):
+        a=Dict({
+            "b" : Int(),
+            "c" : Int()
+        })
+        a.set({ "b" : 1, "c" : 2 })
+        a.appendModel( "d" , String() )
+        a.d = "oh yeah"
+        self.assertEqual(a.d, 'oh yeah')
+        a.removeModel("d")
+        with self.assertRaises(Error) as e:
+            a.d = "oh yeah"
+        self.assertEqual(e.exception._message, 'locked')
+ 
+    
     def test_reference_Type(self):
         a=Dict({
             "b" : Int(),

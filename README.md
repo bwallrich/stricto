@@ -62,7 +62,7 @@ All basic calss from python are implemented in ```stricto```.
 
 ```python
 # example
-from stricto import int
+from stricto import Int
 
 a = Int()
 a.set(22) # -> ok
@@ -75,12 +75,13 @@ a = "the number of the beast" # works ! the affectation of "a" change. Now it is
 
 ## json
 
+
 use ```.getvalue()``` to extract a dict from a Dict and do th json.dumps like usual.
 
 
 ```python
 # example
-from stricto import int, List, String, Dict, Error
+from stricto import Int, List, String, Dict, Error
 import json
 
 model={
@@ -95,3 +96,23 @@ sa = json.dumps(a.getValue()) # json dumps
 b.set( json.loads(sa) ) 
 b == a # return True
 ```
+
+## Types
+
+### Int()
+
+```Int( options )``` is for integer
+
+available options ares :
+| Option | Default | Description |
+| - | - | - |
+| ```notNull=True``` | False | cannot be None or inexistent |
+| ```required=True``` | False | similar to ```notNull``` |
+| ```description="whatever you want"``` | None | a description of this object |
+| ```default=666``` | None | the default value |
+| ```in=[ 1, 2, 3, 5 ]\|func[^1]``` | None | the value must be one of those elements |
+| ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
+| ```union=[ 1, 2, 3, 5 ]\|func[^1]``` | None | similar to ```in```  |
+
+
+[^1]: can be a function or a lamda with return a list of values.
