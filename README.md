@@ -113,26 +113,26 @@ available options for all types ares :
 | ```default=666``` | None | the default value |
 | ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
 | ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
-| ```transform=func``` | None | a [function](##Functions) to transform the value before setting it |
-| ```constraint=func``` | None | a [function](##Functions) to check the value before setting it |
-| ```constraints=[func]``` | None | a list of [functions](##Functions) to check the value before setting it |
-| ```onchange=func``` | None | a [function](##Functions) to trigger when the value change |
+| ```transform=func``` | None | a [function](#functions) to transform the value before setting it |
+| ```constraint=func``` | None | a [function](#functions) to check the value before setting it |
+| ```constraints=[func]``` | None | a list of [functions](#functions) to check the value before setting it |
+| ```onchange=func``` | None | a [function](#functions) to trigger when the value change |
 | ```onChange=func``` | None | similar to ```onchange``` |
 
-See [functions](##Functions) for mor details and examples how tu use them.
+See [functions](#functions) for mor details and examples how tu use them.
 
 
 ### Int()
 
 ```Int( options )``` is for integer.
 
-```Int( options )``` use [generic options](###All types).
+```Int( options )``` use [generic options](#all-types).
 
 available specific options for Int() ares :
 
 | Option | Default | Description |
 | - | - | - |
-| ```min=21``` | None | minimum value |
+| ```min=``` | None | minimum value |
 | ```minimum=21``` | None | similar to ```min``` |
 | ```max=99``` | None | maximum value |
 | ```maximum=99``` | None | similar to ```max=99``` |
@@ -152,12 +152,52 @@ newAge = client.age+1 # -> raise an Error (newAge is implicitly an Int( min=21, 
 newAge = 1+client.age # -> Ok (newAge is implicitly an int)
 ```
 
+### String()
+
+```String( options )``` is for strings.
+
+```String( options )``` use [generic options](#all-types).
+
+
+available specific options for Int() ares :
+
+| Option | Default | Description |
+| - | - | - |
+| ```pattern=regexp``` | None | must match this regexp |
+| ```patterns=[reg1, reg2]``` | None | must match all regexps |
+| ```regexp=``` | None | similar to ```pattern``` |
+
+Examples
+
+```python
+a=String( patern='^A' )
+a.set('Foo')        # -> raise an error
+a.set('AZERTY')     # OK
+
+# list of regexp
+a=String( paterns=[ '^A', r'.*Z$' ] )
+a.set('Allo')        # -> raise an error
+a.set('AtoZ')        # OK
+
+# function return a regexp
+a=String( patern= lambda a,b : r'.*Z$')
+a.set('Allo')        # -> raise an error
+a.set('AtoZ')        # OK
+
+```
+
+
+
+
 
 
 ## Functions
 
  a ```func``` can return a value to adapt the result
 
+### transform
+
+ Please see [transform function](#all-types)
 
 ```python
 # example
@@ -179,6 +219,10 @@ company=Dict({
 company.name="worldcompagny"
 print(company.name) # -> "WORLDCOMPAGNY"
 ```
+
+### in or union
+
+Please see [in or union function](#all-types)
 
 
 ```python
