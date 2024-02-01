@@ -101,20 +101,108 @@ b == a # return True
 
 ## Types
 
-### Int()
+### All types
 
-```Int( options )``` is for integer
+available options for all types ares :
 
-available options ares :
 | Option | Default | Description |
 | - | - | - |
-| ```notNull=True``` | False | cannot be None or inexistent |
-| ```required=True``` | False | similar to ```notNull``` |
+| ```notNull=True\|False``` | False | cannot be None or inexistent |
+| ```required=True\|False``` | False | similar to ```notNull``` |
 | ```description="whatever you want"``` | None | a description of this object |
 | ```default=666``` | None | the default value |
-| ```in=[ 1, 2, 3, 5 ]\|func[^1]``` | None | the value must be one of those elements |
+| ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
 | ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
-| ```union=[ 1, 2, 3, 5 ]\|func[^1]``` | None | similar to ```in```  |
+| ```transform=func``` | None | a [function](##Functions) to transform the value before setting it |
+| ```constraint=func``` | None | a [function](##Functions) to check the value before setting it |
+| ```constraints=[func]``` | None | a list of [functions](##Functions) to check the value before setting it |
+| ```onchange=func``` | None | a [function](##Functions) to trigger when the value change |
+| ```onChange=func``` | None | similar to ```onchange``` |
+
+See [functions](##Functions) for mor details and examples how tu use them.
 
 
-[^1]: can be a function or a lamda with return a list of values.
+### Int()
+
+```Int( options )``` is for integer.
+
+```Int( options )``` use [generic options](###All types).
+
+available specific options for Int() ares :
+
+| Option | Default | Description |
+| - | - | - |
+| ```min=21``` | None | minimum value |
+| ```minimum=21``` | None | similar to ```min``` |
+| ```max=99``` | None | maximum value |
+| ```maximum=99``` | None | similar to ```max=99``` |
+
+```python
+# example
+from stricto import Dict, Int, String
+
+client = Dict{
+    "age" : Int( min=21, max=120)
+}
+
+client.age = 12  # -> raise an error
+client.age = 120  # -> Ok
+
+newAge = client.age+1 # -> raise an Error (newAge is implicitly an Int( min=21, max=120))
+newAge = 1+client.age # -> Ok (newAge is implicitly an int)
+```
+
+
+
+## Functions
+
+ a ```func``` can return a value to adapt the result
+
+
+```python
+# example
+from stricto import Dict, Int, String
+
+def upper(value, o):
+    """
+    transform the value into upper
+
+    value : the current value given ("worldcompagny" in this example).
+    o     : the full object
+    """
+    return value.upper()
+
+company=Dict({
+    "name" : String( transform=upper ),
+})
+
+company.name="worldcompagny"
+print(company.name) # -> "WORLDCOMPAGNY"
+```
+
+
+```python
+# example
+from stricto import Dict, Int, String
+
+def build_union(value, o):
+    """
+    return the size in month for babies or for adult 
+    (a stupid example)
+
+    value : the current value given (32 in this example).
+    o     : the full object
+    """
+    if o.age < 2:
+        return [ 3, 6, 12, 18, 24 ]
+    return [ 32, 36, 38, 40 ]
+
+a=Dict({
+    "age" : Int(),
+    "size" : Int( in=build_union )
+})
+
+a.set{ "age" : 1, "size" : 32 } # -> raise an error
+a.set{ "age" : 3, "size" : 32 } # -> Ok
+```
+

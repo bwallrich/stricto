@@ -288,5 +288,5 @@ class GenericType:
             min = computeMin -> return computeMin( value )
         """
         if callable(arg):
-            return arg(self, value)
+            return arg(self, value, self._root)
         return arg

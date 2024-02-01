@@ -8,6 +8,7 @@ from stricto import Int, Error
 
         
 def pair_only(value, o):
+    print(f"paronly {o}")
     return value+1 if value % 2 else value
 
 def check_pair(value , o):
