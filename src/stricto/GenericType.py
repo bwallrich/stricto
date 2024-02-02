@@ -19,9 +19,11 @@ class GenericType:
         self._descrition = kwargs.pop('description', None)
         self._default = kwargs.pop('default', None)
         self._value=self._default
+        self._oldValue=self._value
         self._notNull = kwargs.pop('notNull', kwargs.pop('required', False))
         self._union = kwargs.pop('union', kwargs.pop('in', None))
-        
+        self._autoSet = kwargs.pop('set', kwargs.pop('compute', None))
+        self._inAutoSet = False
         constraint = kwargs.pop('constraint', kwargs.pop('constraints', []))
         self._constraints = constraint if type(constraint) is list else [ constraint ]
         
@@ -32,6 +34,11 @@ class GenericType:
         self._root = root
         self._parent = parent
         self._name = name
+
+    def amIRoot( self ):
+        if self._root == self: return True
+        return False
+
 
     def pathName(self):
         p=[]
@@ -55,6 +62,7 @@ class GenericType:
         """
         b=self._value + self.getOtherValue(other)
         r = self.__copy__()
+
         r.set(b)
         return r
     
@@ -205,23 +213,52 @@ class GenericType:
         """
         Fill with a value or raise an Error if not valid
         """
+
+        if self._autoSet is not None:
+            if self._root._inAutoSet == False:
+                raise Error(ErrorType.READONLY, 'Cannot modify value', self.pathName())
+
         correctedValue = value._value if type(value) == type(self) else value
+        if callable( self._transform ):
+            correctedValue = self._transform( correctedValue, self._root )
 
         self.check( correctedValue )
         return self.setWithoutCheck( correctedValue )
     
     def setWithoutCheck(self, value):
+        """
+        return True if some changement, otherwise False
+        """
+        
+        if self._autoSet is not None:
+            if self._root._inAutoSet == False:
+                raise Error(ErrorType.READONLY, 'Cannot modify value', self.pathName())
+
         
         # transform the value before the check
         correctedValue = value._value if type(value) == type(self) else value
-        if callable( self._transform ):
-            correctedValue = self._transform( correctedValue, self._root )
 
-        oldValue = self._value
-        self._value = correctedValue if correctedValue is not None else self._default
-        if callable(self._onChange):
-            if oldValue != value:
-                return self._onChange(oldValue, value, self._root)
+        self._oldValue = self._value
+        self._value = self._default if correctedValue is None else correctedValue
+
+
+        if self._oldValue != self._value:
+            if callable(self._onChange):
+                self._onChange(self._oldValue, value, self._root)
+            if self._root is not None:
+                self._root.autoSet()
+            return True
+        return False
+
+    def autoSet(self):
+        """
+        compute automatically a value because another value as changed somewhere.
+        (related to set=flag)        
+        """
+        if callable (self._autoSet) == False:
+            return
+        newValue = self._autoSet(self._root)
+        return self.setWithoutCheck( newValue )
 
     def getValue( self ):
         return self._value

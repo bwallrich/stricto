@@ -14,7 +14,7 @@ def check_pair(value , o):
     return False if value % 2 else True
 
 
-class test_List(unittest.TestCase):
+class Test_List(unittest.TestCase):
 
     def test_Error_Type(self):
         a=List( Int() )

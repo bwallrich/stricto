@@ -49,12 +49,10 @@ class Dict(GenericType):
 
     
     def setRoot( self, root, parent, name):
-        self.__dict__["_root"] = root
-        self.__dict__["_parent"] = parent
-        self.__dict__["_name"] = name
+        GenericType.setRoot( self, root, parent, name)
         for key in self._keys:
             self.__dict__[key].setRoot( root, self, key )
-    
+            
     def keys(self):
         return self._keys
 
@@ -144,22 +142,28 @@ class Dict(GenericType):
         v = self.__dict__[key]
         return default if v is None else v
 
-    def set(self, value):
-        
-        correctedValue = value
-        # transform the value before the check
-        if callable( self._transform ):
-            correctedValue = self._transform( self, value )
-
-        self.check(correctedValue)
-        return self.setWithoutCheck(correctedValue)
-
     def setWithoutCheck(self, value):
         for key in self._keys:
-            v = value.get(key)
-            self.__dict__[key].setWithoutCheck(v)
+            if key in value:
+                v = value.get(key)
+                self.__dict__[key].setWithoutCheck(v)
 
-
+    def autoSet(self):
+        """
+        compute automatically a value because another value as changed somewhere.
+        (related to set=flag) and call  to all subs
+        """
+        if self.amIRoot() == True:
+            if self.__dict__["_inAutoSet"] == True:
+                return
+            self.__dict__["_inAutoSet"] = True
+            
+        GenericType.autoSet(self)
+        for key in self._keys:
+            getattr( self, key ).autoSet()
+        
+        self.__dict__["_inAutoSet"] = False
+        
     def getKeysWithAttribute( self, attribute, value):
         """
         return a list of keys with the corresponding attribute

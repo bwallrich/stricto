@@ -14,7 +14,7 @@ def check_pair(value , o):
     return False if value % 2 else True
 
 
-class test_Int(unittest.TestCase):
+class Test_Int(unittest.TestCase):
 
 
     def test_Error_Type(self):
@@ -22,6 +22,14 @@ class test_Int(unittest.TestCase):
         with self.assertRaises(Error) as e:
             a.set(12.3)
         self.assertEqual(e.exception._message, 'Must be a int')
+        
+    def test_Default(self):
+        a=Int()
+        self.assertEqual(a, None)
+        a=Int(default=3)
+        b=a+2
+        self.assertEqual(a, 3)
+        self.assertEqual(b, 5)
         
     def test_min(self):
         a = Int( min=10 )

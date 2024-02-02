@@ -14,7 +14,7 @@ def check_pair(value , o):
     return False if value % 2 else True
 
 
-class test_Bool(unittest.TestCase):
+class tTst_Bool(unittest.TestCase):
 
     def test_Error_Type(self):
         a=Bool()

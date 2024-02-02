@@ -16,6 +16,7 @@ class ErrorType(Enum):
     REGEXP = auto()
     LENGTH = auto()
     DUP = auto()
+    READONLY = auto()
 
     def __repr__(self):
         return PREFIX + self.name

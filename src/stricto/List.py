@@ -199,11 +199,6 @@ class List(GenericType):
 
         self._value.extend( models )
 
-
-
-    def set( self, value):
-        self.check(value)
-        return self.setWithoutCheck( value )
     
     def setWithoutCheck(self, value):
         if value is None:
@@ -218,6 +213,18 @@ class List(GenericType):
             model.setWithoutCheck(v)
             self._value.append(model)
             i=i+1
+
+    def autoSet(self):
+        """
+        compute automatically a value because another value as changed somewhere.
+        (related to set=flag) and call to all subs
+        """
+        GenericType.autoSet(self)
+        if type(self._value) != list:
+            return
+
+        for key in self._value:
+            key.autoSet()
 
     def check( self, value):
         GenericType.check( self, value )

@@ -4,11 +4,11 @@ Strict Dict with schema validation embedded
 
 ## Installation
 
-> [!TIP]
-> Soon
+```bash
+pip install git+https://github.com/bwallrich/stricto
+```
 
-
-## Quick start
+## Quickstart
 
 ```python
 from stricto import Dict, Int, String, List
@@ -118,8 +118,10 @@ available options for all types ares :
 | ```constraints=[func]``` | None | a list of [functions](#functions) to check the value before setting it |
 | ```onchange=func``` | None | a [function](#functions) to trigger when the value change |
 | ```onChange=func``` | None | similar to ```onchange``` |
+| ```set=func``` | None | a read only value, calculated from other |
+| ```compute=func``` | None | similar to ```set``` |
 
-See [functions](#functions) for mor details and examples how tu use them.
+See [functions](#functions) for mor details and examples how to use them.
 
 
 ### Int()
@@ -248,6 +250,26 @@ a=Dict({
 
 a.set{ "age" : 1, "size" : 32 } # -> raise an error
 a.set{ "age" : 3, "size" : 32 } # -> Ok
+```
+
+
+### set or compute
+
+```python
+# example
+from stricto import Dict, Int, String
+
+a=Dict({
+    "b" : Int( default = 0, set=lambda o: o.c+1 ),
+    "d" : Int( default = 0, set=lambda o: o.b+1 ),
+    "c" : Int( ),
+})
+
+a.b = 3 # -> raise an error
+
+a.c = 2
+print(a.b) # -> 3
+print(a.d) # -> 4
 ```
 
 ## Tests

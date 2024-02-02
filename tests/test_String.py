@@ -7,7 +7,7 @@ import context
 from stricto import String, Error
 
 
-class test_String(unittest.TestCase):
+class Test_String(unittest.TestCase):
 
     def test_Error_Type(self):
         a=String()
