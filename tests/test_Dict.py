@@ -21,8 +21,7 @@ class Test_Dict(unittest.TestCase):
         self.assertEqual(a.b, 1)
         self.assertEqual(a.c, 2)
         self.assertEqual(a.b + a.c, 3)
-        with self.assertRaises(AttributeError) as e:
-            a.d
+        self.assertEqual(a.d, None)
 
     def test_Error_Type(self):
         a=Dict({

@@ -290,6 +290,19 @@ class GenericType:
         
         return True
 
+
+    
+    def __getattr__(self, k):
+        """
+        replicate all atributes from value, but prefere self attribute first.
+        """
+        if k in self.__dict__:
+            return self.__dict__[k]
+        if hasattr (self._value, k):
+            return getattr (self._value, k )
+        return None
+
+
     def checkType( self, value,):
         return True
     

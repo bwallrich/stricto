@@ -61,6 +61,7 @@ All basic calss from python are implemented in ```stricto```.
 | string | String() |
 | list | List() |
 | dict | Dict() |
+| | In() |
 
 ```python
 # example
@@ -111,14 +112,14 @@ available options for all types ares :
 | ```required=True\|False``` | False | similar to ```notNull``` |
 | ```description="whatever you want"``` | None | a description of this object |
 | ```default=666``` | None | the default value |
-| ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
+| ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements. See [in function](#in-or-union) for mor details |
 | ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
-| ```transform=func``` | None | a [function](#functions) to transform the value before setting it |
+| ```transform=func``` | None | a [function](#functions) to [transform](#transform) the value before setting it |
 | ```constraint=func``` | None | a [function](#functions) to check the value before setting it |
 | ```constraints=[func]``` | None | a list of [functions](#functions) to check the value before setting it |
 | ```onchange=func``` | None | a [function](#functions) to trigger when the value change |
 | ```onChange=func``` | None | similar to ```onchange``` |
-| ```set=func``` | None | a read only value, calculated from other |
+| ```set=func``` | None | a read only value, calculated from other .See [set or compute function](#set-or-compute) |
 | ```compute=func``` | None | similar to ```set``` |
 
 See [functions](#functions) for mor details and examples how to use them.
@@ -188,6 +189,25 @@ a.set('AtoZ')        # OK
 
 ```
 
+### In()
+
+```In()``` is not a type, but an **union**
+
+```python
+# example
+from stricto import In, Int, String
+
+a = In( [ Int(), String() ] )
+
+a.set("hello") # -> OK
+a.count('h') # -> return 1
+
+a.set(12) # -> OK
+a.bit_length() # -> return 4
+a.count('h') # -> return None
+
+a.set(3.14) # -> raise an error
+```
 
 
 

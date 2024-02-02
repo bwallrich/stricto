@@ -49,6 +49,10 @@ class Test_String(unittest.TestCase):
         a=String( notNull=True, default="yoyo")
         self.assertEqual(a, 'yoyo')
 
+    def test_count(self):
+        a=String( notNull=True, default="yoyo")
+        self.assertEqual(a.count("y"), 2)
+        
     def test_regexp(self):
         
         # unique regexp

@@ -8,7 +8,9 @@ class String(GenericType):
     """
     def __init__(self, **kwargs):
         """
+        A string
         
+        regexp=pattern=patterns : A (list of) regular expression to match
         
         """
         GenericType.__init__( self, **kwargs )

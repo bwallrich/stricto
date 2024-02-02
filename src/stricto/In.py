@@ -21,8 +21,14 @@ class In(GenericType):
         
         for model in self._models:
             if model is None: continue
+            
+            # Look for the good type
             try:
-                if self._model.check( value ) == True: return
+                model.checkType( value )
             except Error as r:
                 continue
+
+            # check if OK to the model
+            return model.check( value )
+            
         raise Error(ErrorType.WRONGTYPE,"Match no model", self.pathName())
