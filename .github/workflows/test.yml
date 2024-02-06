@@ -22,5 +22,4 @@ jobs:
       run: |
         coverage run -m unittest
     - name: Coverage Badge
-      uses: we-cli/coverage-badge-action@v1.0.1
-    
+      uses: tj-actions/coverage-badge-py@v2    
