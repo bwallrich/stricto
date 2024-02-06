@@ -79,7 +79,7 @@ a = "the number of the beast" # works ! the affectation of "a" change. Now it is
 ## json
 
 
-use ```.getvalue()``` to extract a dict from a Dict and do the *json.dumps* like usual.
+use ```.get_value()``` to extract a dict from a Dict and do the *json.dumps* like usual.
 
 
 ```python
@@ -270,6 +270,5 @@ print(a.d) # -> 4
 ## Tests
 
 ```bash
-cd tests/
 python -m unittest
 ```
