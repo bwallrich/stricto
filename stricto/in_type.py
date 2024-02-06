@@ -1,5 +1,5 @@
 """Module providing the In() sur-Class"""
-from .genericType import GenericType
+from .generic import GenericType
 from .error import Error, ErrorType
 
 
@@ -8,7 +8,7 @@ class In(GenericType):
     A kind of "one of"
     """
 
-    def __init__(self, models: list = [], **kwargs):
+    def __init__(self, models: list , **kwargs):
         """
         available arguments
 

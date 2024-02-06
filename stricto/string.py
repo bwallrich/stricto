@@ -1,6 +1,6 @@
 """Module providing the String() Class"""
 import re
-from .genericType import GenericType
+from .generic import GenericType
 from .error import Error, ErrorType
 
 

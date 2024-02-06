@@ -1,5 +1,5 @@
 """Module providing the Float() Class"""
-from .genericType import GenericType
+from .generic import GenericType
 from .error import Error, ErrorType
 
 
@@ -29,10 +29,8 @@ class Float(GenericType):
 
         GenericType.check_constraints(self, value)
 
-        if self._min is not None:
-            if value < self._min:
-                raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
-        if self._max is not None:
-            if value > self._max:
-                raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
+        if self._min is not None and value < self._min:
+            raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
+        if self._max is not None and value > self._max:
+            raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
         return True

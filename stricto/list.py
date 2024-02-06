@@ -1,10 +1,10 @@
 """Module providing the List() Class"""
 import copy
-from .genericType import GenericType
+from .generic import GenericType
 from .error import Error, ErrorType
 
 
-class List(GenericType):
+class List(GenericType): # pylint: disable=too-many-instance-attributes
     """
     A Dict Type
     """

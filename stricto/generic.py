@@ -6,7 +6,7 @@ import copy
 from .error import Error, ErrorType
 
 
-class GenericType:
+class GenericType: # pylint: disable=too-many-instance-attributes
     """
     A generic type (class for int, string, etc)
     """
@@ -242,7 +242,7 @@ class GenericType:
             if self.root.currently_doing_autoset is False:
                 raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
 
-        corrected_value = value.get_value() if type(value) == type(self) else value
+        corrected_value = value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
         if callable(self._transform):
             corrected_value = self._transform(corrected_value, self.root)
 
@@ -259,7 +259,7 @@ class GenericType:
                 raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
 
         # transform the value before the check
-        corrected_value = value.get_value() if type(value) == type(self) else value
+        corrected_value = value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
 
         self._old_value = self._value
         self._value = self._default if corrected_value is None else corrected_value
@@ -326,7 +326,7 @@ class GenericType:
             return getattr(self._value, k)
         return None
 
-    def check_type(self, value):
+    def check_type(self, value): # pylint: disable=unused-argument
         """
         Check if the type is correct.
         must be overwritten

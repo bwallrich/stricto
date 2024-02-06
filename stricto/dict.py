@@ -1,6 +1,6 @@
 """Module providing the Dict() Class"""
 import copy
-from .genericType import GenericType
+from .generic import GenericType
 from .error import Error, ErrorType
 
 
@@ -9,7 +9,7 @@ class Dict(GenericType):
     A Dict Type
     """
 
-    def __init__(self, schema: dict = {}, **kwargs):
+    def __init__(self, schema: dict , **kwargs):
         """ """
         GenericType.__init__(self, **kwargs)
         self._keys = []
@@ -65,12 +65,12 @@ class Dict(GenericType):
     def __setattr__(self, name, value):
         try:
             locked = self.__dict__["_locked"]
-        except Exception:
+        except KeyError:
             locked = False
 
         try:
             keys = self.__dict__["_keys"]
-        except:
+        except KeyError:
             keys = None
 
         if locked:
@@ -118,7 +118,7 @@ class Dict(GenericType):
             try:
                 if getattr(self, key) != getattr(other, key):
                     return False
-            except:
+            except AttributeError:
                 return False
         return True
 

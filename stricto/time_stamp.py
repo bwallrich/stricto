@@ -1,5 +1,5 @@
 """Module providing the TimeStamp() Class"""
-from .genericType import GenericType
+from .generic import GenericType
 from .error import Error, ErrorType
 
 
