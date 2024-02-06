@@ -21,5 +21,6 @@ jobs:
     - name: run tests and coverage
       run: |
         coverage run -m unittest
-    - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v2
+    - name: Coverage Badge
+      uses: we-cli/coverage-badge-action@v1.0.1
+    
