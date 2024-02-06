@@ -51,7 +51,7 @@ c == b # return False
 
 ## Basic types
 
-All basic calss from python are implemented in ```stricto```.
+All basic class from python are implemented in ```stricto```.
 
 | python class | type in stricto |
 | - | - |
@@ -95,7 +95,7 @@ a=Dict(model)
 b=Dict(model)
 a.set({ "b" : 1, "e" : [ "aa", "bb"]})
 
-sa = json.dumps(a.getValue()) # json dumps 
+sa = json.dumps(a.get_value()) # json dumps 
 b.set( json.loads(sa) ) 
 b == a # return True
 ```
@@ -112,7 +112,7 @@ available options for all types ares :
 | ```required=True\|False``` | False | similar to ```notNull``` |
 | ```description="whatever you want"``` | None | a description of this object |
 | ```default=666``` | None | the default value |
-| ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements. See [in function](#in-or-union) for mor details |
+| ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
 | ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
 | ```transform=func``` | None | a [function](#functions) to [transform](#transform) the value before setting it |
 | ```constraint=func``` | None | a [function](#functions) to check the value before setting it |
@@ -151,7 +151,7 @@ client = Dict{
 client.age = 12  # -> raise an error
 client.age = 120  # -> Ok
 
-newAge = client.age+1 # -> raise an Error (newAge is implicitly an Int( min=21, max=120))
+newAge = client.age+1 # -> raise an Error ( > max ) newAge is implicitly an Int( min=21, max=120))
 newAge = 1+client.age # -> Ok (newAge is implicitly an int)
 ```
 
@@ -191,7 +191,10 @@ a.set('AtoZ')        # OK
 
 ### In()
 
-```In()``` is not a type, but an **union**
+```In( [ Array of types ] )``` is not a type, but an **union** of diffferent types.
+
+```In( options )``` use [generic options](#all-types).
+
 
 ```python
 # example
@@ -215,7 +218,7 @@ a.set(3.14) # -> raise an error
 
 ## Functions
 
- a ```func``` can return a value to adapt the result
+ a ```func``` can return a value to adapt the result. It can bee a lambda too.
 
 ### transform
 
@@ -242,37 +245,6 @@ company.name="worldcompagny"
 print(company.name) # -> "WORLDCOMPAGNY"
 ```
 
-### in or union
-
-Please see [in or union function](#all-types)
-
-
-```python
-# example
-from stricto import Dict, Int, String
-
-def build_union(value, o):
-    """
-    return the size in month for babies or for adult 
-    (a stupid example)
-
-    value : the current value given (32 in this example).
-    o     : the full object
-    """
-    if o.age < 2:
-        return [ 3, 6, 12, 18, 24 ]
-    return [ 32, 36, 38, 40 ]
-
-a=Dict({
-    "age" : Int(),
-    "size" : Int( in=build_union )
-})
-
-a.set{ "age" : 1, "size" : 32 } # -> raise an error
-a.set{ "age" : 3, "size" : 32 } # -> Ok
-```
-
-
 ### set or compute
 
 ```python
@@ -285,6 +257,9 @@ a=Dict({
     "c" : Int( ),
 })
 
+# "b" and "d" cannot be modified by hand. the are recalculated every time another value 
+# change in the Dict.
+
 a.b = 3 # -> raise an error
 
 a.c = 2
@@ -296,5 +271,5 @@ print(a.d) # -> 4
 
 ```bash
 cd tests/
-python -m unittest -v
+python -m unittest
 ```
