@@ -105,7 +105,7 @@ b.set( json.loads(sa) )
 b == a # return True
 ```
 
-## Types
+## Types and options
 
 ### All types
 
@@ -120,15 +120,14 @@ available options for all types ares :
 | ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
 | ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
 | ```transform=func``` | None | a [function](#functions) to [transform](#transform) the value before setting it |
-| ```constraint=func``` | None | a [function](#functions) to check the value before setting it |
-| ```constraints=[func]``` | None | a list of [functions](#functions) to check the value before setting it |
-| ```onchange=func``` | None | a [function](#functions) to trigger when the value change |
+| ```constraint=func``` | None | a [constraints](#constraints) to check the value before setting it |
+| ```constraints=[func]``` | None | a list of [constraints](#constraints) to check the value before setting it |
+| ```onchange=func``` | None | a [onchange](#onchange) function trigged when the value change |
 | ```onChange=func``` | None | similar to ```onchange``` |
 | ```set=func``` | None | a read only value, calculated from other .See [set or compute function](#set-or-compute) |
 | ```compute=func``` | None | similar to ```set``` |
 
 See [functions](#functions) for mor details and examples how to use them.
-
 
 ### Int()
 
@@ -165,7 +164,6 @@ newAge = 1+client.age # -> Ok (newAge is implicitly an int)
 ```String( options )``` is for strings.
 
 ```String( options )``` use [generic options](#all-types).
-
 
 available specific options for Int() ares :
 
@@ -217,10 +215,6 @@ a.count('h') # -> return None
 a.set(3.14) # -> raise an error
 ```
 
-
-
-
-
 ## Functions
 
  a ```func``` can return a value to adapt the result. It can bee a lambda too.
@@ -270,6 +264,57 @@ a.b = 3 # -> raise an error
 a.c = 2
 print(a.b) # -> 3
 print(a.d) # -> 4
+```
+
+### constraints
+
+```python
+# example
+from stricto import Dict, Int, String
+
+
+
+def check_pair(value, o): # pylint: disable=unused-argument
+    """
+    return true if pair
+    """
+    return not value % 2
+
+a=Dict({
+    "b" : Int( default = 0, constraint=check_pair ),        # check before setting
+    "d" : Int( constraint=lambda value, o : not value % 2 ), # same as above, with a lambda
+    "c" : Int( constraints=[ check_pair ] ),                # A list of constraints
+})
+
+a.b = 2 # OK
+a.c = 3 # -> raise an error
+```
+
+
+
+### onchange
+
+```python
+# example
+from stricto import Dict, Int, String
+
+
+
+def change_test(old_value, value, o): # pylint: disable=unused-argument
+    """
+    just a change option
+    old_value   -> The previous value
+    value       -> the new one
+    o           -> the root object = a in our example
+    """
+    print(f"The value of b as changed from {old_value} to {value}")
+
+a=Dict({
+    "b" : Int( default = 0, onchange=change_test )
+})
+
+a.b = 2     # -> output "The value of b as changed from 0 to 2"
+a.b = 3-1   # -> nothing displayed
 ```
 
 ## Tests
