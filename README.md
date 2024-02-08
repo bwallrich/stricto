@@ -49,7 +49,7 @@ a.nickname[1] # -> Eddy
 b=a # b is a reference on a
 c=a.copy() # c is a different object : c is a copy
 
-c == b # return True
+c == b # return True (yes you can test and do operators directly on objects)
 b.nicknames.pop()
 c == b # return False
 ```
