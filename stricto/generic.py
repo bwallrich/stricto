@@ -6,7 +6,7 @@ import copy
 from .error import Error, ErrorType
 
 
-class GenericType: # pylint: disable=too-many-instance-attributes
+class GenericType:  # pylint: disable=too-many-instance-attributes
     """
     A generic type (class for int, string, etc)
     """
@@ -23,19 +23,26 @@ class GenericType: # pylint: disable=too-many-instance-attributes
         self.root = None
         self.parent = None
         self.attribute_name = ""
+        self._value = None
+        self._old_value = None
         self._descrition = kwargs.pop("description", None)
-        self._default = kwargs.pop("default", None)
-        self._value = self._default
-        self._old_value = self._value
         self._not_null = kwargs.pop("notNull", kwargs.pop("required", False))
         self._union = kwargs.pop("union", kwargs.pop("in", None))
-        self._auto_set = kwargs.pop("set", kwargs.pop("compute", None))
         self.currently_doing_autoset = False
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
         self._constraints = constraint if isinstance(constraint, list) else [constraint]
 
+
+
+        self._default = kwargs.pop("default", None)
+        self.check(self._default)
+        self._value = self._default
+        self._old_value = self._value
+
         self._transform = kwargs.pop("transform", None)
+        self._auto_set = kwargs.pop("set", kwargs.pop("compute", None))
         self._on_change = kwargs.pop("onChange", kwargs.pop("onchange", None))
+
 
     def set_hierachy_attributs(self, root, parent, name):
         """
@@ -65,8 +72,8 @@ class GenericType: # pylint: disable=too-many-instance-attributes
         return ".".join(p)
 
     def get_other_value(self, other):
-        """ 
-        return the value of the other object if GenericType 
+        """
+        return the value of the other object if GenericType
         """
         if isinstance(other, GenericType):
             return other.get_value()
@@ -242,7 +249,9 @@ class GenericType: # pylint: disable=too-many-instance-attributes
             if self.root.currently_doing_autoset is False:
                 raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
 
-        corrected_value = value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
+        corrected_value = (
+            value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
+        )
         if callable(self._transform):
             corrected_value = self._transform(corrected_value, self.root)
 
@@ -259,7 +268,9 @@ class GenericType: # pylint: disable=too-many-instance-attributes
                 raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
 
         # transform the value before the check
-        corrected_value = value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
+        corrected_value = (
+            value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
+        )
 
         self._old_value = self._value
         self._value = self._default if corrected_value is None else corrected_value
@@ -320,18 +331,18 @@ class GenericType: # pylint: disable=too-many-instance-attributes
         """
         replicate all atributes from value, but prefere self attribute first.
         """
-        if k in self.__dict__:
-            return self.__dict__[k]
+        #if k in self.__dict__:
+        #    return self.__dict__[k]
         if hasattr(self._value, k):
             return getattr(self._value, k)
         return None
 
-    def check_type(self, value): # pylint: disable=unused-argument
+    def check_type(self, value):  # pylint: disable=unused-argument
         """
         Check if the type is correct.
         must be overwritten
         """
-        return True
+        # return True
 
     def check_constraints(self, value):
         """

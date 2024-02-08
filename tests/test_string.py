@@ -49,11 +49,42 @@ class TestString(unittest.TestCase):
         a.set("hop")
         self.assertNotEqual(a, b)
 
+    def test_len(self):
+        """
+        length
+        """
+        a = String()
+        a.set("foo")
+        self.assertEqual(len (a), 3)
+
+    def test_union(self):
+        """
+        union
+        """
+        a = String( union=['M', 'F' ])
+        with self.assertRaises(Error) as e:
+            a.set("foo")
+        self.assertEqual(e.exception.message, "not in list")
+        a.set("F")
+        self.assertEqual(a, 'F')
+
+    def test_union_error(self):
+        """
+        union error
+        """
+        a = String( union= 22 )
+        with self.assertRaises(Error) as e:
+            a.set("M")
+        self.assertEqual(e.exception.message, "Union constraint not list")
+
     def test_not_null(self):
         """
         String not null
         """
-        a = String(notNull=True)
+        with self.assertRaises(Error) as e:
+            a = String(notNull=True)
+        self.assertEqual(e.exception.message, "Cannot be empty")
+        a = String(notNull=True, default="")
         with self.assertRaises(Error) as e:
             a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")

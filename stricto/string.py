@@ -16,9 +16,9 @@ class String(GenericType):
         regexp=pattern=patterns : A (list of) regular expression to match
 
         """
-        GenericType.__init__(self, **kwargs)
         regexp = kwargs.pop("regexp", kwargs.pop("pattern", kwargs.pop("patterns", [])))
-        self._regexps = regexp if isinstance(regexp,list) else [regexp]
+        self._regexps = regexp if isinstance(regexp, list) else [regexp]
+        GenericType.__init__(self, **kwargs)
 
     def __len__(self):
         return self._value.__len__()

@@ -6,7 +6,7 @@ import unittest
 from stricto import List, Int, String, Error
 
 
-class TestList(unittest.TestCase):
+class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
     """
     Test on Strings
     """
@@ -25,18 +25,58 @@ class TestList(unittest.TestCase):
         a.set([11])
         self.assertEqual(a[0], 11)
 
-    def test_none(self):
+    def test_list_none(self):
         """
         Test notnull value
         """
-        a = List(Int(), notNull=True)
-        a.set([])
+        with self.assertRaises(Error) as e:
+            a = List(Int(), notNull=True)
+        self.assertEqual(e.exception.message, "Cannot be empty")
+        a = List(Int(), notNull=True, default=[])
         with self.assertRaises(Error) as e:
             a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")
         a = List(Int())
         a.set(None)
         self.assertEqual(a, None)
+
+
+    def test_repr(self):
+        """
+        Test repr()
+        """
+        a = List(Int())
+        self.assertEqual(repr(a), 'None')
+        a.set([1, 2, 3])
+        self.assertEqual(repr(a), '[1, 2, 3]')
+        a = List(List(Int()))
+        a.set([[1, 2, 3], [0, 4]])
+        self.assertEqual(repr(a), '[[1, 2, 3], [0, 4]]')
+
+    def test_default(self):
+        """
+        Test default()
+        """
+        a = List(Int(), default = [12])
+        self.assertEqual(len(a), 1)
+        self.assertEqual(a[0], 12)
+
+        with self.assertRaises(Error) as e:
+            a = List(Int(), default = 22)
+        self.assertEqual(e.exception.message, "Must be a list")
+
+    def test_clear(self):
+        """
+        Test clear()
+        """
+        a = List(Int())
+        a.set([1, 2, 3])
+        a.clear()
+        self.assertEqual(len(a), 0)
+        a = List(Int(), default = [1])
+        a.set([1, 2, 3])
+        a.clear()
+        self.assertEqual(len(a), 0)
 
     def test_none_append(self):
         """
@@ -116,6 +156,7 @@ class TestList(unittest.TestCase):
         a[0] = 22
         self.assertEqual(a[0], 22)
 
+
     def test_set_item_slice(self):
         """
         Test set a[i:j]=[...]
@@ -160,6 +201,11 @@ class TestList(unittest.TestCase):
         self.assertEqual(len(a), 1)
         self.assertEqual(a[0], 23)
 
+        a.set(None)
+        a.insert(10, 23)
+        self.assertEqual(len(a), 1)
+        self.assertEqual(a[0], 23)
+
     def test_sort(self):
         """
         Test sort
@@ -172,6 +218,18 @@ class TestList(unittest.TestCase):
         a.sort(reverse=True)
         self.assertEqual(a[0], "Volvo")
         self.assertEqual(a[2], "BMW")
+        a.set(None)
+        a.sort()
+
+    def test_set_as_list(self):
+        """
+        Test set as a list
+        """
+        a = List(String())
+        a.set(["Ford", "BMW", "Volvo"])
+        b = List(String())
+        b.check(a)
+        b.set(a)
 
     def test_add(self):
         """
@@ -204,3 +262,47 @@ class TestList(unittest.TestCase):
         b[1] = "Renault"
         self.assertEqual(a[1], "BMW")
         self.assertEqual(b[1], "Renault")
+
+    def test_uniq(self):
+        """
+        Test uniq()
+        """
+        a = List(String(), uniq=True)
+        a.set(["Ford", "BMW", "Volvo"])
+        with self.assertRaises(Error) as e:
+            a[1]="Ford"
+        self.assertEqual(e.exception.message, "duplicate value in list")
+        with self.assertRaises(Error) as e:
+            a=a+["BMW", "yolo"]
+        self.assertEqual(e.exception.message, "duplicate value in list")
+
+    def test_min_max(self):
+        """
+        Test min and max()
+        """
+        with self.assertRaises(Error) as e:
+            a = List(String(), min=2, default=["zaza"])
+            print(a)
+        self.assertEqual(e.exception.message, "Must be above Minimal")
+
+        a = List(String(), min=2, default=[ "a", "b" ] )
+        with self.assertRaises(Error) as e:
+            a.set(["Ford"])
+        self.assertEqual(e.exception.message, "Must be above Minimal")
+        a.set(["Ford", "BMW"])
+        with self.assertRaises(Error) as e:
+            a.pop()
+        self.assertEqual(e.exception.message, "Must be above Minimal")
+        with self.assertRaises(Error) as e:
+            a.clear()
+        self.assertEqual(e.exception.message, "Must be above Minimal")
+        self.assertEqual(a[1], "BMW")
+
+        a = List(String(), max=2 )
+        with self.assertRaises(Error) as e:
+            a.set(["Ford", "BMW", "Volvo"])
+        self.assertEqual(e.exception.message, "Must be below Maximal")
+        a.set(["Ford", "BMW"])
+        with self.assertRaises(Error) as e:
+            a.append("yolo")
+        self.assertEqual(e.exception.message, "Must be below Maximal")

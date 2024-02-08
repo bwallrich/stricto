@@ -8,13 +8,13 @@ class In(GenericType):
     A kind of "one of"
     """
 
-    def __init__(self, models: list , **kwargs):
+    def __init__(self, models: list, **kwargs):
         """
         available arguments
 
         """
-        GenericType.__init__(self, **kwargs)
         self._models = models
+        GenericType.__init__(self, **kwargs)
 
     def check(self, value):
         """
@@ -27,7 +27,8 @@ class In(GenericType):
 
             # Look for the good type
             try:
-                model.check_type(value)
+                if value is not None:
+                    model.check_type(value)
             except Error:
                 continue
 

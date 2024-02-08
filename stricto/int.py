@@ -16,9 +16,9 @@ class Int(GenericType):
         max : maximal value
 
         """
-        GenericType.__init__(self, **kwargs)
         self._min = kwargs.pop("min", kwargs.pop("minimum", None))
         self._max = kwargs.pop("max", kwargs.pop("maximum", None))
+        GenericType.__init__(self, **kwargs)
 
     def check_type(
         self,

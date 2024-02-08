@@ -1,16 +1,17 @@
 """
-test for Int()
+test for Float()
 """
 import unittest
+import math
 
-from stricto import Int, Error
+from stricto import Float, Error
 
 
 def pair_only(value, o): # pylint: disable=unused-argument
     """
     return the value if par, or value +1 
     """
-    return value + 1 if value % 2 else value
+    return value + 1.0 if value % 2 else value
 
 
 def check_pair(value, o): # pylint: disable=unused-argument
@@ -22,7 +23,7 @@ def check_pair(value, o): # pylint: disable=unused-argument
 
 class TestInt(unittest.TestCase):
     """
-    Test on Int
+    Test on Float
     """
     def __init__(self, m):
         unittest.TestCase.__init__(self, m)
@@ -32,48 +33,62 @@ class TestInt(unittest.TestCase):
         """
         Test error of type
         """
-        a = Int()
+        a = Float()
         with self.assertRaises(Error) as e:
-            a.set(12.3)
-        self.assertEqual(e.exception.message, "Must be a int")
+            a.set("dd")
+        self.assertEqual(e.exception.message, "Must be a float")
 
     def test_default(self):
         """
         Test default value
         """
-        a = Int()
+        a = Float()
         self.assertEqual(a, None)
-        a = Int(default=3)
-        b = a + 2
-        self.assertEqual(a, 3)
-        self.assertEqual(b, 5)
+        a = Float(default=3.14)
+        b = a + 2.0
+        self.assertEqual(a, 3.14)
+        self.assertEqual(math.isclose(b.get_value(), 5.14), True)
 
     def test_min(self):
         """
         Test min
         """
-        a = Int(min=10)
+        a = Float(min=10.0)
         with self.assertRaises(Error) as e:
-            a.set(9)
+            a.set(9.9)
         self.assertEqual(e.exception.message, "Must be above Minimal")
 
     def test_max(self):
         """
         Test max
         """
-        a = Int(max=10)
+        a = Float(max=10.0)
         with self.assertRaises(Error) as e:
-            a.set(11)
+            a.set(10.00001)
         self.assertEqual(e.exception.message, "Must be below Maximal")
+
+    def test_float_operator(self):
+        """
+        Test __operators__
+        """
+        c = Float( default=5.0)
+        for d in [ Float(default=2.0), 2.0 ]:
+            self.assertEqual(c+d, 7)
+            self.assertEqual(c-d, 3)
+            self.assertEqual(c*d, 10)
+            self.assertEqual(c**d, 25)
+            self.assertEqual(c//d, 2)
+            self.assertEqual(c/d, 2.5)
+            self.assertEqual(c%d, 1)
 
     def test_copy(self):
         """
         Test ref and copy()
         """
-        a = Int(max=10)
-        a.set(9)
+        a = Float(max=10.0)
+        a.set(9.0)
         b = a.copy()
-        self.assertEqual(b, 9)
+        self.assertEqual(b, 9.0)
         with self.assertRaises(Error) as e:
             b.set(a + 3)
         self.assertEqual(e.exception.message, "Must be below Maximal")
@@ -82,97 +97,64 @@ class TestInt(unittest.TestCase):
         """
         test comparison operators
         """
-        a = Int(max=10)
-        a.set(9)
-        b = Int()
-        b.set(9)
+        a = Float(max=10.0)
+        a.set(9.0)
+        b = Float()
+        b.set(9.0)
         self.assertEqual(b, a)
-        b.set(11)
-        self.assertNotEqual(b, a)
+        b.set(11.0)
         self.assertGreater(b, a)
-        self.assertLess(a, b)
         self.assertGreaterEqual(b, a)
-        self.assertLessEqual(a, b)
 
     def test_object_affectation(self):
         """
         Test __add__
         """
-        a = Int(max=10)
-        a.set(9)
-        b = Int()
-        b.set(9)
+        a = Float(max=10.0)
+        a.set(9.0)
+        b = Float()
+        b.set(9.0)
         with self.assertRaises(Error) as e:
             c = a + b
         self.assertEqual(e.exception.message, "Must be below Maximal")
         c = b + a
-        self.assertEqual(type(c), Int)
-        self.assertEqual(c, 18)
-
-    def test_int_operator(self):
-        """
-        Test __operators__
-        """
-        a = Int( default=5)
-        for b in [ Int(default=2), 2 ]:
-            self.assertEqual(a+b, 7)
-            self.assertEqual(a-b, 3)
-            self.assertEqual(a*b, 10)
-            self.assertEqual(a**b, 25)
-            self.assertEqual(a//b, 2)
-            with self.assertRaises(Error) as e:
-                self.assertEqual(a/b, 2)
-            self.assertEqual(e.exception.message, "Must be a int")
-            self.assertEqual(a%b, 1)
-            self.assertEqual(a>>b, 1)
-            self.assertEqual(a<<b, 20)
-            self.assertEqual(a&b, 0)
-            self.assertEqual(a|b, 7)
-            self.assertEqual(a^b, 7)
+        self.assertEqual(type(c), Float)
+        self.assertEqual(c, 18.0)
 
     def test_transform(self):
         """
         Test transform= option
         """
-        a = Int(transform=pair_only)
-        a.set(10)
-        self.assertEqual(a, 10)
-        a.set(9)
-        self.assertEqual(a, 10)
+        a = Float(transform=pair_only)
+        a.set(10.0)
+        self.assertEqual(a, 10.0)
+        a.set(9.0)
+        self.assertEqual(a, 10.0)
 
     def test_transform_lambda(self):
         """
         Test transform with a lambda
         """
-        a = Int(transform=lambda value, o: value + 1 if value % 2 else value)
-        a.set(10)
-        self.assertEqual(a, 10)
-        a.set(9)
-        self.assertEqual(a, 10)
+        a = Float(transform=lambda value, o: value + 1.0 if value % 2 else value)
+        a.set(10.0)
+        self.assertEqual(a, 10.0)
+        a.set(9.0)
+        self.assertEqual(a, 10.0)
 
     def test_constraint(self):
         """
         Test constraints
         """
-        a = Int(constraint=check_pair)
+        a = Float(constraint=check_pair)
         with self.assertRaises(Error) as e:
-            a.set(11)
+            a.set(11.0)
         self.assertEqual(e.exception.message, "constraint not validated")
-        a = Int(constraint=[check_pair])
+        a = Float(constraint=[check_pair])
         with self.assertRaises(Error) as e:
-            a.set(11)
+            a.set(11.0)
         self.assertEqual(e.exception.message, "constraint not validated")
-        a.set(10)
-        self.assertEqual(a, 10)
-
-    def test_constraint_error(self):
-        """
-        Test constraint error
-        """
-        a = Int(constraint="coucou")
-        with self.assertRaises(Error) as e:
-            a.set(11)
-        self.assertEqual(e.exception.message, "constraint not callable")
+        a.set(10.0)
+        self.assertEqual(a, 10.0)
 
     def test_transform_on_change(self):
         """
@@ -186,12 +168,12 @@ class TestInt(unittest.TestCase):
             """
             self.on_change_bool = True
 
-        a = Int(onChange=change_test)
+        a = Float(onChange=change_test)
         self.on_change_bool = False
-        a.set(10)
+        a.set(10.0)
         self.assertEqual(self.on_change_bool, True)
         self.on_change_bool = False
-        a.set(10)
+        a.set(10.0)
         self.assertEqual(self.on_change_bool, False)
-        a.set(11)
+        a.set(11.0)
         self.assertEqual(self.on_change_bool, True)

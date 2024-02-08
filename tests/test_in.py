@@ -45,6 +45,14 @@ class TestIn(unittest.TestCase):
         b = a + "bar"
         self.assertEqual(b, "foobar")
 
+    def test_model_none(self):
+        """
+        Test error
+        """
+        a = In([None, Int()])
+        a.set(11)
+        self.assertEqual(a, 11)
+
     def test_default_type(self):
         """
         default

@@ -26,6 +26,34 @@ class TestDict(unittest.TestCase):
         self.assertEqual(a.b + a.c, 3)
         self.assertEqual(a.d, None)
 
+    def test_set_error(self):
+        """
+        test set with error 
+        """
+        with self.assertRaises(Error) as e:
+            Dict({"b": Int(), "c": Int(), "d": 23})
+        self.assertEqual(e.exception.message, "Not a schema")
+
+    def test_set_no_value(self):
+        """
+        test set non existing value 
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        with self.assertRaises(Error) as e:
+            a.set({"b": 1, "c": 2, "d": "yolo"})
+        self.assertEqual(e.exception.message, "Unknown content")
+
+    def test_set_with_dict(self):
+        """
+        test set non existing value 
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        b = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+        b.check(a)
+        b.set(a)
+        self.assertEqual(b.b, 1)
+
     def test_locked(self):
         """
         test locked
@@ -35,6 +63,51 @@ class TestDict(unittest.TestCase):
         with self.assertRaises(Error) as e:
             a.d = 22
         self.assertEqual(e.exception.message, "locked")
+
+    def test_get_keys(self):
+        """
+        test get keys
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        self.assertEqual(a.keys(), [ "b", "c" ])
+
+    def test_get_item(self):
+        """
+        test get item
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+        self.assertEqual(a["b"], 1)
+        self.assertEqual(a["yolo"], None)
+
+    def test_get(self):
+        """
+        test get
+        """
+        a = Dict({"b": Int( default=22 ), "c": Int()})
+        a.set({"c": 2})
+        self.assertEqual(a.get("b"), 22)
+        self.assertEqual(a.get("c"), 2)
+        self.assertEqual(a.get("notfound"), None)
+
+    def test_am_i_root(self):
+        """
+        test am i root
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+        self.assertEqual( a.b.am_i_root(), False )
+        self.assertEqual( a.am_i_root(), True )
+
+    def test_repr(self):
+        """
+        test __repr__
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+        c = repr( a )
+        self.assertEqual( type(c), str )
+        self.assertEqual( c, "{'b': 1, 'c': 2}" )
 
     def test_modify_schema(self):
         """
@@ -61,6 +134,23 @@ class TestDict(unittest.TestCase):
         self.assertEqual(a.b, 33)
         a.b = 22
         self.assertEqual(a.c, 22)
+
+    def test_equality(self):
+        """
+        Test equality
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+        b=a.copy()
+        self.assertEqual(a, b)
+        self.assertEqual(a == b , True)
+        self.assertEqual(a != b , False)
+        b.b=22
+        self.assertNotEqual(a, b)
+        b = Dict({"b": Int(), "d": Int()})
+        b.set({"b": 1, "d": 2})
+        self.assertNotEqual(a, b)
+        self.assertEqual(a != b, True)
 
     def test_copy_type(self):
         """

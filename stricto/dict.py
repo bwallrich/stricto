@@ -9,11 +9,9 @@ class Dict(GenericType):
     A Dict Type
     """
 
-    def __init__(self, schema: dict , **kwargs):
+    def __init__(self, schema: dict, **kwargs):
         """ """
-        GenericType.__init__(self, **kwargs)
         self._keys = []
-
         for key in schema.keys():
             m = schema.get(key)
             if isinstance(m, GenericType) is False:
@@ -21,6 +19,8 @@ class Dict(GenericType):
             mm = copy.copy(m)
             setattr(self, key, mm)
             self._keys.append(key)
+
+        GenericType.__init__(self, **kwargs)
 
         self.set_hierachy_attributs(self, None, "")
 
@@ -115,10 +115,7 @@ class Dict(GenericType):
         equality test two objects
         """
         for key in self._keys:
-            try:
-                if getattr(self, key) != getattr(other, key):
-                    return False
-            except AttributeError:
+            if getattr(self, key) != getattr(other, key):
                 return False
         return True
 
@@ -168,10 +165,10 @@ class Dict(GenericType):
 
         self.__dict__["currently_doing_autoset"] = False
 
-
     def check(self, value):
-        self.check_type(value)
-        self.check_constraints(value)
+        #self.check_type(value)
+        #self.check_constraints(value)
+        GenericType.check( self, value)
 
         # check reccursively subtypes
         if isinstance(value, dict):

@@ -4,29 +4,29 @@ from .generic import GenericType
 from .error import Error, ErrorType
 
 
-class List(GenericType): # pylint: disable=too-many-instance-attributes
+class List(GenericType):  # pylint: disable=too-many-instance-attributes
     """
     A Dict Type
     """
 
     def __init__(self, class_type: None, **kwargs):
-        """ 
+        """
         initialisation, set class_type and some parameters
         """
-        self._value = []
-        GenericType.__init__(self, **kwargs)
         self._type = class_type
-        self._default = kwargs.pop("default", [])
-        self._value = self._default
+
         self._min = kwargs.pop("min", None)
         self._max = kwargs.pop("max", None)
         self._uniq = kwargs.pop("uniq", None)
+
+        GenericType.__init__(self, **kwargs)
+
 
     def __len__(self):
         """
         calld by len()
         """
-        if not isinstance( self._value, list):
+        if not isinstance(self._value, list):
             return 0
         return self._value.__len__()
 
@@ -44,12 +44,17 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
         """
         Do like set_hierachy_attributs, but for sub objects
         """
+        if not isinstance(self._value, list):
+            return
+
         i = 0
         for item in self._value:
             item.set_hierachy_attributs(self.root, self, f"{self.attribute_name}[{i}]")
             i = i + 1
 
     def __repr__(self):
+        if self._value is None:
+            return repr(None)
         a = []
         for i in self._value:
             a.append(i)
@@ -62,14 +67,17 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
-        result._value = []
-        for i in self._value:
-            result._value.append(i.copy())
+        result._value = None
+        if isinstance(self._value, list):
+            result._value = []
+            for i in self._value:
+                result._value.append(i.copy())
         return result
 
     def copy(self):
         return copy.copy(self)
-    # self.__copy__()
+
+    # self.__copy__()
 
     def clear(self):
         """
@@ -80,7 +88,7 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
 
     def duplicate_in_list(self):
         """
-        Copy the list self._value to another list 
+        Copy the list self._value to another list
         used to check() on this list before modification
         """
         a = []
@@ -126,9 +134,6 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
             a.__setitem__(key, models)
             self.check(a)
 
-            if not isinstance(self._value, list):
-                self._value = []
-
             self._value.__setitem__(key, models)
             self.set_sub_root()
         else:
@@ -137,9 +142,6 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
             model.set(value)
             a[key].set(value)
             self.check(a)
-
-            if not isinstance(self._value, list):
-                self._value = []
 
             self._value.__setitem__(key, model)
 
@@ -226,7 +228,7 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
         # Duplicate and check
         a = self.duplicate_in_list()
         models = []
-        i = len ( self )
+        i = len(self)
         for value in second_list:
             model = self._type.copy()
             model.set_hierachy_attributs(self.root, self, f"[{i}]")
@@ -236,7 +238,7 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
             i = i + 1
         self.check(a)
 
-        if not isinstance( self._value, list):
+        if not isinstance(self._value, list):
             self._value = []
 
         self._value.extend(models)
@@ -248,6 +250,9 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
         if value is None:
             self._value = None
             return
+
+        if not isinstance(self._value, list):
+            self._value = []
 
         self._value.clear()
         i = 0
@@ -264,7 +269,7 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
         (related to set=flag) and call to all subs
         """
         GenericType.auto_set(self)
-        if not isinstance( self._value, list):
+        if not isinstance(self._value, list):
             return
 
         for key in self._value:
@@ -272,8 +277,6 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
 
     def check(self, value):
         GenericType.check(self, value)
-        # self.check_type( value )
-        # self.check_constraints( value )
 
         # check all values
         if isinstance(value, list):
@@ -293,6 +296,9 @@ class List(GenericType): # pylint: disable=too-many-instance-attributes
         """
         @overwrite GenericType.get_value()
         """
+        if self._value is None:
+            return None
+
         a = []
         for element in self._value:
             a.append(element.get_value())
