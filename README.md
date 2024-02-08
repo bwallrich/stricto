@@ -1,6 +1,11 @@
-# Stricto
+# stricto
 
-Strict Dict with schema validation embedded
+Strict json structure with schema validation
+
+The way to use is very simple, see [Quickstart](#quickstart) for a basic setup.
+
+The main difference with [jsonschema](https://github.com/python-jsonschema/jsonschema) is that the schema is directly in types of data. You don't have to *validate* them.
+
 
 ## Installation
 
