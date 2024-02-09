@@ -42,6 +42,14 @@ class TestString(unittest.TestCase):
         b = String()
         b.set("bar")
         self.assertNotEqual(a, b)
+        self.assertEqual(a, "foo")
+        self.assertEqual(a == "foo", True)
+        self.assertEqual(a != "foo", False)
+        for c in [ b, "bar"]:
+            self.assertEqual(a < c, False)
+            self.assertEqual(a <= c, False)
+            self.assertEqual(a > c, True)
+            self.assertEqual(a >= c, True)
 
         # check for non reference
         b.set(a)
@@ -122,7 +130,7 @@ class TestString(unittest.TestCase):
         a.set("AtoZ")
 
         # function return a regexp
-        a = String(regexp=lambda self, value, root: r".*Z$")
+        a = String(regexp=lambda value, root: r".*Z$")
         with self.assertRaises(Error) as e:
             a.set("Foo")
         self.assertEqual(e.exception.message, "Dont match regexp")

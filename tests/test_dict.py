@@ -4,7 +4,7 @@ test for Dict()
 import unittest
 import json
 
-from stricto import String, Int, Dict, List, Error
+from stricto import String, Int, Dict, List, Bool, Error
 
 
 class TestDict(unittest.TestCase):
@@ -257,3 +257,45 @@ class TestDict(unittest.TestCase):
         self.assertEqual(a.c, 2)
         self.assertEqual(a.d, 3)
         self.assertEqual(a.e, 4)
+
+
+    def test_not_exist(self):
+        """
+        test not exist
+        """
+        def check_exists(value, o): # pylint: disable=unused-argument
+            """
+            return if exists or not
+            """
+            return o.must_exists.get_value()
+
+        a = Dict(
+            {
+                "must_exists" : Bool( default=False),
+                "a": Int(),
+                "b": Int(default=1),
+                "c": Int(default=2),
+                "d": Int(default=3, required=True, exists=check_exists),
+                "e": Int(default=4),
+            }
+        )
+        a.set({"a": 2})
+        with self.assertRaises(KeyError) as e:
+            a.d=a.get_value()['d']
+        self.assertEqual(e.exception.args[0], "d")
+        self.assertEqual(a.get('d'), None)
+        self.assertEqual(repr (a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}")
+
+        with self.assertRaises(Error) as e:
+            a.set({"d": 2})
+        self.assertEqual(e.exception.message, "locked")
+        with self.assertRaises(Error) as e:
+            a.d=2
+        self.assertEqual(e.exception.message, "locked")
+
+        a.must_exists = True
+        self.assertEqual(a.get('d'), 3)
+        self.assertEqual(a.get_value()['d'], 3)
+        self.assertEqual(repr (a), "{'must_exists': True, 'a': 2, 'b': 1, 'c': 2, 'd': 3, 'e': 4}")
+        a.set({"d": 2})
+        self.assertEqual(a.d, 2)

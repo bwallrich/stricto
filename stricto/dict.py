@@ -101,12 +101,16 @@ class Dict(GenericType):
         result.__dict__["parent"] = self.__dict__["parent"]
         result.__dict__["attribute_name"] = self.__dict__["attribute_name"]
         result.__dict__["_on_change"] = self.__dict__["_on_change"]
+        result.__dict__["_exists"] = self.__dict__["_exists"]
         result._locked = True
         return result
 
     def __repr__(self):
         a = {}
         for key in self._keys:
+            v = getattr(self, key)
+            if v.exists() is False:
+                continue
             a[key] = getattr(self, key)
         return a.__repr__()
 
@@ -131,6 +135,9 @@ class Dict(GenericType):
     def get_value(self):
         a = {}
         for key in self._keys:
+            key_object = getattr(self, key)
+            if key_object.exists() is False:
+                continue
             a[key] = getattr(self, key).get_value()
         return a
 
@@ -141,7 +148,9 @@ class Dict(GenericType):
         if key not in self._keys:
             return default
         v = self.__dict__[key]
-        return default if v is None else v
+        if v.exists() is False:
+            return default
+        return v
 
     def set_value_without_checks(self, value):
         for key in self._keys:
@@ -161,7 +170,10 @@ class Dict(GenericType):
 
         GenericType.auto_set(self)
         for key in self._keys:
-            getattr(self, key).auto_set()
+            key_object = getattr(self, key)
+            if key_object.exists() is False:
+                continue
+            key_object.auto_set()
 
         self.__dict__["currently_doing_autoset"] = False
 
@@ -173,8 +185,11 @@ class Dict(GenericType):
         # check reccursively subtypes
         if isinstance(value, dict):
             for key in self._keys:
+                key_object = self.__dict__[key]
+                if key_object.exists() is False:
+                    continue
                 sub_value = value.get(key)
-                self.__dict__[key].check(sub_value)
+                key_object.check(sub_value)
 
             # check if a non-described value
             for key in value:
@@ -188,8 +203,12 @@ class Dict(GenericType):
 
         if isinstance(value, Dict):
             for key in self._keys:
+                key_object = self.__dict__[key]
+                if key_object.exists() is False:
+                    continue
+
                 sub_value = value.get(key).get_value()
-                self.__dict__[key].check(sub_value)
+                key_object.check(sub_value)
             return
 
     def check_type(self, value):

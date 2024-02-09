@@ -126,6 +126,7 @@ available options for all types ares :
 | ```onChange=func``` | None | similar to ```onchange``` |
 | ```set=func``` | None | a read only value, calculated from other .See [set or compute function](#set-or-compute) |
 | ```compute=func``` | None | similar to ```set``` |
+| ```exists=func``` | None | a function to say if the object "exists", depending on values from other attributs. See  [exists](#exists) for details |
 
 See [functions](#functions) for mor details and examples how to use them.
 
@@ -315,6 +316,42 @@ a=Dict({
 
 a.b = 2     # -> output "The value of b as changed from 0 to 2"
 a.b = 3-1   # -> nothing displayed
+```
+
+### exists
+
+A function wich must return ```True|False``` to say if this key exists.
+
+```python
+# example
+from stricto import Dict, Int, String
+
+def check_if_female(value, o):
+    """
+    return true if Female
+    """
+    if o.gender == "Male":
+        return False
+    return True
+
+cat=Dict({
+    "name" : String(),
+    "gender" : String( default = 'Male', in=[ 'Male', 'Female' ]),
+    "female_infos" : Dict(
+        {
+        "number_of_litter" : Int(default=0, required=True)
+        # ... some other attributes
+
+    }, exists=check_if_female )
+})
+
+a.set({ "name" : "Felix", "gender" : "Male" }
+a.female_infos   # -> None
+a.female_infos.number_of_litter = 2 # -> Raise an Error
+
+a.gender = "Female"
+a.female_infos.number_of_litter = 2 # -> Ok
+a.female_infos # -> { "number_of_litter" : 2 }
 ```
 
 ## Tests

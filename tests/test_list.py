@@ -8,7 +8,7 @@ from stricto import List, Int, String, Error
 
 class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
     """
-    Test on Strings
+    Test on Lists
     """
 
     def test_error_type(self):

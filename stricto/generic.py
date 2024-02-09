@@ -33,15 +33,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         self._constraints = constraint if isinstance(constraint, list) else [constraint]
 
 
-
         self._default = kwargs.pop("default", None)
         self.check(self._default)
         self._value = self._default
         self._old_value = self._value
 
+        # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
+        # the  value is computed
         self._auto_set = kwargs.pop("set", kwargs.pop("compute", None))
+        # on change trigger
         self._on_change = kwargs.pop("onChange", kwargs.pop("onchange", None))
+        # this object exist
+        self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
 
     def set_hierachy_attributs(self, root, parent, name):
@@ -59,6 +63,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         if self.root == self:
             return True
         return False
+
+    def exists(self):
+        """
+        Return True if the object Exist, othewise False.
+        exist can be a function to make this field dependant from the value of another
+        """
+        return self.get_args_or_execute_them(self._exists, self._value)
 
     def path_name(self):
         """
@@ -244,6 +255,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         """
         Fill with a value or raise an Error if not valid
         """
+        
+        if self.exists() is False:
+            raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
         if self._auto_set is not None:
             if self.root.currently_doing_autoset is False:
@@ -262,6 +276,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         """
         return True if some changement, otherwise False
         """
+
+        if self.exists() is False:
+            raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
         if self._auto_set is not None:
             if self.root.currently_doing_autoset is False:
@@ -380,5 +397,5 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
             min = computeMin -> return computeMin( value )
         """
         if callable(arg):
-            return arg(self, value, self.root)
+            return arg(value, self.root)
         return arg
