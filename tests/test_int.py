@@ -20,7 +20,7 @@ def check_pair(value, o): # pylint: disable=unused-argument
     return not value % 2
 
 
-class TestInt(unittest.TestCase):
+class TestInt(unittest.TestCase): # pylint: disable=too-many-public-methods
     """
     Test on Int
     """

@@ -6,7 +6,7 @@ import unittest
 from stricto import String, Error
 
 
-class TestString(unittest.TestCase):
+class TestString(unittest.TestCase): # pylint: disable=too-many-public-methods
     """
     Test on Strings
     """

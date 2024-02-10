@@ -255,7 +255,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         """
         Fill with a value or raise an Error if not valid
         """
-        
+
         if self.exists() is False:
             raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 

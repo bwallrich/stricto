@@ -7,7 +7,7 @@ import json
 from stricto import String, Int, Dict, List, Bool, Error
 
 
-class TestDict(unittest.TestCase):
+class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
     """
     test for Dict()
     """
