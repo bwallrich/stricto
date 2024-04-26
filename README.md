@@ -1,7 +1,7 @@
 # stricto
 
-![pylink](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/pylint.yml)
-![test](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/test.yml)
+![pylint](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/pylint.yml?label=linter)
+![test](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/test.yml?label=test)
 
 Strict json structure with schema validation
 
