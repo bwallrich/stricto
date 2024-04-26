@@ -42,9 +42,9 @@ class TestBool(unittest.TestCase):
         Test notnull for a bool
         """
         with self.assertRaises(Error) as e:
-            a = Bool(notNull=True)
+            a = Bool(notNone=True)
         self.assertEqual(e.exception.message, "Cannot be empty")
-        a = Bool(notNull=True, default= True)
+        a = Bool(notNone=True, default= True)
         with self.assertRaises(Error) as e:
             a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")

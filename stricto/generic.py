@@ -17,7 +17,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         description : A tring to describe the object
         default     : The default value
-        notNull     : (boolean) must be required or not
+        notNone     : (boolean) must be required or not
 
         """
         self.root = None
@@ -26,7 +26,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         self._value = None
         self._old_value = None
         self._descrition = kwargs.pop("description", None)
-        self._not_null = kwargs.pop("notNull", kwargs.pop("required", False))
+        self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
         self._union = kwargs.pop("union", kwargs.pop("in", None))
         self.currently_doing_autoset = False
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
@@ -332,7 +332,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         # handle the None value
         if corrected_value is None:
-            if self._not_null is True:
+            if self._not_none is True:
                 raise Error(ErrorType.NULL, "Cannot be empty", self.path_name())
             return True
 

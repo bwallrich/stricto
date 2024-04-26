@@ -1,5 +1,7 @@
 # stricto
 
+![example workflow](https://github.com/bwallrich/stricto/actions/workflows/test.yml/coverage.svg)
+
 Strict json structure with schema validation
 
 The way to use is very simple, see [Quickstart](#quickstart) for a basic setup.
@@ -38,18 +40,21 @@ a.set({
 })
 
 
-print(a.num) # 22
-a.name = 666 # -> raise a typeError
-print (a) # print like a dict
+print(a.address.num) # 22
+print(a.address) # { "num" : 22, "street" : "acacia avenue" }
 
-a.nicknames.append(666) # -> raise a typeError
+a.name = 666 # -> raise a typeError (must be a string)
+
+print (a) # { "name" : "Edward", ... }
+
+a.nicknames.append(666) # -> raise a typeError (must be a string)
 a.nicknames.append("Eddy")
 a.nickname[1] # -> Eddy
 
 b=a # b is a reference on a
 c=a.copy() # c is a different object : c is a copy
 
-c == b # return True (yes you can test and do operators directly on objects)
+c == b # return True (you can test and do operators directly on objects)
 b.nicknames.pop()
 c == b # return False
 ```
@@ -70,7 +75,7 @@ All basic class from python are implemented in ```stricto```.
 
 ```python
 # example
-from stricto import Int
+from stricto import Dict, Int
 
 a = Int()
 a.set(22) # -> ok
@@ -79,6 +84,16 @@ a.set("the number of the beast") # raise an error
 
 # WARNING
 a = "the number of the beast" # works ! the affectation of "a" change. Now it is a string. This is python.
+
+# Inside a Dict().
+test=Dict({
+    "a" : Int()
+})
+
+test.a = 22 # -> ok
+test.a = 23.1 # raise an error
+test.a = "the number of the beast" # raise an error
+
 ```
 
 ## json
@@ -113,8 +128,8 @@ available options for all types ares :
 
 | Option | Default | Description |
 | - | - | - |
-| ```notNull=True\|False``` | False | cannot be None or inexistent |
-| ```required=True\|False``` | False | similar to ```notNull``` |
+| ```notNone=True\|False``` | False | cannot be **None** |
+| ```required=True\|False``` | False | similar to ```notNone``` |
 | ```description="whatever you want"``` | None | a description of this object |
 | ```default=666``` | None | the default value |
 | ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
@@ -126,7 +141,7 @@ available options for all types ares :
 | ```onChange=func``` | None | similar to ```onchange``` |
 | ```set=func``` | None | a read only value, calculated from other .See [set or compute function](#set-or-compute) |
 | ```compute=func``` | None | similar to ```set``` |
-| ```exists=func``` | None | a function to say if the object "exists", depending on values from other attributs. See  [exists](#exists) for details |
+| ```exists=func``` | True | a function to say if the object "exists", depending on values from other attributs. See  [exists](#exists) for details |
 
 See [functions](#functions) for mor details and examples how to use them.
 

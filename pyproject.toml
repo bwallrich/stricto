@@ -1,12 +1,13 @@
 [project]
 name = "stricto"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Bertrand Wallrich", email="Bertrand.Wallrich@inria.fr" },
 ]
 description = "Strict Dict (json) with schema validation embedded"
 readme = "README.md"
 requires-python = ">=3.8"
+license = {file = "LICENSE"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -14,6 +15,7 @@ classifiers = [
 ]
 
 [project.urls]
+GitHub = "https://github.com/NiziL/esnpy"
 Homepage = "https://github.com/bwallrich/stricto"
 Issues = "https://github.com/bwallrich/stricto/issues"
 

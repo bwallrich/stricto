@@ -30,9 +30,9 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         Test notnull value
         """
         with self.assertRaises(Error) as e:
-            a = List(Int(), notNull=True)
+            a = List(Int(), notNone=True)
         self.assertEqual(e.exception.message, "Cannot be empty")
-        a = List(Int(), notNull=True, default=[])
+        a = List(Int(), notNone=True, default=[])
         with self.assertRaises(Error) as e:
             a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")
