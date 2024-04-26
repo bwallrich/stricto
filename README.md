@@ -1,6 +1,7 @@
 # stricto
 
-![example workflow](https://github.com/bwallrich/stricto/actions/workflows/test.yml/coverage.svg)
+![pylink](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/pylint.yml)
+![test](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/test.yml)
 
 Strict json structure with schema validation
 
