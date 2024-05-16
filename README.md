@@ -17,7 +17,7 @@ The main difference with [jsonschema](https://github.com/python-jsonschema/jsons
 ## Installation
 
 ```bash
-pip install git+https://github.com/bwallrich/stricto
+pip install stricto
 ```
 
 ## Quickstart

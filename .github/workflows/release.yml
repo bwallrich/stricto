@@ -24,4 +24,4 @@ jobs:
     - name: uploading package
       run: |
         python3 -m build
-        python3 -m twine upload --username ${{ secrets.TESTPYPI_LOGIN }} --password ${{ secrets.TESTPYPI_PASSWORD }} --repository testpypi dist/*
+        python3 -m twine upload --username ${{ secrets.PYPI_LOGIN }} --password ${{ secrets.PYPI_PASSWORD }} dist/*
