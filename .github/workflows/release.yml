@@ -1,10 +1,10 @@
 name: Build_Package
 
-on: [published]
+on:
+  release:
+    types: [published]
 
 jobs:
-  tests:
-    uses: ./.github/workflows/tests.yml
   build:
     runs-on: ubuntu-latest
     strategy:
