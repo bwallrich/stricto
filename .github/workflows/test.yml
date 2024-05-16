@@ -3,14 +3,13 @@ name: CodeCov
 on: [push, pull_request, workflow_call]
 
 jobs:
+  uses: bwallrich/stricto/.github/workflows/pylint.yml@main
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10"]
     steps:
-    - name : Pylint before
-      uses: bwallrich/stricto/.github/workflows/pylint.yml@main
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
