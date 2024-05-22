@@ -76,6 +76,7 @@ All basic class from python are implemented in ```stricto```.
 | string | String() |
 | list | List() |
 | dict | Dict() |
+| tuple | Tuple() |
 | | In() |
 
 ```python
@@ -210,6 +211,59 @@ a.set('AtoZ')        # OK
 a=String( pattern=lambda self, value, root : r'.*Z$')
 a.set('Allo')        # -> raise an error
 a.set('AtoZ')        # OK
+
+```
+
+### List()
+
+```List( options )``` is for list.
+
+```List( options )``` use [generic options](#all-types).
+
+available specific options for List() ares :
+
+| Option | Default | Description |
+| - | - | - |
+| ```min=``` | None | minimum number of elements in the list |
+| ```minimum=21``` | None | similar to ```min``` |
+| ```max=99``` | None | maximum number of elements in the list |
+| ```maximum=99``` | None | similar to ```max=99``` |
+| ```uniq=True``` | None | duplicate values are forbidden |
+
+```python
+# example
+from stricto import Dict, List
+
+client = Dict{
+    "nicknames" : List( String(), default=[], uniq=True, min=0, max=3)
+}
+
+client.nicknames = [ "Ed", "Eddy", "Edward" ]  # -> raise an error
+client.nicknames = [ "Ed" ]  # -> Ok
+client.nicknames.append( "Ed" ) # -> raise an error (must be uniq)
+```
+
+### Tuple()
+
+```Tuple( options )``` is for tuple.
+
+```Tuple( options )``` use [generic options](#all-types).
+
+Ther is no available specific options for Tuple().
+
+```python
+# example
+from stricto import Dict, Tuple
+
+client = Dict{
+    "address" : Tuple( (Int(), String()) )
+}
+
+print(client.address) # -> None
+client.address = ( 12, "accacia avenue" )  # -> Ok
+client.address[1] # -> "acacia avenue"
+client.address[0] = 13  # -> raise an error like a standard tuple
+client.address = ( 13, "accacia avenue" )  # -> Ok
 
 ```
 
@@ -374,8 +428,21 @@ a.female_infos.number_of_litter = 2 # -> Ok
 a.female_infos # -> { "number_of_litter" : 2 }
 ```
 
-## Tests
+## Tests & co
 
 ```bash
+# all tests
 python -m unittest
+# or for only some tests
+python -m unittest tests/test_bool.py
+# or for a specific test
+
+
+# pylint
+pylint $(git ls-files '*.py')
+
+# coverage
+coverage run -m unittest
+coverage html # report under htmlcov/index.html
+
 ```

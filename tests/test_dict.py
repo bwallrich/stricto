@@ -293,6 +293,11 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
             a.d=2
         self.assertEqual(e.exception.message, "locked")
 
+        with self.assertRaises(Error) as e:
+            a.set({'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4, 'd':2 })
+        self.assertEqual(e.exception.message, "locked")
+        self.assertEqual(repr (a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}")
+
         a.must_exists = True
         self.assertEqual(a.get('d'), 3)
         self.assertEqual(a.get_value()['d'], 3)

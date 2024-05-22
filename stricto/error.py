@@ -12,6 +12,7 @@ class ErrorType(Enum):
 
     WRONGTYPE = auto()
     NOTALIST = auto()
+    NOTATUPLE = auto()
     NOTADICT = auto()
     NOTONEOF = auto()
     NULL = auto()

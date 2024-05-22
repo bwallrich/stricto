@@ -3,6 +3,7 @@ Module stricto.
 export all classes
 """
 from .string import String
+from .tuple import Tuple
 from .int import Int
 from .dict import Dict
 from .list import List

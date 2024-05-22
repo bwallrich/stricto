@@ -204,8 +204,8 @@ class Dict(GenericType):
         if isinstance(value, Dict):
             for key in self._keys:
                 key_object = self.__dict__[key]
-                if key_object.exists() is False:
-                    continue
+                #if key_object.exists() is False:
+                #    continue
 
                 sub_value = value.get(key).get_value()
                 key_object.check(sub_value)
