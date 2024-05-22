@@ -115,7 +115,7 @@ class Tuple(GenericType):
 
         if self.get_other_value(other) is None:
             raise TypeError('can only concatenate Tuple to Tuple')
-            
+
         r=Tuple( tuple(self._schema) + tuple(other._schema) )
         r._value = self._value + other._value
         return r
@@ -129,7 +129,7 @@ class Tuple(GenericType):
         if value is None:
             self._value = None
             return
-        
+
         self._value=[]
         i=0
         for element in value:
@@ -158,10 +158,10 @@ class Tuple(GenericType):
 
         if isinstance(value, Tuple):
             return True
-        
+
         if isinstance(value, List):
             return True
-        
+
         if isinstance(value, list):
             return True
 

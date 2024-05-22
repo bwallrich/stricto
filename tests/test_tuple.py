@@ -40,8 +40,7 @@ class TestTuple(unittest.TestCase):
             a.set([ 12, 12 ])
         self.assertEqual(e.exception.message, "Must be a bool")
 
-
-        # Wrong type 
+        # Wrong type
         b = List( Int() )
         b.set([ 5, 22 ])
         a = Tuple( (Bool(), Int()) )
@@ -165,7 +164,7 @@ class TestTuple(unittest.TestCase):
         a.set(( False , 11 ))
         self.assertEqual(b, (False,11))
         self.assertEqual(c, (True,22))
-    
+
         with self.assertRaises(Error) as e:
             c.set(( True , 32 ))
         self.assertEqual(e.exception.message, "Must be below Maximal")
@@ -173,8 +172,6 @@ class TestTuple(unittest.TestCase):
         with self.assertRaises(Error) as e:
             b.set(( True , 32 ))
         self.assertEqual(e.exception.message, "Must be below Maximal")
-
-
 
     def test_inequality_type(self):
         """
@@ -193,7 +190,6 @@ class TestTuple(unittest.TestCase):
         self.assertEqual(a>=b, False)
         self.assertEqual(a>b, False)
         b.set(None)
-
 
     def test_add_tuple(self):
         """
@@ -222,7 +218,6 @@ class TestTuple(unittest.TestCase):
         self.assertEqual(a, (True, 22))
         self.assertEqual(b, (True, 8))
 
-
     def test_json_tuple(self):
         """
         Test tuple to json 
@@ -240,7 +235,3 @@ class TestTuple(unittest.TestCase):
         })
         e.set( json.loads(sa) )
         self.assertEqual(d, e)
-
-        
-
-
