@@ -282,7 +282,6 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         with self.assertRaises(Error) as e:
             a = List(String(), min=2, default=["zaza"])
-            print(a)
         self.assertEqual(e.exception.message, "Must be above Minimal")
 
         a = List(String(), min=2, default=[ "a", "b" ] )

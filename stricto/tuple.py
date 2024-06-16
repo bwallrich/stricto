@@ -16,20 +16,28 @@ class Tuple(GenericType):
         GenericType.__init__(self, **kwargs)
 
         self._schema=[]
+        i = 0
         for element_schema in schema:
             if isinstance(element_schema, GenericType) is False:
                 raise Error(ErrorType.NOTATYPE, "Not a schema")
             mm = copy.copy(element_schema)
+            mm.parent = self
+            mm.attribute_name = f"({i})"
             self._schema.append( mm )
+            i=i+1
 
-        self.set_hierachy_attributs(self, None, "")
         self._locked = True
 
-    def set_hierachy_attributs(self, root, parent, name):
-        GenericType.set_hierachy_attributs(self, root, parent, name)
-        i = 0
-        for element_schema in self._schema:
-            element_schema.set_hierachy_attributs(self.root, self, f"{self.attribute_name}[{i}]")
+    def trigg( self, event_name, from_id ):
+        """
+        trigg an event
+        """
+        if self._schema is not None:
+            for element_schema in self._schema:
+                element_schema.trigg( event_name, from_id )
+
+        GenericType.trigg( self, event_name, from_id )
+
 
     def get_value(self):
         """

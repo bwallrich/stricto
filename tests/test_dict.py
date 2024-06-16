@@ -64,6 +64,26 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
             a.d = 22
         self.assertEqual(e.exception.message, "locked")
 
+    def test_sub_undefined(self):
+        """
+        test locked
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+        with self.assertRaises(AttributeError) as e:
+            a.d.e = 22
+        self.assertEqual(e.exception.args[0], "'NoneType' object has no attribute 'e'")
+        with self.assertRaises(Error) as e:
+            a.set({"b": 1, "c": 2, "d" : { "e" : 1 }})
+        self.assertEqual(e.exception.message, "Unknown content")
+
+    def test_sub_undefined_2(self):
+        """
+        test locked
+        """
+        a = Dict({"b": Int(), "c": Int(), "d" : Dict({ "e" : Int() })})
+        a.set({"b": 1, "c": 2})
+
     def test_get_keys(self):
         """
         test get keys
@@ -118,10 +138,31 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.add_to_model("d", String())
         a.d = "oh yeah"
         self.assertEqual(a.d, "oh yeah")
+        self.assertEqual(a.d.root, a.root)
         a.remove_model("d")
         with self.assertRaises(Error) as e:
             a.d = "oh yeah"
         self.assertEqual(e.exception.message, "locked")
+
+    def test_modify_schema_dict(self):
+        """
+        test schema modification
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
+
+        a.add_to_model("d", Dict( { "e" : String() }))
+        a.d.e = "oh yeah"
+        self.assertEqual(a.d.e, "oh yeah")
+        self.assertEqual(a.d.root, a.root)
+        self.assertEqual(a.d.e.root, a.root)
+        self.assertEqual(a.d.parent, a)
+        self.assertEqual(a.d.e.parent, a.d)
+        a.remove_model("d")
+        with self.assertRaises(AttributeError) as e:
+            a.d.e = 22
+        self.assertEqual(e.exception.args[0], "'NoneType' object has no attribute 'e'")
+
 
     def test_reference_type(self):
         """
@@ -193,7 +234,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         Test auto_set"""
         a = Dict(
             {
-                "b": Int(default=12, set=lambda o: o.c + 1),
+                "b": Int(default=12, set=lambda o: o.c+1),
                 "c": Int(default=0),
             }
         )
@@ -211,9 +252,13 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
             {
                 "b": Int(default=0, set=lambda o: o.c + 1),
                 "d": Int(default=0, set=lambda o: o.b + 1),
-                "c": Int(),
+                "c": Int(default=1),
             }
         )
+
+        self.assertEqual(a.b.parent, a)
+        self.assertEqual(a.d.parent, a)
+
         a.set({"c": 2})
         self.assertEqual(a.b, 3)
         self.assertEqual(a.d, 4)
@@ -221,43 +266,21 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(a.b, 34)
         self.assertEqual(a.d, 35)
 
-    def test_auto_set_error(self):
-        """
-        try to modify an auto_set value
-        """
-        a = Dict(
-            {
-                "b": Int(default=0, set=lambda o: o.c + 1),
-                "d": Int(default=0, set=lambda o: o.b + 1),
-                "c": Int(),
-            }
-        )
-        with self.assertRaises(Error) as e:
-            a.set({"b": 2})
-        self.assertEqual(e.exception.message, "Cannot modify value")
-        with self.assertRaises(Error) as e:
-            a.b = 3
-        self.assertEqual(e.exception.message, "Cannot modify value")
-
     def test_auto_set_loop(self):
         """
         loop in auto_set
         """
         a = Dict(
             {
-                "a": Int(),
-                "b": Int(default=0, set=lambda o: o.c + 1),
-                "c": Int(default=0, set=lambda o: o.b + 1),
-                "d": Int(default=0, set=lambda o: o.c + 1),
-                "e": Int(default=0, set=lambda o: o.d + 1),
+                "b": Int(default=0, set=lambda o: o.d - 1),
+                "d": Int(default=0, set=lambda o: o.b + 1),
+                "c": Int(default=0),
             }
         )
-        a.set({"a": 2})
-        self.assertEqual(a.b, 1)
-        self.assertEqual(a.c, 2)
+        a.set({"b": 2})
         self.assertEqual(a.d, 3)
-        self.assertEqual(a.e, 4)
-
+        a.d=5
+        self.assertEqual(a.b, 4)
 
     def test_not_exist(self):
         """
@@ -304,3 +327,30 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(repr (a), "{'must_exists': True, 'a': 2, 'b': 1, 'c': 2, 'd': 3, 'e': 4}")
         a.set({"d": 2})
         self.assertEqual(a.d, 2)
+
+    def test_event(self):
+        """
+        test for events
+        """
+        def trigged_load( event_name, root, me ):
+            self.assertEqual(event_name, "load")
+            self.assertEqual(root.a, 2)
+            self.assertEqual(root.b, 3)
+            self.assertEqual(me, a.c)
+
+        def trigged_bb( event_name, root, me ):
+            self.assertEqual(event_name, "bb")
+            self.assertEqual(root.a, 2)
+            self.assertEqual(root.b, 3)
+            self.assertEqual(me, a.c)
+
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "b": Int(default=3),
+                "c": Int( on=[('load', trigged_load), ('bb', trigged_bb)])
+            }
+        )
+        a.set({"a" : 2})
+        a.trigg("load", id(a) )
+        a.trigg("bb", id(a) )

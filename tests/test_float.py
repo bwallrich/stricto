@@ -21,7 +21,7 @@ def check_pair(value, o): # pylint: disable=unused-argument
     return not value % 2
 
 
-class TestInt(unittest.TestCase):
+class TestFloat(unittest.TestCase):
     """
     Test on Float
     """

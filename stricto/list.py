@@ -30,27 +30,31 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             return 0
         return self._value.__len__()
 
-    def set_hierachy_attributs(self, root, parent, name):
-        """
-        set the root, parent and attribute_name
-        used to build the hierachy of the object and the name of che current key (name)
-        """
-        self.root = root
-        self.parent = parent
-        self.attribute_name = name
-        self.set_sub_root()
 
-    def set_sub_root(self):
+    def reset_attribute_name(self):
         """
-        Do like set_hierachy_attributs, but for sub objects
+        the list is reordonned (added, supression, ...)
+        the attribute name must be reset
         """
         if not isinstance(self._value, list):
             return
 
         i = 0
         for item in self._value:
-            item.set_hierachy_attributs(self.root, self, f"{self.attribute_name}[{i}]")
+            item.attribute_name = f"[{i}]"
             i = i + 1
+
+
+    def trigg( self, event_name, from_id ):
+        """
+        trigg an event
+        """
+        if self._value is not None:
+            for item in self._value:
+                item.trigg( event_name, from_id )
+
+        GenericType.trigg( self, event_name, from_id )
+
 
     def __repr__(self):
         if self._value is None:
@@ -106,7 +110,8 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         # Duplicate and check
         a = self.duplicate_in_list()
         model = self._type.copy()
-        model.set_hierachy_attributs(self.root, self, f"{self.attribute_name}[{key}]")
+        model.parent = self
+        model.attribute_name = f"[{key}]"
         model.set(value)
         a.insert(key, model)
         self.check(a)
@@ -128,17 +133,18 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             models = []
             for v in value:
                 model = self._type.copy()
-                model.set_hierachy_attributs(self.root, self, "[slice]")
+                model.parent = self
+                model.attribute_name = "[slice]"
                 model.set(v)
                 models.append(model)
             a.__setitem__(key, models)
             self.check(a)
 
             self._value.__setitem__(key, models)
-            self.set_sub_root()
         else:
             model = self._type.copy()
-            model.set_hierachy_attributs(self.root, self, f"[{key}]")
+            model.parent = self
+            model.attribute_name = f"[{key}]"
             model.set(value)
             a[key].set(value)
             self.check(a)
@@ -156,7 +162,7 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         self._value.__delitem__(key)
-        self.set_sub_root()
+        self.reset_attribute_name()
 
     def sort(self, **kwarg):
         """
@@ -185,7 +191,7 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         popped = self._value.pop(key)
-        self.set_sub_root()
+        self.reset_attribute_name()
         return popped
 
     def remove(self, value):
@@ -199,7 +205,7 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         removed = self._value.remove(value)
-        self.set_sub_root()
+        self.reset_attribute_name()
         return removed
 
     def append(self, value):
@@ -208,7 +214,8 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         """
 
         model = self._type.copy()
-        model.set_hierachy_attributs(self.root, self, f"[{len(self)}]")
+        model.parent = self
+        model.attribute_name = f"[{len(self)}]"
         model.set(value)
 
         # Duplicate and check
@@ -231,7 +238,8 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         i = len(self)
         for value in second_list:
             model = self._type.copy()
-            model.set_hierachy_attributs(self.root, self, f"[{i}]")
+            model.parent = self
+            model.attribute_name = f"[{i}]"
             model.set(value)
             a.append(model)
             models.append(model)
@@ -258,22 +266,11 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         i = 0
         for v in value:
             model = self._type.copy()
-            model.set_hierachy_attributs(self.root, self, f"[{i}]")
+            model.parent = self
+            model.attribute_name = f"[{i}]"
             model.set_value_without_checks(v)
             self._value.append(model)
             i = i + 1
-
-    def auto_set(self):
-        """
-        compute automatically a value because another value as changed somewhere.
-        (related to set=flag) and call to all subs
-        """
-        GenericType.auto_set(self)
-        if not isinstance(self._value, list):
-            return
-
-        for key in self._value:
-            key.auto_set()
 
     def check(self, value):
         GenericType.check(self, value)

@@ -436,7 +436,7 @@ python -m unittest
 # or for only some tests
 python -m unittest tests/test_bool.py
 # or for a specific test
-
+python -m unittest tests.TestDict.test_simple_type
 
 # pylint
 pylint $(git ls-files '*.py')

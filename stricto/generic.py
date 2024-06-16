@@ -20,47 +20,95 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         notNone     : (boolean) must be required or not
 
         """
-        self.root = None
+        self._params = {
+            "read" : True,
+            "modify" : True
+        }
         self.parent = None
-        self.attribute_name = ""
+        self.attribute_name = "?"
         self._value = None
         self._old_value = None
         self._descrition = kwargs.pop("description", None)
         self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
         self._union = kwargs.pop("union", kwargs.pop("in", None))
-        self.currently_doing_autoset = False
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
         self._constraints = constraint if isinstance(constraint, list) else [constraint]
 
-
         self._default = kwargs.pop("default", None)
         self.check(self._default)
-        self._value = self._default
-        self._old_value = self._value
+        if self._default is not None:
+            self.set_value_without_checks( self._default )
+            self._old_value = self._value
 
         # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
+
         # the  value is computed
-        self._auto_set = kwargs.pop("set", kwargs.pop("compute", None))
+        auto_set = kwargs.pop("set", kwargs.pop("compute", None))
         # on change trigger
         self._on_change = kwargs.pop("onChange", kwargs.pop("onchange", None))
         # this object exist
         self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
+        # for events
+        self._on = kwargs.pop("on", None)
+        self._events = {}
+        if self._on is not None:
+            l = self._on if isinstance(self._on, list) else [ self._on ]
+            for event in l:
+                if not isinstance( event, tuple):
+                    continue
+                if not callable( event[1]):
+                    continue
+                if event[0] not in self._events:
+                    self._events[event[0]] = []
+                self._events[event[0]].append( event[1] )
 
-    def set_hierachy_attributs(self, root, parent, name):
+        # transform auto_set in events. adapt with a lambda function
+        if auto_set is not None:
+            # Cannot modify a value which is a result of a computation
+            # self._params["modify"] = False
+            if 'change' not in self._events:
+                self._events['change'] = []
+            self._events['change'].append(
+                        lambda event_name, root, self: self.change_trigg_wrap( root, auto_set )
+                    )
+
+
+    def change_trigg_wrap(self, root, auto_set):
         """
-        set the attribute root, parent and name for the current objecte related to the all structure
+        test
         """
-        self.root = root
-        self.parent = parent
-        self.attribute_name = name
+        a = auto_set( root )
+        self.set ( a )
+
+
+    def trigg( self, event_name, from_id ):
+        """
+        trig an event
+        """
+        if self._events is None:
+            return
+        if id(self) == from_id:
+            return
+        if event_name not in self._events:
+            return
+        for func in self._events[event_name]:
+            func( event_name, self.get_root(), self )
+
+    def get_root( self ):
+        """
+        go to the root object
+        """
+        if self.parent is None:
+            return self
+        return self.parent.get_root()
 
     def am_i_root(self):
         """
         Check if this object is the root object
         """
-        if self.root == self:
+        if self.parent is None:
             return True
         return False
 
@@ -69,17 +117,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         Return True if the object Exist, othewise False.
         exist can be a function to make this field dependant from the value of another
         """
-        return self.get_args_or_execute_them(self._exists, self._value)
+        return self.get_args_or_execute_them(self._exists, self.get_value())
 
     def path_name(self):
         """
         return a string with the name of the object
         """
-        p = []
-        parent = self
+        p = [ self.attribute_name ]
+
+        parent = self.parent
         while parent is not None:
             p.insert(0, parent.attribute_name)
             parent = parent.parent
+
         return ".".join(p)
 
     def get_other_value(self, other):
@@ -243,6 +293,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
+        result.parent = None
+        result.attribute_name = "?"
         return result
 
     def copy(self):
@@ -259,15 +311,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         if self.exists() is False:
             raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
-        if self._auto_set is not None:
-            if self.root.currently_doing_autoset is False:
-                raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
+        root = self.get_root()
 
         corrected_value = (
             value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
         )
         if callable(self._transform):
-            corrected_value = self._transform(corrected_value, self.root)
+            corrected_value = self._transform(corrected_value, root)
 
         self.check(corrected_value)
         return self.set_value_without_checks(corrected_value)
@@ -280,13 +330,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         if self.exists() is False:
             raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
-        if self._auto_set is not None:
-            if self.root.currently_doing_autoset is False:
-                raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
-
+        root = self.get_root()
         # transform the value before the check
         corrected_value = (
-            value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
+            value.get_value() if isinstance(value, GenericType) else value # pylint: disable=unidiomatic-typecheck
         )
 
         self._old_value = self._value
@@ -296,20 +343,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
             return False
 
         if callable(self._on_change):
-            self._on_change(self._old_value, value, self.root)
-        if self.root is not None:
-            self.root.auto_set()
-        return True
+            self._on_change(self._old_value, self._value, root)
 
-    def auto_set(self):
-        """
-        compute automatically a value because another value as changed somewhere.
-        (related to set=flag)
-        """
-        if callable(self._auto_set) is False:
-            return
-        new_value = self._auto_set(self.root)
-        self.set_value_without_checks(new_value)
+        # Trigd a 'change' event to recompute
+        if not self.am_i_root():
+            root.trigg('change', id(self) )
+
+        return True
 
     def get_value(self):
         """
@@ -325,10 +365,16 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         check if complain to model or return an Error
         """
 
+        root = self.get_root()
+
+        if self._params["modify"] is False:
+            raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
+
+
         # transform the value before the check
         corrected_value = value
         if callable(self._transform):
-            corrected_value = self._transform(value, self.root)
+            corrected_value = self._transform(value, root)
 
         # handle the None value
         if corrected_value is None:
@@ -348,11 +394,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         """
         replicate all atributes from value, but prefere self attribute first.
         """
-        #if k in self.__dict__:
-        #    return self.__dict__[k]
-        if hasattr(self._value, k):
-            return getattr(self._value, k)
-        return None
+        return getattr(self._value, k, None)
+        #return None
 
     def check_type(self, value):  # pylint: disable=unused-argument
         """
@@ -381,7 +424,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
                 raise Error(
                     ErrorType.NOTCALLABLE, "constraint not callable", self.path_name()
                 )
-            r = constraint(value, self.root)
+            root = self.get_root()
+            r = constraint(value, root)
             if r is False:
                 raise Error(
                     ErrorType.CONSTRAINT, "constraint not validated", self.path_name()
@@ -397,5 +441,5 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
             min = computeMin -> return computeMin( value )
         """
         if callable(arg):
-            return arg(value, self.root)
+            return arg(value, self.get_root())
         return arg
