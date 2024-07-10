@@ -7,14 +7,14 @@ import math
 from stricto import Float, Error
 
 
-def pair_only(value, o): # pylint: disable=unused-argument
+def pair_only(value, o):  # pylint: disable=unused-argument
     """
-    return the value if par, or value +1 
+    return the value if par, or value +1
     """
     return value + 1.0 if value % 2 else value
 
 
-def check_pair(value, o): # pylint: disable=unused-argument
+def check_pair(value, o):  # pylint: disable=unused-argument
     """
     return true if pair
     """
@@ -25,6 +25,7 @@ class TestFloat(unittest.TestCase):
     """
     Test on Float
     """
+
     def __init__(self, m):
         unittest.TestCase.__init__(self, m)
         self.on_change_bool = False
@@ -71,15 +72,15 @@ class TestFloat(unittest.TestCase):
         """
         Test __operators__
         """
-        c = Float( default=5.0)
-        for d in [ Float(default=2.0), 2.0 ]:
-            self.assertEqual(c+d, 7)
-            self.assertEqual(c-d, 3)
-            self.assertEqual(c*d, 10)
-            self.assertEqual(c**d, 25)
-            self.assertEqual(c//d, 2)
-            self.assertEqual(c/d, 2.5)
-            self.assertEqual(c%d, 1)
+        c = Float(default=5.0)
+        for d in [Float(default=2.0), 2.0]:
+            self.assertEqual(c + d, 7)
+            self.assertEqual(c - d, 3)
+            self.assertEqual(c * d, 10)
+            self.assertEqual(c ** d, 25)
+            self.assertEqual(c // d, 2)
+            self.assertEqual(c / d, 2.5)
+            self.assertEqual(c % d, 1)
 
     def test_copy(self):
         """
@@ -162,7 +163,7 @@ class TestFloat(unittest.TestCase):
         """
         self.on_change_bool = False
 
-        def change_test(old_value, value, o): # pylint: disable=unused-argument
+        def change_test(old_value, value, o):  # pylint: disable=unused-argument
             """
             just a change option
             """

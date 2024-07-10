@@ -21,11 +21,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         notNone     : (boolean) must be required or not
 
         """
-        self._params = {
-            "exists" : True,
-            "read" : True,
-            "modify" : True
-        }
+        self._params = {"exists": True, "read": True, "modify": True}
         self.parent = None
         self._exists = True
         self.attribute_name = "$"
@@ -43,65 +39,63 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         self._default = kwargs.pop("default", None)
         self.check(self._default)
         if self._default is not None:
-            self.set_value_without_checks( self._default )
+            self.set_value_without_checks(self._default)
             self._old_value = self._value
 
-        # transformation of the value before setting
+        # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
 
         # Set rights
-        self._params['read'] = kwargs.pop("can_read", True)
-        self._params['modify'] = kwargs.pop("can_modify", True)
+        self._params["read"] = kwargs.pop("can_read", True)
+        self._params["modify"] = kwargs.pop("can_modify", True)
 
         # the  value is computed
         auto_set = kwargs.pop("set", kwargs.pop("compute", None))
-        # on change trigger
+        # on change trigger
         self._on_change = kwargs.pop("onChange", kwargs.pop("onchange", None))
-        # this object exist
+        # this object exist
         self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
         # for events
         self._on = kwargs.pop("on", None)
         self._events = {}
         if self._on is not None:
-            l = self._on if isinstance(self._on, list) else [ self._on ]
+            l = self._on if isinstance(self._on, list) else [self._on]
             for event in l:
-                if not isinstance( event, tuple):
+                if not isinstance(event, tuple):
                     continue
-                if not callable( event[1]):
+                if not callable(event[1]):
                     continue
                 if event[0] not in self._events:
                     self._events[event[0]] = []
-                self._events[event[0]].append( event[1] )
+                self._events[event[0]].append(event[1])
 
-        # transform auto_set in events. adapt with a lambda function
+        # transform auto_set in events. adapt with a lambda function
         if auto_set is not None:
             # Cannot modify a value which is a result of a computation
             # self._params["modify"] = False
-            if 'change' not in self._events:
-                self._events['change'] = []
-            self._events['change'].append(
-                        lambda event_name, root, self: self.change_trigg_wrap( root, auto_set )
-                    )
-
+            if "change" not in self._events:
+                self._events["change"] = []
+            self._events["change"].append(
+                lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
+            )
 
     def change_trigg_wrap(self, root, auto_set):
         """
         transform a set=... option to an event.
         this function is called by the event and call the set function.
         """
-        a = auto_set( root )
-        self.set ( a )
+        a = auto_set(root)
+        self.set(a)
 
-
-    def trigg( self, event_name, from_id  = None):
+    def trigg(self, event_name, from_id=None):
         """
         trig an event
         from_id is an id to avoid the event to call itself
         """
         if from_id is None:
             from_id = id(self)
-            
+
         if self._events is None:
             return
         if id(self) == from_id:
@@ -109,9 +103,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         if event_name not in self._events:
             return
         for func in self._events[event_name]:
-            func( event_name, self.get_root(), self )
+            func(event_name, self.get_root(), self)
 
-    def get_root( self ):
+    def get_root(self):
         """
         go to the root object
         """
@@ -139,7 +133,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         if self.parent is None:
             return True
 
-        #return True
+        # return True
         return self.parent.exists()
 
     def can_read(self):
@@ -147,21 +141,21 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         Return True if the object can be read.
         can be a function to make this field dependant from the value of another
         """
-        return self.get_args_or_execute_them(self._params['read'], None)
+        return self.get_args_or_execute_them(self._params["read"], None)
 
     def can_modify(self):
         """
         Return True if the object can be modified.
         can be a function to make this field dependant from the value of another
         """
-        return self.get_args_or_execute_them(self._params['modify'], None)
+        return self.get_args_or_execute_them(self._params["modify"], None)
 
     def path_name(self):
         """
         return a string with the name of the object
         according to RFC 9535
         """
-        p = [ self.attribute_name ]
+        p = [self.attribute_name]
 
         parent = self.parent
         while parent is not None:
@@ -174,9 +168,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         """
         get with selector as lists
         """
-        # A sub object behing a generic ? -> No
+        # A sub object behing a generic ? -> No
         if selectors_as_list:
             return None
+
+        if sel_filter:
+            # Not yet implemented
+            sel_filter = None
 
         return self
 
@@ -186,17 +184,16 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         """
         a = []
         for sel in selectors.split("."):
-            # selector like blabla[...] or blabla or [...]
-            match = re.search(r'(.*)\[(.*)\]', sel)
+            # selector like blabla[...] or blabla or [...]
+            match = re.search(r"(.*)\[(.*)\]", sel)
             if not match:
-                a.append( ( sel, None) )
+                a.append((sel, None))
                 continue
-            a.append( ( match.group(1), match.group(2)) )
+            a.append((match.group(1), match.group(2)))
 
         print(f"select {a}")
         (sel, sel_filter) = a.pop(0)
         return self.get_selectors(sel_filter, a)
-
 
     def get_other_value(self, other):
         """
@@ -380,7 +377,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         root = self.get_root()
 
         corrected_value = (
-            value.get_value() if type(value) == type(self) else value # pylint: disable=unidiomatic-typecheck
+            value.get_value()
+            if type(value) == type(self) # pylint: disable=unidiomatic-typecheck
+            else value
         )
         if callable(self._transform):
             corrected_value = self._transform(corrected_value, root)
@@ -399,7 +398,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         root = self.get_root()
         # transform the value before the check
         corrected_value = (
-            value.get_value() if isinstance(value, GenericType) else value # pylint: disable=unidiomatic-typecheck
+            value.get_value()
+            if isinstance(value, GenericType)
+            else value  # pylint: disable=unidiomatic-typecheck
         )
 
         self._old_value = self._value
@@ -413,7 +414,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         # Trigd a 'change' event to recompute
         if not self.am_i_root():
-            root.trigg('change', id(self) )
+            root.trigg("change", id(self))
 
         return True
 
@@ -434,7 +435,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         root = self.get_root()
 
         if self.can_read() is False:
-            raise Error(ErrorType.READONLY, "cannot read (and modify) value", self.path_name())
+            raise Error(
+                ErrorType.READONLY, "cannot read (and modify) value", self.path_name()
+            )
 
         # transform the value before the check
         corrected_value = value
@@ -450,11 +453,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         # Check correct type or raise an Error
         self.check_type(corrected_value)
 
-
         if self.can_modify() is False:
             if corrected_value != self._value:
                 raise Error(ErrorType.READONLY, "cannot modify value", self.path_name())
-
 
         # check constraints or raise an Error
         self.check_constraints(corrected_value)
@@ -466,7 +467,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         replicate all atributes from value, but prefere self attribute first.
         """
         return getattr(self._value, k, None)
-        #return None
+        # return None
 
     def check_type(self, value):  # pylint: disable=unused-argument
         """

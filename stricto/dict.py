@@ -1,8 +1,8 @@
 """Module providing the Dict() Class"""
 import copy
-import re
 from .generic import GenericType
 from .error import Error, ErrorType
+
 
 class Dict(GenericType):
     """
@@ -63,7 +63,7 @@ class Dict(GenericType):
 
     def __setattr__(self, k, value):
 
-        # Set a "normal" value
+        # Set a "normal" value
         try:
             _keys = object.__getattribute__(self, "_keys")
         except AttributeError:
@@ -74,15 +74,15 @@ class Dict(GenericType):
             if v.exists() is False:
                 raise AttributeError(f"'Dict' object has no attribute '{k}'")
 
-            # a reference
-            if type(value) == type(v): # pylint: disable=unidiomatic-typecheck
+            # a reference
+            if type(value) == type(v):  # pylint: disable=unidiomatic-typecheck
                 v.check(value)
                 self.__dict__[k] = value
             else:
                 v.set(self.get_other_value(value))
             return
 
-        if k in [ "root", "parent", "attribute_name" ]:
+        if k in ["root", "parent", "attribute_name"]:
             self.__dict__[k] = value
             return
 
@@ -98,10 +98,8 @@ class Dict(GenericType):
     def copy(self):
         return copy.copy(self)
 
-
     def __getattr__(self, k):
-        """
-        """
+        """ """
         return self.__getattribute__(k)
 
     def __getattribute__(self, k):
@@ -110,12 +108,12 @@ class Dict(GenericType):
         """
 
         if k == "__getattribute__":
-            return object.__getattribute__(self, '__getattribute__')
+            return object.__getattribute__(self, "__getattribute__")
 
-        #if k == "_value":
+        # if k == "_value":
         #    raise TypeError(f"dict getattr want {k}")
         try:
-            d = object.__getattribute__(self, '_keys')
+            d = object.__getattribute__(self, "_keys")
         except AttributeError:
             return object.__getattribute__(self, k)
 
@@ -146,7 +144,6 @@ class Dict(GenericType):
             result.__dict__[key].parent = result
             result.__dict__[key].attribute_name = key
 
-
         # Events are copied
         result.__dict__["_events"] = copy.copy(self.__dict__["_events"])
 
@@ -157,8 +154,7 @@ class Dict(GenericType):
         result._locked = True
         return result
 
-
-    def trigg( self, event_name, from_id = None):
+    def trigg(self, event_name, from_id=None):
         """
         trigg an event
         """
@@ -170,10 +166,9 @@ class Dict(GenericType):
                 v = object.__getattribute__(self, key)
                 if v.exists() is False:
                     continue
-                v.trigg( event_name, from_id )
+                v.trigg(event_name, from_id)
 
-        GenericType.trigg( self, event_name, from_id )
-
+        GenericType.trigg(self, event_name, from_id)
 
     def __repr__(self):
         a = {}
@@ -239,13 +234,17 @@ class Dict(GenericType):
             return None
         return v
 
-    def get_selectors(self, sel_filter, selectors_as_list):
+    def get_selectors(self, sel_filter, selectors_as_list): # pylint: disable=too-many-return-statements
         """
         get with selector as lists
-        selectors_as_list is a list of tuples like 
+        selectors_as_list is a list of tuples like
         ( "a" , 0 ) -> a[0]
-        ( "toto", None ) -> toto        
+        ( "toto", None ) -> toto
         """
+        if sel_filter:
+            # Not yet implemented
+            sel_filter = None
+
         if not selectors_as_list:
             return self
 
@@ -254,32 +253,28 @@ class Dict(GenericType):
         (sel, sub_sel_filter) = selectors_as_list.pop(0)
         # apply selector to me
         if sel == "$":
-            return self.get_root().get_selectors( sub_sel_filter, selectors_as_list )
+            return self.get_root().get_selectors(sub_sel_filter, selectors_as_list)
         if sel == "@":
-            return self.get_selectors( sub_sel_filter, selectors_as_list )
+            return self.get_selectors(sub_sel_filter, selectors_as_list)
 
         if sel in self._keys:
-
             v = self.__dict__[sel]
             if v.exists() is False:
                 return None
-
             return v.get_selectors(sub_sel_filter, selectors_as_list)
 
-        # Selecing all
-        if sel in ( "", "*" ):
-            a=[]
+        # Selecing all
+        if sel in ("", "*"):
+            a = []
             for k in self._keys:
                 v = self.__dict__[k]
                 if v.exists():
                     result = v.get_selectors(sub_sel_filter, selectors_as_list.copy())
                     if result is not None:
                         a.append(result)
-            if not a or len(a) == 0:
+            if not a:
                 return None
-            if len(a) == 1:
-                return a[0]
-            return a
+            return a[0] if len(a)==1 else a
 
         return None
 
@@ -290,9 +285,9 @@ class Dict(GenericType):
                 self.__dict__[key].set_value_without_checks(v)
 
     def check(self, value):
-        #self.check_type(value)
-        #self.check_constraints(value)
-        GenericType.check( self, value)
+        # self.check_type(value)
+        # self.check_constraints(value)
+        GenericType.check(self, value)
 
         # check reccursively subtypes
         if isinstance(value, dict):
@@ -318,7 +313,7 @@ class Dict(GenericType):
         if isinstance(value, Dict):
             for key in self._keys:
                 key_object = self.__dict__[key]
-                #if key_object.exists() is False:
+                # if key_object.exists() is False:
                 #    continue
 
                 sub_value = value.get(key).get_value()

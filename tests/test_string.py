@@ -6,10 +6,11 @@ import unittest
 from stricto import String, Error
 
 
-class TestString(unittest.TestCase): # pylint: disable=too-many-public-methods
+class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
     Test on Strings
     """
+
     def test_error_type(self):
         """
         Test error
@@ -45,7 +46,7 @@ class TestString(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(a, "foo")
         self.assertEqual(a == "foo", True)
         self.assertEqual(a != "foo", False)
-        for c in [ b, "bar"]:
+        for c in [b, "bar"]:
             self.assertEqual(a < c, False)
             self.assertEqual(a <= c, False)
             self.assertEqual(a > c, True)
@@ -63,24 +64,24 @@ class TestString(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         a = String()
         a.set("foo")
-        self.assertEqual(len (a), 3)
+        self.assertEqual(len(a), 3)
 
     def test_union(self):
         """
         union
         """
-        a = String( union=['M', 'F' ])
+        a = String(union=["M", "F"])
         with self.assertRaises(Error) as e:
             a.set("foo")
         self.assertEqual(e.exception.message, "not in list")
         a.set("F")
-        self.assertEqual(a, 'F')
+        self.assertEqual(a, "F")
 
     def test_union_error(self):
         """
         union error
         """
-        a = String( union= 22 )
+        a = String(union=22)
         with self.assertRaises(Error) as e:
             a.set("M")
         self.assertEqual(e.exception.message, "Union constraint not list")

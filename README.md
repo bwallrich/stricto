@@ -153,6 +153,10 @@ a.select('$.a') # 12
 
 a.select('$.f.d') # None
 a.f.d # -> raise an error
+
+a.select("$.b.l[0].i") # "fir"
+a.select("$.*.l.i") # ["fir", "sec"]
+
 ```
 
 
@@ -532,6 +536,9 @@ python -m unittest tests
 python -m unittest tests/test_bool.py
 # or for a specific test
 python -m unittest tests.TestDict.test_simple_type
+
+# reformat
+python -m black .
 
 # pylint
 pylint $(git ls-files '*.py')

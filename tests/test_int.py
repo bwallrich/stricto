@@ -5,37 +5,39 @@ import unittest
 
 from stricto import Int, Error
 
-increment = 0 # pylint: disable=invalid-name
+increment = 0  # pylint: disable=invalid-name
 
-def check_if_can_modify(value, root): # pylint: disable=unused-argument
+
+def check_if_can_modify(value, root):  # pylint: disable=unused-argument
     """
     test
     """
-    global increment # pylint: disable=global-statement
-    increment+=1
+    global increment  # pylint: disable=global-statement
+    increment += 1
     if increment > 1:
         return False
     return True
 
 
-def pair_only(value, o): # pylint: disable=unused-argument
+def pair_only(value, o):  # pylint: disable=unused-argument
     """
-    return the value if par, or value +1 
+    return the value if par, or value +1
     """
     return value + 1 if value % 2 else value
 
 
-def check_pair(value, o): # pylint: disable=unused-argument
+def check_pair(value, o):  # pylint: disable=unused-argument
     """
     return true if pair
     """
     return not value % 2
 
 
-class TestInt(unittest.TestCase): # pylint: disable=too-many-public-methods
+class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
     Test on Int
     """
+
     def __init__(self, m):
         unittest.TestCase.__init__(self, m)
         self.on_change_bool = False
@@ -125,22 +127,22 @@ class TestInt(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         Test __operators__
         """
-        a = Int( default=5)
-        for b in [ Int(default=2), 2 ]:
-            self.assertEqual(a+b, 7)
-            self.assertEqual(a-b, 3)
-            self.assertEqual(a*b, 10)
-            self.assertEqual(a**b, 25)
-            self.assertEqual(a//b, 2)
+        a = Int(default=5)
+        for b in [Int(default=2), 2]:
+            self.assertEqual(a + b, 7)
+            self.assertEqual(a - b, 3)
+            self.assertEqual(a * b, 10)
+            self.assertEqual(a ** b, 25)
+            self.assertEqual(a // b, 2)
             with self.assertRaises(Error) as e:
-                self.assertEqual(a/b, 2)
+                self.assertEqual(a / b, 2)
             self.assertEqual(e.exception.message, "Must be a int")
-            self.assertEqual(a%b, 1)
-            self.assertEqual(a>>b, 1)
-            self.assertEqual(a<<b, 20)
-            self.assertEqual(a&b, 0)
-            self.assertEqual(a|b, 7)
-            self.assertEqual(a^b, 7)
+            self.assertEqual(a % b, 1)
+            self.assertEqual(a >> b, 1)
+            self.assertEqual(a << b, 20)
+            self.assertEqual(a & b, 0)
+            self.assertEqual(a | b, 7)
+            self.assertEqual(a ^ b, 7)
 
     def test_transform(self):
         """
@@ -192,7 +194,7 @@ class TestInt(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         self.on_change_bool = False
 
-        def change_test(old_value, value, o): # pylint: disable=unused-argument
+        def change_test(old_value, value, o):  # pylint: disable=unused-argument
             """
             just a change option
             """
@@ -223,7 +225,7 @@ class TestInt(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         Test read only with function
         """
-        global increment # pylint: disable=global-statement
+        global increment  # pylint: disable=global-statement
         increment = 0
         a = Int(default=10, can_modify=check_if_can_modify)
         a.set(12)

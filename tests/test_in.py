@@ -10,6 +10,7 @@ class TestIn(unittest.TestCase):
     """
     test for In()
     """
+
     def test_set(self):
         """
         set type error

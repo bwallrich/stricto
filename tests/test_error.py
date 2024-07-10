@@ -6,11 +6,11 @@ import unittest
 from stricto import ErrorType, Error
 
 
-
 class TestError(unittest.TestCase):
     """
     Test error type ()
     """
+
     def test_error_type(self):
         """
         Test error type
@@ -23,17 +23,19 @@ class TestError(unittest.TestCase):
         """
         with self.assertRaises(Error) as e:
             raise Error(
-                    ErrorType.UNKNOWNCONTENT,
-                    "test Error",
-                    "variable_name",
-                    )
+                ErrorType.UNKNOWNCONTENT,
+                "test Error",
+                "variable_name",
+            )
         self.assertEqual(e.exception.message, "test Error")
-        self.assertEqual(str(e.exception), "variable_name: test Error (ErrorType.UNKNOWNCONTENT)")
+        self.assertEqual(
+            str(e.exception), "variable_name: test Error (ErrorType.UNKNOWNCONTENT)"
+        )
 
         with self.assertRaises(Error) as e:
             raise Error(
-                    ErrorType.UNKNOWNCONTENT,
-                    "test Error",
-                    )
+                ErrorType.UNKNOWNCONTENT,
+                "test Error",
+            )
         self.assertEqual(e.exception.message, "test Error")
         self.assertEqual(str(e.exception), "test Error (ErrorType.UNKNOWNCONTENT)")

@@ -6,11 +6,11 @@ import unittest
 from stricto import Bool, Error
 
 
-
 class TestBool(unittest.TestCase):
     """
     Tres Bool()
     """
+
     def test_error_type(self):
         """
         Test error type
@@ -44,7 +44,7 @@ class TestBool(unittest.TestCase):
         with self.assertRaises(Error) as e:
             a = Bool(notNone=True)
         self.assertEqual(e.exception.message, "Cannot be empty")
-        a = Bool(notNone=True, default= True)
+        a = Bool(notNone=True, default=True)
         with self.assertRaises(Error) as e:
             a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")
@@ -59,5 +59,5 @@ class TestBool(unittest.TestCase):
         self.assertNotEqual(a, True)
         self.assertNotEqual(a, False)
         a.set(not a)
-        self.assertNotEqual(a , True)
+        self.assertNotEqual(a, True)
         self.assertEqual(a, False)

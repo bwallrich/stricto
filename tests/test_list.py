@@ -6,7 +6,7 @@ import unittest
 from stricto import List, Int, String, Error
 
 
-class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
+class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
     Test on Lists
     """
@@ -40,29 +40,28 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.set(None)
         self.assertEqual(a, None)
 
-
     def test_repr(self):
         """
         Test repr()
         """
         a = List(Int())
-        self.assertEqual(repr(a), 'None')
+        self.assertEqual(repr(a), "None")
         a.set([1, 2, 3])
-        self.assertEqual(repr(a), '[1, 2, 3]')
+        self.assertEqual(repr(a), "[1, 2, 3]")
         a = List(List(Int()))
         a.set([[1, 2, 3], [0, 4]])
-        self.assertEqual(repr(a), '[[1, 2, 3], [0, 4]]')
+        self.assertEqual(repr(a), "[[1, 2, 3], [0, 4]]")
 
     def test_default(self):
         """
         Test default()
         """
-        a = List(Int(), default = [12])
+        a = List(Int(), default=[12])
         self.assertEqual(len(a), 1)
         self.assertEqual(a[0], 12)
 
         with self.assertRaises(Error) as e:
-            a = List(Int(), default = 22)
+            a = List(Int(), default=22)
         self.assertEqual(e.exception.message, "Must be a list")
 
     def test_clear(self):
@@ -73,7 +72,7 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.set([1, 2, 3])
         a.clear()
         self.assertEqual(len(a), 0)
-        a = List(Int(), default = [1])
+        a = List(Int(), default=[1])
         a.set([1, 2, 3])
         a.clear()
         self.assertEqual(len(a), 0)
@@ -269,10 +268,10 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         a = List(String(), uniq=True)
         a.set(["Ford", "BMW", "Volvo"])
         with self.assertRaises(Error) as e:
-            a[1]="Ford"
+            a[1] = "Ford"
         self.assertEqual(e.exception.message, "duplicate value in list")
         with self.assertRaises(Error) as e:
-            a=a+["BMW", "yolo"]
+            a = a + ["BMW", "yolo"]
         self.assertEqual(e.exception.message, "duplicate value in list")
 
     def test_min_max(self):
@@ -283,7 +282,7 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
             a = List(String(), min=2, default=["zaza"])
         self.assertEqual(e.exception.message, "Must be above Minimal")
 
-        a = List(String(), min=2, default=[ "a", "b" ] )
+        a = List(String(), min=2, default=["a", "b"])
         with self.assertRaises(Error) as e:
             a.set(["Ford"])
         self.assertEqual(e.exception.message, "Must be above Minimal")
@@ -296,7 +295,7 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(e.exception.message, "Must be above Minimal")
         self.assertEqual(a[1], "BMW")
 
-        a = List(String(), max=2 )
+        a = List(String(), max=2)
         with self.assertRaises(Error) as e:
             a.set(["Ford", "BMW", "Volvo"])
         self.assertEqual(e.exception.message, "Must be below Maximal")

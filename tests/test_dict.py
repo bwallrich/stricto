@@ -8,7 +8,7 @@ import json
 from stricto import String, Int, Dict, List, Bool, Error, Tuple
 
 
-class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
+class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
     test for Dict()
     """
@@ -28,7 +28,6 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         with self.assertRaises(AttributeError) as e:
             self.assertEqual(a.d, None)
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
-
 
     def test_set_error(self):
         """
@@ -78,14 +77,14 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
             a.d.e = 22
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
         with self.assertRaises(Error) as e:
-            a.set({"b": 1, "c": 2, "d" : { "e" : 1 }})
+            a.set({"b": 1, "c": 2, "d": {"e": 1}})
         self.assertEqual(e.exception.message, "Unknown content")
 
     def test_sub_undefined_2(self):
         """
         test locked
         """
-        a = Dict({"b": Int(), "c": Int(), "d" : Dict({ "e" : Int() })})
+        a = Dict({"b": Int(), "c": Int(), "d": Dict({"e": Int()})})
         a.set({"b": 1, "c": 2})
 
     def test_get_keys(self):
@@ -93,7 +92,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         test get keys
         """
         a = Dict({"b": Int(), "c": Int()})
-        self.assertEqual(a.keys(), [ "b", "c" ])
+        self.assertEqual(a.keys(), ["b", "c"])
 
     def test_get_item(self):
         """
@@ -108,7 +107,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         test get
         """
-        a = Dict({"b": Int( default=22 ), "c": Int()})
+        a = Dict({"b": Int(default=22), "c": Int()})
         a.set({"c": 2})
         self.assertEqual(a.get("b"), 22)
         self.assertEqual(a.get("c"), 2)
@@ -120,8 +119,8 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         a = Dict({"b": Int(), "c": Int()})
         a.set({"b": 1, "c": 2})
-        self.assertEqual( a.b.am_i_root(), False )
-        self.assertEqual( a.am_i_root(), True )
+        self.assertEqual(a.b.am_i_root(), False)
+        self.assertEqual(a.am_i_root(), True)
 
     def test_repr(self):
         """
@@ -129,9 +128,9 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         a = Dict({"b": Int(), "c": Int()})
         a.set({"b": 1, "c": 2})
-        c = repr( a )
-        self.assertEqual( type(c), str )
-        self.assertEqual( c, "{'b': 1, 'c': 2}" )
+        c = repr(a)
+        self.assertEqual(type(c), str)
+        self.assertEqual(c, "{'b': 1, 'c': 2}")
 
     def test_modify_schema(self):
         """
@@ -154,7 +153,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a = Dict({"b": Int(), "c": Int()})
         a.set({"b": 1, "c": 2})
 
-        a.add_to_model("d", Dict( { "e" : String() }))
+        a.add_to_model("d", Dict({"e": String()}))
         a.d.e = "oh yeah"
         self.assertEqual(a.d.e, "oh yeah")
         self.assertEqual(a.d.parent, a)
@@ -163,7 +162,6 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         with self.assertRaises(AttributeError) as e:
             a.d.e = 22
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
-
 
     def test_reference_type(self):
         """
@@ -183,11 +181,11 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         a = Dict({"b": Int(), "c": Int()})
         a.set({"b": 1, "c": 2})
-        b=a.copy()
+        b = a.copy()
         self.assertEqual(a, b)
-        self.assertEqual(a == b , True)
-        self.assertEqual(a != b , False)
-        b.b=22
+        self.assertEqual(a == b, True)
+        self.assertEqual(a != b, False)
+        b.b = 22
         self.assertNotEqual(a, b)
         b = Dict({"b": Int(), "d": Int()})
         b.set({"b": 1, "d": 2})
@@ -200,7 +198,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         a = Dict({"b": Int(), "c": Int()})
         a.set({"b": 1, "c": 2})
-        a.b = a.c.copy()                # pylint: disable=no-member
+        a.b = a.c.copy()  # pylint: disable=no-member
         a.c = 33
         self.assertEqual(a.b, 2)
         self.assertEqual(a.c, 33)
@@ -235,7 +233,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         Test auto_set"""
         a = Dict(
             {
-                "b": Int(default=12, set=lambda o: o.c+1),
+                "b": Int(default=12, set=lambda o: o.c + 1),
                 "c": Int(default=0),
             }
         )
@@ -280,7 +278,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         )
         a.set({"b": 2})
         self.assertEqual(a.d, 3)
-        a.d=5
+        a.d = 5
         self.assertEqual(a.b, 4)
 
     def test_auto_set_loop_error(self):
@@ -302,7 +300,8 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         test not exist
         """
-        def check_exists(value, o): # pylint: disable=unused-argument
+
+        def check_exists(value, o):  # pylint: disable=unused-argument
             """
             return if exists or not
             """
@@ -310,7 +309,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
 
         a = Dict(
             {
-                "must_exists" : Bool( default=False),
+                "must_exists": Bool(default=False),
                 "a": Int(),
                 "b": Int(default=1),
                 "c": Int(default=2),
@@ -320,33 +319,39 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         )
         a.set({"a": 2})
         with self.assertRaises(KeyError) as e:
-            print(a.get_value()['d'])
+            print(a.get_value()["d"])
         self.assertEqual(e.exception.args[0], "d")
         with self.assertRaises(KeyError) as e:
-            print(a['d'])
+            print(a["d"])
         self.assertEqual(e.exception.args[0], "d")
         with self.assertRaises(AttributeError) as e:
-            a.d=12
+            a.d = 12
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
-        self.assertEqual(a.get('d'), None)
-        self.assertEqual(repr (a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}")
+        self.assertEqual(a.get("d"), None)
+        self.assertEqual(
+            repr(a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}"
+        )
 
         with self.assertRaises(Error) as e:
             a.set({"d": 2})
         self.assertEqual(e.exception.message, "locked")
         with self.assertRaises(AttributeError) as e:
-            a.d=2
+            a.d = 2
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
 
         with self.assertRaises(Error) as e:
-            a.set({'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4, 'd':2 })
+            a.set({"must_exists": False, "a": 2, "b": 1, "c": 2, "e": 4, "d": 2})
         self.assertEqual(e.exception.message, "locked")
-        self.assertEqual(repr (a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}")
+        self.assertEqual(
+            repr(a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}"
+        )
 
         a.must_exists = True
-        self.assertEqual(a.get('d'), 3)
-        self.assertEqual(a.get_value()['d'], 3)
-        self.assertEqual(repr (a), "{'must_exists': True, 'a': 2, 'b': 1, 'c': 2, 'd': 3, 'e': 4}")
+        self.assertEqual(a.get("d"), 3)
+        self.assertEqual(a.get_value()["d"], 3)
+        self.assertEqual(
+            repr(a), "{'must_exists': True, 'a': 2, 'b': 1, 'c': 2, 'd': 3, 'e': 4}"
+        )
         a.set({"d": 2})
         self.assertEqual(a.d, 2)
 
@@ -354,7 +359,8 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         """
         test not exist
         """
-        def check_exists(value, o): # pylint: disable=unused-argument
+
+        def check_exists(value, o):  # pylint: disable=unused-argument
             """
             return if exists or not
             """
@@ -362,27 +368,27 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
 
         a = Dict(
             {
-                "must_exists" : Bool( default=False),
+                "must_exists": Bool(default=False),
                 "a": Int(),
-                "b": Dict({
-                    "e" : Dict({
-                        "f" : Int(default=33)
-                    }),
-                    "d": Int(default=3, required=True),
-                }, exists=check_exists)
+                "b": Dict(
+                    {
+                        "e": Dict({"f": Int(default=33)}),
+                        "d": Int(default=3, required=True),
+                    },
+                    exists=check_exists,
+                ),
             }
         )
         a.set({"a": 2})
-        self.assertEqual(a.get('b'), None)
-        self.assertEqual(repr (a), "{'must_exists': False, 'a': 2}")
-
+        self.assertEqual(a.get("b"), None)
+        self.assertEqual(repr(a), "{'must_exists': False, 'a': 2}")
 
         with self.assertRaises(AttributeError) as e:
-            print(print(a.b.e['f']))
+            print(print(a.b.e["f"]))
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
 
         with self.assertRaises(AttributeError) as e:
-            a.b = { "d" : 33 }
+            a.b = {"d": 33}
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
 
         with self.assertRaises(AttributeError) as e:
@@ -393,20 +399,18 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.b.set({"d": 2})
         self.assertEqual(a.b.d, 2)
 
-
-
-
     def test_event(self):
         """
         test for events
         """
-        def trigged_load( event_name, root, me ):
+
+        def trigged_load(event_name, root, me):
             self.assertEqual(event_name, "load")
             self.assertEqual(root.a, 2)
             self.assertEqual(root.b, 3)
             self.assertEqual(me, a.c)
 
-        def trigged_bb( event_name, root, me ):
+        def trigged_bb(event_name, root, me):
             self.assertEqual(event_name, "bb")
             self.assertEqual(root.a, 2)
             self.assertEqual(root.b, 3)
@@ -416,14 +420,14 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
             {
                 "a": Int(default=1),
                 "b": Int(default=3),
-                "c": Int( on=[('load', trigged_load), ('bb', trigged_bb)])
+                "c": Int(on=[("load", trigged_load), ("bb", trigged_bb)]),
             }
         )
-        a.set({"a" : 2})
-        a.trigg("load", id(a) )
-        a.trigg("load" )
-        a.trigg("bb", id(a) )
-        a.trigg("bb" )
+        a.set({"a": 2})
+        a.trigg("load", id(a))
+        a.trigg("load")
+        a.trigg("bb", id(a))
+        a.trigg("bb")
 
     def test_bad_event(self):
         """
@@ -433,7 +437,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
             {
                 "a": Int(default=1),
                 "b": Int(default=3),
-                "c": Int( on=['load', ('bb', 'cc')])
+                "c": Int(on=["load", ("bb", "cc")]),
             }
         )
 
@@ -444,20 +448,27 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a = Dict(
             {
                 "a": Int(default=1),
-                "b": Dict({
-                    "l" : List( Dict({
-                        "i" : String()
-                    }) )
-                }),
-                "c": Tuple( (Int(), String()) )
+                "b": Dict({"l": List(Dict({"i": String()}))}),
+                "c": Tuple((Int(), String())),
             }
         )
-        a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] }, "c" : ( 22, "h") })
+        a.set(
+            {
+                "a": 12,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ]
+                },
+                "c": (22, "h"),
+            }
+        )
         self.assertEqual(a.a.path_name(), "$.a")
         self.assertEqual(a.c.path_name(), "$.c")
         self.assertEqual(a.b.l.path_name(), "$.b.l")
         self.assertEqual(a.b.l[0].i.path_name(), "$.b.l[0].i")
-        a.b.l.append( { "i" : "third"} )
+        a.b.l.append({"i": "third"})
         self.assertEqual(a.b.l[2].i.path_name(), "$.b.l[2].i")
         with self.assertRaises(IndexError) as e:
             a.b.l[222].i.path_name()
@@ -465,7 +476,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         with self.assertRaises(AttributeError) as e:
             a.b.nono.i.path_name()
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'nono'")
-        a.c=( 22, "hop")
+        a.c = (22, "hop")
         self.assertEqual(a.c[0], 22)
         self.assertEqual(a.c[0].path_name(), "$.c[0]")
 
@@ -476,15 +487,21 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a = Dict(
             {
                 "a": Int(default=1),
-                "b": Dict({
-                    "l" : List( Dict({
-                        "i" : String()
-                    }) )
-                }),
+                "b": Dict({"l": List(Dict({"i": String()}))}),
             }
         )
-        a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] } })
-        self.assertEqual(a.select('$.a'), 12)
-        self.assertEqual(a.select('$.f.d'), None)
-        self.assertEqual(a.select('$.b.l[0].i'), "fir")
-        self.assertEqual(a.select('$.*.l.i'), ['fir', 'sec'])
+        a.set(
+            {
+                "a": 12,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ]
+                },
+            }
+        )
+        self.assertEqual(a.select("$.a"), 12)
+        self.assertEqual(a.select("$.f.d"), None)
+        self.assertEqual(a.select("$.b.l[0].i"), "fir")
+        self.assertEqual(a.select("$.*.l.i"), ["fir", "sec"])

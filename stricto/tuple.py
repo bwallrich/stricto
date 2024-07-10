@@ -17,7 +17,7 @@ class Tuple(GenericType):
         GenericType.__init__(self, **kwargs)
         self.json_path_separator = ""
 
-        self._schema=[]
+        self._schema = []
         i = 0
         for element_schema in schema:
             if isinstance(element_schema, GenericType) is False:
@@ -25,38 +25,37 @@ class Tuple(GenericType):
             mm = copy.copy(element_schema)
             mm.parent = self
             mm.attribute_name = f"[{i}]"
-            self._schema.append( mm )
-            i=i+1
+            self._schema.append(mm)
+            i = i + 1
 
         self._locked = True
 
-
     def get_selectors(self, sel_filter, selectors_as_list):
         """
-        get with selector as lists
+        get with selector in tuple
         """
         print(f"tuple get_selector {sel_filter} + {selectors_as_list}")
 
         if sel_filter is None:
-            a=[]
+            list_of_result = []
             for v in self._value:
-                result = v.get_selectors( None , selectors_as_list.copy())
+                result = v.get_selectors(None, selectors_as_list.copy())
                 if result is not None:
-                    a.append( result )
-            return tuple(a)
+                    list_of_result.append(result)
+            return tuple(list_of_result)
 
-        if re.match('^-*[0-9]+$', sel_filter):
+        if re.match("^[0-9]+$", sel_filter):
             if self._value is None:
                 return None
             try:
-                v = self._value[int(sel_filter)]
+                sub_object = self._value[int(sel_filter)]
             except IndexError:
                 return None
-            return v.get_selectors(None, selectors_as_list)
+            return sub_object.get_selectors(None, selectors_as_list)
 
         return None
 
-    def trigg( self, event_name, from_id = None):
+    def trigg(self, event_name, from_id=None):
         """
         trigg an event
         """
@@ -65,10 +64,9 @@ class Tuple(GenericType):
 
         if self._schema is not None:
             for element_schema in self._schema:
-                element_schema.trigg( event_name, from_id )
+                element_schema.trigg(event_name, from_id)
 
-        GenericType.trigg( self, event_name, from_id )
-
+        GenericType.trigg(self, event_name, from_id)
 
     def get_value(self):
         """
@@ -79,18 +77,17 @@ class Tuple(GenericType):
 
         a = []
         for sub_value in self._value:
-            a.append( sub_value.get_value() )
+            a.append(sub_value.get_value())
         return tuple(a)
 
     def __repr__(self):
         a = []
         if self._value is None:
-            return 'None'
+            return "None"
 
         for sub_value in self._value:
-            a.append( sub_value )
+            a.append(sub_value)
         return tuple(a).__repr__()
-
 
     def __len__(self):
         """
@@ -111,7 +108,6 @@ class Tuple(GenericType):
         """
         t = None if self._value is None else tuple(self._value)
         return t != self.get_other_value(other)
-
 
     def __lt__(self, other):
 
@@ -150,12 +146,12 @@ class Tuple(GenericType):
         add two Tuples
         """
         if not isinstance(other, Tuple):
-            raise TypeError('can only concatenate Tuple to Tuple')
+            raise TypeError("can only concatenate Tuple to Tuple")
 
         if self.get_other_value(other) is None:
-            raise TypeError('can only concatenate Tuple to Tuple')
+            raise TypeError("can only concatenate Tuple to Tuple")
 
-        r=Tuple( tuple(self._schema) + tuple(other._schema) )
+        r = Tuple(tuple(self._schema) + tuple(other._schema))
         r._value = self._value + other._value
         return r
 
@@ -169,26 +165,28 @@ class Tuple(GenericType):
             self._value = None
             return
 
-        self._value=[]
-        i=0
+        self._value = []
+        i = 0
         for element in value:
             mm = copy.copy(self._schema[i])
-            mm.set_value_without_checks( element )
+            mm.set_value_without_checks(element)
             mm.parent = self
             mm.attribute_name = f"[{i}]"
-            self._value.append( mm )
-            i=i+1
+            self._value.append(mm)
+            i = i + 1
 
     def check(self, value):
-        GenericType.check( self, value)
+        GenericType.check(self, value)
 
         if isinstance(value, (tuple, Tuple, list, List)):
-            if len( value ) != len( self ):
-                raise Error(ErrorType.NOTATUPLE, "Tuple not same size", self.path_name())
-            i=0
+            if len(value) != len(self):
+                raise Error(
+                    ErrorType.NOTATUPLE, "Tuple not same size", self.path_name()
+                )
+            i = 0
             for element in value:
                 self._schema[i].check(element)
-                i=i+1
+                i = i + 1
 
     def check_type(self, value):
         """
