@@ -1,5 +1,6 @@
 """Module providing the List() Class"""
 import copy
+import re
 from .generic import GenericType
 from .error import Error, ErrorType
 
@@ -20,6 +21,8 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         self._uniq = kwargs.pop("uniq", None)
 
         GenericType.__init__(self, **kwargs)
+        self.json_path_separator = ""
+
 
 
     def __len__(self):
@@ -45,10 +48,13 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             i = i + 1
 
 
-    def trigg( self, event_name, from_id ):
+    def trigg( self, event_name, from_id = None):
         """
         trigg an event
         """
+        if from_id is None:
+            from_id = id(self)
+
         if self._value is not None:
             for item in self._value:
                 item.trigg( event_name, from_id )
@@ -66,6 +72,34 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
 
     def __getitem__(self, index):
         return self._value[index]
+
+
+    def get_selectors(self, sel_filter, selectors_as_list):
+        """
+        get with selector as lists
+        """
+        print(f"list get_selector {sel_filter} + {selectors_as_list}")
+
+        if sel_filter is None:
+            a=[]
+            for v in self._value:
+                result = v.get_selectors( None , selectors_as_list.copy())
+                if result is not None:
+                    a.append( result )
+            return a
+
+        if re.match('^-*[0-9]+$', sel_filter):
+            if self._value is None:
+                return None
+            try:
+                v = self._value[int(sel_filter)]
+            except IndexError:
+                return None
+            return v.get_selectors(None, selectors_as_list)
+
+        return None
+
+
 
     def __copy__(self):
         cls = self.__class__

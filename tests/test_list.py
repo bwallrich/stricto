@@ -156,7 +156,6 @@ class TestList(unittest.TestCase): # pylint: disable=too-many-public-methods
         a[0] = 22
         self.assertEqual(a[0], 22)
 
-
     def test_set_item_slice(self):
         """
         Test set a[i:j]=[...]

@@ -1,5 +1,6 @@
 """Module providing the Dict() Class"""
 import copy
+import re
 from .generic import GenericType
 from .error import Error, ErrorType
 
@@ -10,6 +11,7 @@ class Dict(GenericType):
 
     def __init__(self, schema: dict, **kwargs):
         """ """
+
         self._keys = []
         for key in schema.keys():
             m = schema.get(key)
@@ -22,7 +24,6 @@ class Dict(GenericType):
             self._keys.append(key)
 
         GenericType.__init__(self, **kwargs)
-
         self._locked = True
 
     def add_to_model(self, key, model):
@@ -54,57 +55,75 @@ class Dict(GenericType):
 
     def __getitem__(self, k):
         if k in self._keys:
+            v = object.__getattribute__(self, k)
+            if v.exists() is False:
+                raise KeyError(k)
             return self.__dict__[k]
         return None
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, k, value):
+
+        # Set a "normal" value
         try:
-            locked = self.__dict__["_locked"]
-        except KeyError:
-            locked = False
+            _keys = object.__getattribute__(self, "_keys")
+        except AttributeError:
+            _keys = []
 
-        try:
-            keys = self.__dict__["_keys"]
-        except KeyError:
-            keys = None
+        if k in _keys:
+            v = object.__getattribute__(self, k)
+            if v.exists() is False:
+                raise AttributeError(f"'Dict' object has no attribute '{k}'")
 
-        skip_locked_test = False
-        if name in [ "root", "parent", "attribute_name" ]:
-            skip_locked_test = True
-
-        if locked and not skip_locked_test:
-            if name not in keys:
-                raise Error(ErrorType.NOTALIST, "locked", f"{name}")
-            if isinstance(value, GenericType):
-                # if same type, do a reference
-                if type(value) == type(self.__dict__[f"{name}"]): # pylint: disable=unidiomatic-typecheck
-                    self.__dict__[f"{name}"].check(value)
-                    self.__dict__[f"{name}"] = value
-                else:
-                    self.__dict__[f"{name}"].set(value)
+            # a reference
+            if type(value) == type(v): # pylint: disable=unidiomatic-typecheck
+                v.check(value)
+                self.__dict__[k] = value
             else:
-                self.__dict__[f"{name}"].set(value)
+                v.set(self.get_other_value(value))
             return
 
-        self.__dict__[f"{name}"] = value
+        if k in [ "root", "parent", "attribute_name" ]:
+            self.__dict__[k] = value
+            return
+
+        try:
+            locked = object.__getattribute__(self, "_locked")
+        except AttributeError:
+            locked = False
+
+        if locked is True:
+            raise Error(ErrorType.NOTALIST, "locked", f"{k}")
+        self.__dict__[k] = value
 
     def copy(self):
         return copy.copy(self)
 
 
-
     def __getattr__(self, k):
+        """
+        """
+        return self.__getattribute__(k)
+
+    def __getattribute__(self, k):
         """
         replicate all atributes from value, but prefere self attribute first.
         """
-        if k == "_value":
-            raise TypeError(f"dict getattr want {k}")
 
-        if k in self.__dict__:
-            return self.__dict__[k]
+        if k == "__getattribute__":
+            return object.__getattribute__(self, '__getattribute__')
 
-        return None
+        #if k == "_value":
+        #    raise TypeError(f"dict getattr want {k}")
+        try:
+            d = object.__getattribute__(self, '_keys')
+        except AttributeError:
+            return object.__getattribute__(self, k)
 
+        obj = object.__getattribute__(self, k)
+        if k in d:
+            if obj.exists() is False:
+                raise AttributeError(f"'Dict' object has no attribute '{k}'")
+        return obj
 
     def __copy__(self):
         cls = self.__class__
@@ -115,6 +134,7 @@ class Dict(GenericType):
         result.__dict__["_transform"] = self.__dict__["_transform"]
         result.__dict__["_union"] = self.__dict__["_union"]
         result.__dict__["parent"] = self.__dict__["parent"]
+        result.__dict__["json_path_separator"] = self.__dict__["json_path_separator"]
         result.__dict__["attribute_name"] = self.__dict__["attribute_name"]
         result.__dict__["_on_change"] = self.__dict__["_on_change"]
         result.__dict__["_on"] = self.__dict__["_on"]
@@ -132,19 +152,25 @@ class Dict(GenericType):
 
         # parent and attribute name are reseted
         result.parent = None
-        result.attribute_name = "?"
+        result.attribute_name = "$"
 
         result._locked = True
         return result
 
 
-    def trigg( self, event_name, from_id):
+    def trigg( self, event_name, from_id = None):
         """
         trigg an event
         """
+        if from_id is None:
+            from_id = id(self)
+
         if self._keys is not None:
             for key in self._keys:
-                self.__dict__[key].trigg( event_name, from_id )
+                v = object.__getattribute__(self, key)
+                if v.exists() is False:
+                    continue
+                v.trigg( event_name, from_id )
 
         GenericType.trigg( self, event_name, from_id )
 
@@ -152,7 +178,7 @@ class Dict(GenericType):
     def __repr__(self):
         a = {}
         for key in self._keys:
-            v = getattr(self, key)
+            v = object.__getattribute__(self, key)
             if v.exists() is False:
                 continue
             a[key] = getattr(self, key)
@@ -162,8 +188,16 @@ class Dict(GenericType):
         """
         equality test two objects
         """
+        if isinstance(other, GenericType) is False:
+            return False
+
+        if self._keys != other._keys:
+            return False
+
         for key in self._keys:
-            if getattr(self, key) != getattr(other, key):
+            a = getattr(self, key)
+            o = getattr(other, key)
+            if a != o:
                 return False
         return True
 
@@ -171,18 +205,26 @@ class Dict(GenericType):
         """
         equality test two objects
         """
+        if isinstance(other, GenericType) is False:
+            return True
+
+        if self._keys != other._keys:
+            return True
+
         for key in self._keys:
-            if getattr(self, key) != getattr(other, key):
+            a = getattr(self, key)
+            o = getattr(other, key)
+            if a != o:
                 return True
         return False
 
     def get_value(self):
         a = {}
         for key in self._keys:
-            key_object = getattr(self, key)
-            if key_object.exists() is False:
+            v = object.__getattribute__(self, key)
+            if v.exists() is False:
                 continue
-            a[key] = getattr(self, key).get_value()
+            a[key] = v.get_value()
         return a
 
     def get(self, key: str, default=None):
@@ -191,10 +233,55 @@ class Dict(GenericType):
         """
         if key not in self._keys:
             return default
-        v = self.__dict__[key]
+
+        v = object.__getattribute__(self, key)
         if v.exists() is False:
-            return default
+            return None
         return v
+
+    def get_selectors(self, sel_filter, selectors_as_list):
+        """
+        get with selector as lists
+        selectors_as_list is a list of tuples like 
+        ( "a" , 0 ) -> a[0]
+        ( "toto", None ) -> toto        
+        """
+        if not selectors_as_list:
+            return self
+
+        # The sel_filter is actually ignored.
+
+        (sel, sub_sel_filter) = selectors_as_list.pop(0)
+        # apply selector to me
+        if sel == "$":
+            return self.get_root().get_selectors( sub_sel_filter, selectors_as_list )
+        if sel == "@":
+            return self.get_selectors( sub_sel_filter, selectors_as_list )
+
+        if sel in self._keys:
+
+            v = self.__dict__[sel]
+            if v.exists() is False:
+                return None
+
+            return v.get_selectors(sub_sel_filter, selectors_as_list)
+
+        # Selecing all
+        if sel in ( "", "*" ):
+            a=[]
+            for k in self._keys:
+                v = self.__dict__[k]
+                if v.exists():
+                    result = v.get_selectors(sub_sel_filter, selectors_as_list.copy())
+                    if result is not None:
+                        a.append(result)
+            if not a or len(a) == 0:
+                return None
+            if len(a) == 1:
+                return a[0]
+            return a
+
+        return None
 
     def set_value_without_checks(self, value):
         for key in self._keys:

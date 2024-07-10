@@ -3,6 +3,7 @@ Module providing the Generic() Class
 This class must not be used directly
 """
 import copy
+import re
 from .error import Error, ErrorType
 
 
@@ -21,19 +22,24 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         """
         self._params = {
+            "exists" : True,
             "read" : True,
             "modify" : True
         }
         self.parent = None
-        self.attribute_name = "?"
+        self._exists = True
+        self.attribute_name = "$"
+        self.json_path_separator = "."
         self._value = None
         self._old_value = None
+        self._transform = None
         self._descrition = kwargs.pop("description", None)
         self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
         self._union = kwargs.pop("union", kwargs.pop("in", None))
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
         self._constraints = constraint if isinstance(constraint, list) else [constraint]
 
+        # Set the default value
         self._default = kwargs.pop("default", None)
         self.check(self._default)
         if self._default is not None:
@@ -42,6 +48,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
+
+        # Set rights
+        self._params['read'] = kwargs.pop("can_read", True)
+        self._params['modify'] = kwargs.pop("can_modify", True)
 
         # the  value is computed
         auto_set = kwargs.pop("set", kwargs.pop("compute", None))
@@ -77,16 +87,21 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
     def change_trigg_wrap(self, root, auto_set):
         """
-        test
+        transform a set=... option to an event.
+        this function is called by the event and call the set function.
         """
         a = auto_set( root )
         self.set ( a )
 
 
-    def trigg( self, event_name, from_id ):
+    def trigg( self, event_name, from_id  = None):
         """
         trig an event
+        from_id is an id to avoid the event to call itself
         """
+        if from_id is None:
+            from_id = id(self)
+            
         if self._events is None:
             return
         if id(self) == from_id:
@@ -117,20 +132,71 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         Return True if the object Exist, othewise False.
         exist can be a function to make this field dependant from the value of another
         """
-        return self.get_args_or_execute_them(self._exists, self.get_value())
+        response = self.get_args_or_execute_them(self._exists, None)
+        if response is False:
+            return False
+
+        if self.parent is None:
+            return True
+
+        #return True
+        return self.parent.exists()
+
+    def can_read(self):
+        """
+        Return True if the object can be read.
+        can be a function to make this field dependant from the value of another
+        """
+        return self.get_args_or_execute_them(self._params['read'], None)
+
+    def can_modify(self):
+        """
+        Return True if the object can be modified.
+        can be a function to make this field dependant from the value of another
+        """
+        return self.get_args_or_execute_them(self._params['modify'], None)
 
     def path_name(self):
         """
         return a string with the name of the object
+        according to RFC 9535
         """
         p = [ self.attribute_name ]
 
         parent = self.parent
         while parent is not None:
+            p.insert(0, parent.json_path_separator)
             p.insert(0, parent.attribute_name)
             parent = parent.parent
+        return "".join(p)
 
-        return ".".join(p)
+    def get_selectors(self, sel_filter, selectors_as_list):
+        """
+        get with selector as lists
+        """
+        # A sub object behing a generic ? -> No
+        if selectors_as_list:
+            return None
+
+        return self
+
+    def select(self, selectors):
+        """
+        Get values with selector acording to rfc 9535
+        """
+        a = []
+        for sel in selectors.split("."):
+            # selector like blabla[...] or blabla or [...]
+            match = re.search(r'(.*)\[(.*)\]', sel)
+            if not match:
+                a.append( ( sel, None) )
+                continue
+            a.append( ( match.group(1), match.group(2)) )
+
+        print(f"select {a}")
+        (sel, sel_filter) = a.pop(0)
+        return self.get_selectors(sel_filter, a)
+
 
     def get_other_value(self, other):
         """
@@ -294,7 +360,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         result.parent = None
-        result.attribute_name = "?"
+        result.attribute_name = "$"
         return result
 
     def copy(self):
@@ -367,9 +433,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         root = self.get_root()
 
-        if self._params["modify"] is False:
-            raise Error(ErrorType.READONLY, "Cannot modify value", self.path_name())
-
+        if self.can_read() is False:
+            raise Error(ErrorType.READONLY, "cannot read (and modify) value", self.path_name())
 
         # transform the value before the check
         corrected_value = value
@@ -384,6 +449,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         # Check correct type or raise an Error
         self.check_type(corrected_value)
+
+
+        if self.can_modify() is False:
+            if corrected_value != self._value:
+                raise Error(ErrorType.READONLY, "cannot modify value", self.path_name())
+
 
         # check constraints or raise an Error
         self.check_constraints(corrected_value)

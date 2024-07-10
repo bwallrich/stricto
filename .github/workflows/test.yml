@@ -20,6 +20,6 @@ jobs:
         pip install coverage
     - name: run tests and coverage
       run: |
-        coverage run -m unittest
+        coverage run -m unittest tests
     - name: Coverage Badge
       uses: tj-actions/coverage-badge-py@v2    

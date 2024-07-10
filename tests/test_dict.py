@@ -1,10 +1,11 @@
 """
 test for Dict()
 """
+# pylint: disable=no-member
 import unittest
 import json
 
-from stricto import String, Int, Dict, List, Bool, Error
+from stricto import String, Int, Dict, List, Bool, Error, Tuple
 
 
 class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
@@ -24,11 +25,14 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(a.b, 1)
         self.assertEqual(a.c, 2)
         self.assertEqual(a.b + a.c, 3)
-        self.assertEqual(a.d, None)
+        with self.assertRaises(AttributeError) as e:
+            self.assertEqual(a.d, None)
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
+
 
     def test_set_error(self):
         """
-        test set with error 
+        test set with error
         """
         with self.assertRaises(Error) as e:
             Dict({"b": Int(), "c": Int(), "d": 23})
@@ -36,7 +40,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
 
     def test_set_no_value(self):
         """
-        test set non existing value 
+        test set non existing value
         """
         a = Dict({"b": Int(), "c": Int()})
         with self.assertRaises(Error) as e:
@@ -45,7 +49,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
 
     def test_set_with_dict(self):
         """
-        test set non existing value 
+        test set non existing value
         """
         a = Dict({"b": Int(), "c": Int()})
         b = Dict({"b": Int(), "c": Int()})
@@ -72,7 +76,7 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.set({"b": 1, "c": 2})
         with self.assertRaises(AttributeError) as e:
             a.d.e = 22
-        self.assertEqual(e.exception.args[0], "'NoneType' object has no attribute 'e'")
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
         with self.assertRaises(Error) as e:
             a.set({"b": 1, "c": 2, "d" : { "e" : 1 }})
         self.assertEqual(e.exception.message, "Unknown content")
@@ -138,7 +142,6 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.add_to_model("d", String())
         a.d = "oh yeah"
         self.assertEqual(a.d, "oh yeah")
-        self.assertEqual(a.d.root, a.root)
         a.remove_model("d")
         with self.assertRaises(Error) as e:
             a.d = "oh yeah"
@@ -154,14 +157,12 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         a.add_to_model("d", Dict( { "e" : String() }))
         a.d.e = "oh yeah"
         self.assertEqual(a.d.e, "oh yeah")
-        self.assertEqual(a.d.root, a.root)
-        self.assertEqual(a.d.e.root, a.root)
         self.assertEqual(a.d.parent, a)
         self.assertEqual(a.d.e.parent, a.d)
         a.remove_model("d")
         with self.assertRaises(AttributeError) as e:
             a.d.e = 22
-        self.assertEqual(e.exception.args[0], "'NoneType' object has no attribute 'e'")
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
 
 
     def test_reference_type(self):
@@ -266,9 +267,9 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(a.b, 34)
         self.assertEqual(a.d, 35)
 
-    def test_auto_set_loop(self):
+    def test_auto_set_reflexive(self):
         """
-        loop in auto_set
+        reflexive in auto_set
         """
         a = Dict(
             {
@@ -281,6 +282,21 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(a.d, 3)
         a.d=5
         self.assertEqual(a.b, 4)
+
+    def test_auto_set_loop_error(self):
+        """
+        loop in auto_set must set an error
+        """
+        a = Dict(
+            {
+                "b": Int(default=0, set=lambda o: o.d + 1),
+                "d": Int(default=0, set=lambda o: o.b + 1),
+                "c": Int(default=0),
+            }
+        )
+        with self.assertRaises(RecursionError) as e:
+            a.set({"b": 2})
+        self.assertRegex(e.exception.args[0], "maximum recursion depth exceeded")
 
     def test_not_exist(self):
         """
@@ -304,17 +320,23 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         )
         a.set({"a": 2})
         with self.assertRaises(KeyError) as e:
-            a.d=a.get_value()['d']
+            print(a.get_value()['d'])
         self.assertEqual(e.exception.args[0], "d")
+        with self.assertRaises(KeyError) as e:
+            print(a['d'])
+        self.assertEqual(e.exception.args[0], "d")
+        with self.assertRaises(AttributeError) as e:
+            a.d=12
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
         self.assertEqual(a.get('d'), None)
         self.assertEqual(repr (a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}")
 
         with self.assertRaises(Error) as e:
             a.set({"d": 2})
         self.assertEqual(e.exception.message, "locked")
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(AttributeError) as e:
             a.d=2
-        self.assertEqual(e.exception.message, "locked")
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
 
         with self.assertRaises(Error) as e:
             a.set({'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4, 'd':2 })
@@ -327,6 +349,52 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         self.assertEqual(repr (a), "{'must_exists': True, 'a': 2, 'b': 1, 'c': 2, 'd': 3, 'e': 4}")
         a.set({"d": 2})
         self.assertEqual(a.d, 2)
+
+    def test_not_exist_parent(self):
+        """
+        test not exist
+        """
+        def check_exists(value, o): # pylint: disable=unused-argument
+            """
+            return if exists or not
+            """
+            return o.must_exists.get_value()
+
+        a = Dict(
+            {
+                "must_exists" : Bool( default=False),
+                "a": Int(),
+                "b": Dict({
+                    "e" : Dict({
+                        "f" : Int(default=33)
+                    }),
+                    "d": Int(default=3, required=True),
+                }, exists=check_exists)
+            }
+        )
+        a.set({"a": 2})
+        self.assertEqual(a.get('b'), None)
+        self.assertEqual(repr (a), "{'must_exists': False, 'a': 2}")
+
+
+        with self.assertRaises(AttributeError) as e:
+            print(print(a.b.e['f']))
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
+
+        with self.assertRaises(AttributeError) as e:
+            a.b = { "d" : 33 }
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
+
+        with self.assertRaises(AttributeError) as e:
+            a.b.e.f = 2
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
+
+        a.must_exists = True
+        a.b.set({"d": 2})
+        self.assertEqual(a.b.d, 2)
+
+
+
 
     def test_event(self):
         """
@@ -353,4 +421,70 @@ class TestDict(unittest.TestCase): # pylint: disable=too-many-public-methods
         )
         a.set({"a" : 2})
         a.trigg("load", id(a) )
+        a.trigg("load" )
         a.trigg("bb", id(a) )
+        a.trigg("bb" )
+
+    def test_bad_event(self):
+        """
+        test for bad events
+        """
+        Dict(
+            {
+                "a": Int(default=1),
+                "b": Int(default=3),
+                "c": Int( on=['load', ('bb', 'cc')])
+            }
+        )
+
+    def test_path(self):
+        """
+        test for pathnames
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "b": Dict({
+                    "l" : List( Dict({
+                        "i" : String()
+                    }) )
+                }),
+                "c": Tuple( (Int(), String()) )
+            }
+        )
+        a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] }, "c" : ( 22, "h") })
+        self.assertEqual(a.a.path_name(), "$.a")
+        self.assertEqual(a.c.path_name(), "$.c")
+        self.assertEqual(a.b.l.path_name(), "$.b.l")
+        self.assertEqual(a.b.l[0].i.path_name(), "$.b.l[0].i")
+        a.b.l.append( { "i" : "third"} )
+        self.assertEqual(a.b.l[2].i.path_name(), "$.b.l[2].i")
+        with self.assertRaises(IndexError) as e:
+            a.b.l[222].i.path_name()
+        self.assertEqual(e.exception.args[0], "list index out of range")
+        with self.assertRaises(AttributeError) as e:
+            a.b.nono.i.path_name()
+        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'nono'")
+        a.c=( 22, "hop")
+        self.assertEqual(a.c[0], 22)
+        self.assertEqual(a.c[0].path_name(), "$.c[0]")
+
+    def test_selector(self):
+        """
+        test selector
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "b": Dict({
+                    "l" : List( Dict({
+                        "i" : String()
+                    }) )
+                }),
+            }
+        )
+        a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] } })
+        self.assertEqual(a.select('$.a'), 12)
+        self.assertEqual(a.select('$.f.d'), None)
+        self.assertEqual(a.select('$.b.l[0].i'), "fir")
+        self.assertEqual(a.select('$.*.l.i'), ['fir', 'sec'])

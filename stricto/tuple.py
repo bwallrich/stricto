@@ -1,5 +1,6 @@
 """Module providing the Tuple() Class"""
 import copy
+import re
 from .generic import GenericType
 from .list import List
 from .error import Error, ErrorType
@@ -14,6 +15,7 @@ class Tuple(GenericType):
         """ """
 
         GenericType.__init__(self, **kwargs)
+        self.json_path_separator = ""
 
         self._schema=[]
         i = 0
@@ -22,16 +24,45 @@ class Tuple(GenericType):
                 raise Error(ErrorType.NOTATYPE, "Not a schema")
             mm = copy.copy(element_schema)
             mm.parent = self
-            mm.attribute_name = f"({i})"
+            mm.attribute_name = f"[{i}]"
             self._schema.append( mm )
             i=i+1
 
         self._locked = True
 
-    def trigg( self, event_name, from_id ):
+
+    def get_selectors(self, sel_filter, selectors_as_list):
+        """
+        get with selector as lists
+        """
+        print(f"tuple get_selector {sel_filter} + {selectors_as_list}")
+
+        if sel_filter is None:
+            a=[]
+            for v in self._value:
+                result = v.get_selectors( None , selectors_as_list.copy())
+                if result is not None:
+                    a.append( result )
+            return tuple(a)
+
+        if re.match('^-*[0-9]+$', sel_filter):
+            if self._value is None:
+                return None
+            try:
+                v = self._value[int(sel_filter)]
+            except IndexError:
+                return None
+            return v.get_selectors(None, selectors_as_list)
+
+        return None
+
+    def trigg( self, event_name, from_id = None):
         """
         trigg an event
         """
+        if from_id is None:
+            from_id = id(self)
+
         if self._schema is not None:
             for element_schema in self._schema:
                 element_schema.trigg( event_name, from_id )
@@ -143,6 +174,8 @@ class Tuple(GenericType):
         for element in value:
             mm = copy.copy(self._schema[i])
             mm.set_value_without_checks( element )
+            mm.parent = self
+            mm.attribute_name = f"[{i}]"
             self._value.append( mm )
             i=i+1
 

@@ -235,3 +235,18 @@ class TestTuple(unittest.TestCase):
         })
         e.set( json.loads(sa) )
         self.assertEqual(d, e)
+
+    def test_pathname_tuple(self):
+        """
+        Test pathname  
+        """
+        a = Tuple( (Bool(), Int( max=30)) )
+        a.set(( True , 22 ))
+
+        self.assertEqual(a[0], True)
+        self.assertEqual(type(a[0]), Bool)
+        self.assertEqual(a[0].attribute_name, '[0]')
+        self.assertEqual(a[1].attribute_name, '[1]')
+        self.assertNotEqual(a[0].parent, None)
+        self.assertEqual(a[0].path_name(), '$[0]')
+        self.assertEqual(a[1].path_name(), '$[1]')

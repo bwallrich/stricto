@@ -126,6 +126,36 @@ b.set( json.loads(sa) )
 b == a # return True
 ```
 
+## selectors
+
+You can use json selectors to find the object according to [rfc9535](https://datatracker.ietf.org/doc/rfc9535/)
+
+
+```python
+from stricto import Int, List, String, Dict, Error
+
+a = Dict(
+    {
+        "a": Int(default=1),
+        "b": Dict({
+            "l" : List( Dict({
+                "i" : String()
+            }) )
+        }),
+        "c": Tuple( (Int(), String()) )
+    }
+)
+a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] }, "c" : ( 22, "h") })
+
+a.select('$.a') # 12
+
+# To make the difference :
+
+a.select('$.f.d') # None
+a.f.d # -> raise an error
+```
+
+
 ## Types and options
 
 ### All types
@@ -148,6 +178,9 @@ available options for all types ares :
 | ```set=func``` | None | a read only value, calculated from other .See [set or compute function](#set-or-compute) |
 | ```compute=func``` | None | similar to ```set``` |
 | ```exists=func``` | True | a function to say if the object "exists", depending on values from other attributs. See  [exists](#exists) for details |
+| ```can_read=func``` | True | a function to say if the object can be read. see  [can_read](#can_read) for details |
+| ```can_modify=func``` | True | a function to say if the object can be modified (read only value). see  [can_modify](#can_modify) for details |
+| ```on=(event_name, function)``` | None | trigged to an event. see  [events](#events) for details |
 
 See [functions](#functions) for mor details and examples how to use them.
 
@@ -419,20 +452,82 @@ cat=Dict({
     }, exists=check_if_female )
 })
 
-a.set({ "name" : "Felix", "gender" : "Male" }
-a.female_infos   # -> None
-a.female_infos.number_of_litter = 2 # -> Raise an Error
+cat.set({ "name" : "Felix", "gender" : "Male" }
+cat.female_infos   # -> None
+cat.female_infos.number_of_litter = 2 # -> Raise an Error
 
-a.gender = "Female"
-a.female_infos.number_of_litter = 2 # -> Ok
-a.female_infos # -> { "number_of_litter" : 2 }
+cat.gender = "Female"
+cat.female_infos.number_of_litter = 2 # -> Ok
+cat.female_infos # -> { "number_of_litter" : 2 }
+```
+
+### can_read
+
+A function wich must return ```True|False``` to say if this key can be read.
+Differ from [exists](#exists) in the sens a object can exists but currently not be readable
+
+```python
+# example
+from stricto import Dict, Int, String
+
+current_user_name="John"
+
+def can_see_and_modify_salary(value, o):
+
+    """
+    return true if can read the salary
+    """
+    global current_user_name
+    if current_user_name == o.name:
+        return True
+    return False
+
+
+user=Dict({
+    "name" : String(),
+    "salary" : Int( default=0, can_read=can_see_and_modify_salary, can_modify=can_see_and_modify_salary ),
+})
+
+user.set({ "name" : "John", "salary" : 20000 }
+user.salary   # -> 20000
+
+user.name="Jack"
+user.salary # -> raise an error
+
+```
+
+## Events
+
+A stricto object can be trigged by custom events.
+
+```python
+import random
+from stricto import Dict, Int, String
+
+def random( event_name, root, me ):
+    me.set(random.randint(1, 6))
+
+
+user=Dict({
+    "name" : String(),
+    "dice1" : Int( default=1, on=('roll' , random) ),
+    "dice2" : Int( default=1, on=[ ('roll' , random)] ),
+})
+
+
+user.set({ "name" : "dice1and2" })
+# Later
+user.trigg('roll')
+user.dice1 # -> A number 1-6
+user.dice2 # -> A number 1-6
+
 ```
 
 ## Tests & co
 
 ```bash
 # all tests
-python -m unittest
+python -m unittest tests
 # or for only some tests
 python -m unittest tests/test_bool.py
 # or for a specific test
@@ -442,7 +537,7 @@ python -m unittest tests.TestDict.test_simple_type
 pylint $(git ls-files '*.py')
 
 # coverage
-coverage run -m unittest
+coverage run -m unittest tests
 coverage html # report under htmlcov/index.html
 
 ```
