@@ -3,13 +3,21 @@ test for List()
 """
 import unittest
 
-from stricto import List, Int, String, Error
+from stricto import List, Dict, Int, String, Error
 
 
 class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
     Test on Lists
     """
+
+    def __init__(self, *args, **kwargs):
+        """
+        init this tests
+        """
+        super().__init__(*args, **kwargs)
+
+        self.event_name = None
 
     def test_error_type(self):
         """
@@ -52,6 +60,32 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set([[1, 2, 3], [0, 4]])
         self.assertEqual(repr(a), "[[1, 2, 3], [0, 4]]")
 
+    def test_equality(self):
+        """
+        Test equality()
+        """
+        a = List(Int())
+        self.assertEqual(a, a)
+        self.assertEqual(a, None)
+        self.assertEqual(a != None, False)  # pylint: disable=singleton-comparison
+        a.set([1, 2, 3])
+        self.assertEqual(a, a)
+        b = a.copy()
+        self.assertEqual(a, b)
+        self.assertEqual(b, b)
+        b.append(2)
+        self.assertEqual(a == b, False)
+        self.assertNotEqual(a, b)
+        self.assertNotEqual(a, b[0])
+        b = List(String())
+        self.assertNotEqual(a, b)
+        a = List(Dict({"i": String()}))
+        self.assertEqual(a, a)
+        a.set([{"i": "fir"}, {"i": "sec"}])
+        self.assertEqual(a, a)
+        self.assertEqual(a == Int(), False)
+        self.assertNotEqual(a, Int())
+
     def test_default(self):
         """
         Test default()
@@ -84,6 +118,7 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = List(Int())
         a.set(None)
         self.assertEqual(a, None)
+        self.assertEqual(a.get_value(), None)
         a.append(12)
         self.assertEqual(a[0], 12)
 
@@ -303,3 +338,29 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(Error) as e:
             a.append("yolo")
         self.assertEqual(e.exception.message, "Must be below Maximal")
+
+    def test_event(self):
+        """
+        test for events
+        """
+
+        def trigged_event(event_name, root, me):  # pylint: disable=unused-argument
+            self.event_name = event_name
+
+        a = List(String(on=[("event1", trigged_event), ("event2", trigged_event)]))
+        a.set(["Ford", "BMW", "Volvo"])
+        self.event_name = None
+        self.assertEqual(a[0].get_root(), a)
+        self.assertEqual(a[1].get_root(), a)
+
+        a.trigg("event1", id(a))
+        self.assertEqual(self.event_name, "event1")
+        self.event_name = None
+        a.trigg("event1")
+        self.assertEqual(self.event_name, "event1")
+        self.event_name = None
+        a.trigg("event2", id(a))
+        self.assertEqual(self.event_name, "event2")
+        self.event_name = None
+        a.trigg("event2")
+        self.assertEqual(self.event_name, "event2")

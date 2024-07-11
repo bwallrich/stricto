@@ -13,6 +13,14 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
     test for Dict()
     """
 
+    def __init__(self, *args, **kwargs):
+        """
+        init this tests
+        """
+        super().__init__(*args, **kwargs)
+
+        self.event_name = None
+
     def test_simple_type(self):
         """
         Test type error
@@ -179,7 +187,12 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test equality
         """
-        a = Dict({"b": Int(), "c": Int()})
+        a = Dict({"b": Int(), "c": Int(), "not": Int(exists=False)})
+        self.assertNotEqual(a, None)
+        self.assertEqual(a == None, False)  # pylint: disable=singleton-comparison
+        self.assertNotEqual(a, None)
+        self.assertEqual(a == List(Int()), False)
+        self.assertNotEqual(a, Int())
         a.set({"b": 1, "c": 2})
         b = a.copy()
         self.assertEqual(a, b)
@@ -187,10 +200,33 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a != b, False)
         b.b = 22
         self.assertNotEqual(a, b)
+        self.assertEqual(a == b, False)
         b = Dict({"b": Int(), "d": Int()})
         b.set({"b": 1, "d": 2})
         self.assertNotEqual(a, b)
         self.assertEqual(a != b, True)
+        self.assertEqual(a == b, False)
+
+        b = Dict({"b": Int(), "c": Int(), "not": Int(exists=True)})
+        b.set({"b": 1, "c": 2})
+        self.assertEqual(a != b, True)
+        self.assertEqual(a == b, False)
+
+        a = Dict({"b": Int(), "c": Int(), "d": List(Dict({"i": Int()}))})
+        self.assertEqual(a, a)
+        self.assertEqual(a.b.get_root(), a)
+        a.set({"b": 1, "c": 2})
+        self.assertEqual(a.get_root(), a)
+        self.assertEqual(a, a)
+        b = a.copy()
+        self.assertEqual(a, b)
+        self.assertEqual(b, b)
+        a.c = 3
+        self.assertNotEqual(a, b)
+        b.c = 3
+        self.assertEqual(a, b)
+        b = Dict({"b": Int(), "d": List(Dict({"i": Int()}))})
+        self.assertNotEqual(a, b)
 
     def test_copy_type(self):
         """
@@ -295,6 +331,15 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(RecursionError) as e:
             a.set({"b": 2})
         self.assertRegex(e.exception.args[0], "maximum recursion depth exceeded")
+
+    def test_not_exist_stupid(self):
+        """
+        test not exist stupid case
+        """
+        a = Int(exists=False)
+        with self.assertRaises(Error) as e:
+            a.set(2)
+        self.assertEqual(e.exception.message, "locked")
 
     def test_not_exist(self):
         """
@@ -405,12 +450,14 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
 
         def trigged_load(event_name, root, me):
+            self.event_name = event_name
             self.assertEqual(event_name, "load")
             self.assertEqual(root.a, 2)
             self.assertEqual(root.b, 3)
             self.assertEqual(me, a.c)
 
         def trigged_bb(event_name, root, me):
+            self.event_name = event_name
             self.assertEqual(event_name, "bb")
             self.assertEqual(root.a, 2)
             self.assertEqual(root.b, 3)
@@ -424,10 +471,23 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             }
         )
         a.set({"a": 2})
+        self.event_name = None
         a.trigg("load", id(a))
+        self.assertEqual(self.event_name, "load")
+        self.event_name = None
         a.trigg("load")
+        self.assertEqual(self.event_name, "load")
+        self.event_name = None
         a.trigg("bb", id(a))
+        self.assertEqual(self.event_name, "bb")
+        self.event_name = None
         a.trigg("bb")
+        self.assertEqual(self.event_name, "bb")
+
+        # Must not work (not root)
+        self.event_name = None
+        a.b.trigg("bb", id(a.b))
+        self.assertEqual(self.event_name, None)
 
     def test_bad_event(self):
         """
@@ -487,7 +547,14 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Dict(
             {
                 "a": Int(default=1),
-                "b": Dict({"l": List(Dict({"i": String()}))}),
+                "not": Int(default=1, exists=False),
+                "b": Dict(
+                    {
+                        "l": List(Dict({"i": String()})),
+                        "t": Tuple((Int(), String())),
+                        "tt": Tuple((Int(), Dict({"i": String()}))),
+                    }
+                ),
             }
         )
         a.set(
@@ -501,7 +568,39 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 },
             }
         )
+        self.assertEqual(a, a)
+        self.assertEqual(a.b.select("$.a"), 12)
+        self.assertEqual(a.a.select("$[ttt].a[tt]"), 12)
         self.assertEqual(a.select("$.a"), 12)
+        self.assertEqual(a.select("$.a[blabla]"), 12)
+        self.assertEqual(a.select("$.not"), None)
+        self.assertEqual(a.select("$[blabla].a"), 12)
+        self.assertEqual(a.select("@.a"), 12)
+        self.assertEqual(a.select("$.a.$.a"), 12)
+        self.assertEqual(a.select("$.a.@"), 12)
+        self.assertEqual(a.select("$"), a)
         self.assertEqual(a.select("$.f.d"), None)
+        self.assertEqual(type(a.select("$.b.l")), List)
         self.assertEqual(a.select("$.b.l[0].i"), "fir")
+        self.assertEqual(a.select("$.b.l[20].i"), None)
+        self.assertEqual(a.select("$.b.l[coucou].i"), None)
         self.assertEqual(a.select("$.*.l.i"), ["fir", "sec"])
+        self.assertEqual(a.select("$.*.t[0]"), None)
+        self.assertEqual(a.select("$.b.t[vla]"), None)
+        self.assertEqual(a.select("$.b.t"), None)
+        a.set(
+            {
+                "a": 12,
+                "b": {"l": None, "t": (12, "aa"), "tt": (22, {"i": "bb"})},
+            }
+        )
+
+        self.assertEqual(a.select("$.b.l"), None)
+        self.assertEqual(a.select("$.b.l[0].i"), None)
+        self.assertEqual(a.select("$.*.l.i"), None)
+        self.assertEqual(a.select("$.*.t[0]"), 12)
+        self.assertEqual(a.select("$.*.t[1]"), "aa")
+        self.assertEqual(a.select("$.*.t[22]"), None)
+        self.assertEqual(type(a.select("$.b.t")), Tuple)
+        self.assertEqual(a.select("$.b.tt[1].i"), "bb")
+        self.assertEqual(a.select("$.b.tt.i"), ("bb",))

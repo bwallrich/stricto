@@ -28,6 +28,25 @@ class TestTuple(unittest.TestCase):
         self.assertEqual(type(a[1]), Int)
         self.assertEqual(repr(a), "(True, 22)")
 
+    def test_equality(self):
+        """
+        Test equality()
+        """
+        a = Tuple((Bool(), Int()))
+        self.assertEqual(a, a)
+        self.assertEqual(a.get_root(), a)
+        a.set((True, 22))
+        self.assertEqual(a[0].get_root(), a)
+        self.assertEqual(a, a)
+        b = a.copy()
+        self.assertEqual(a, b)
+        self.assertEqual(b, b)
+        a.set((True, 23))
+        self.assertNotEqual(a, b)
+        a.set((True, 22))
+        self.assertEqual(a, b)
+        self.assertNotEqual(a, b[0])
+
     def test_list_to_type(self):
         """
         Test list to tuple

@@ -88,13 +88,11 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         a = auto_set(root)
         self.set(a)
 
-    def trigg(self, event_name, from_id=None):
+    def trigg(self, event_name, from_id):
         """
         trig an event
         from_id is an id to avoid the event to call itself
         """
-        if from_id is None:
-            from_id = id(self)
 
         if self._events is None:
             return
@@ -169,14 +167,23 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         get with selector as lists
         """
         # A sub object behing a generic ? -> No
-        if selectors_as_list:
-            return None
+        if not selectors_as_list:
+            return self
+
+        (sel, sub_sel_filter) = selectors_as_list[0]
+        # apply selector to me
+        if sel == "$":
+            selectors_as_list.pop(0)
+            return self.get_root().get_selectors(sub_sel_filter, selectors_as_list)
+        if sel == "@":
+            selectors_as_list.pop(0)
+            return self.get_selectors(sub_sel_filter, selectors_as_list)
 
         if sel_filter:
-            # Not yet implemented
+            # Not yet implemented
             sel_filter = None
 
-        return self
+        return None
 
     def select(self, selectors):
         """
@@ -191,9 +198,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
                 continue
             a.append((match.group(1), match.group(2)))
 
-        print(f"select {a}")
-        (sel, sel_filter) = a.pop(0)
-        return self.get_selectors(sel_filter, a)
+        # sel, sel_filter) = a.pop(0)
+        return self.get_selectors(None, a)
 
     def get_other_value(self, other):
         """
@@ -378,7 +384,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
 
         corrected_value = (
             value.get_value()
-            if type(value) == type(self) # pylint: disable=unidiomatic-typecheck
+            if type(value) == type(self)  # pylint: disable=unidiomatic-typecheck
             else value
         )
         if callable(self._transform):

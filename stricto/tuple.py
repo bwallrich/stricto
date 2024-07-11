@@ -34,9 +34,11 @@ class Tuple(GenericType):
         """
         get with selector in tuple
         """
-        print(f"tuple get_selector {sel_filter} + {selectors_as_list}")
 
         if sel_filter is None:
+            if not selectors_as_list:
+                return self
+
             list_of_result = []
             for v in self._value:
                 result = v.get_selectors(None, selectors_as_list.copy())

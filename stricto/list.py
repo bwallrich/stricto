@@ -31,13 +31,42 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             return 0
         return self._value.__len__()
 
+    def __eq__(self, other):
+        """
+        equality test two Lists
+        """
+        if other is None:
+            return self._value is None
+
+        if isinstance(other, List) is False:
+            return False
+
+        if self._value != other._value:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        """
+        equality test two Lists
+        """
+        if other is None:
+            return self._value is not None
+
+        if isinstance(other, List) is False:
+            return True
+
+        if self._value == other._value:
+            return False
+        return True
+
     def reset_attribute_name(self):
         """
         the list is reordonned (added, supression, ...)
         the attribute name must be reset
         """
-        if not isinstance(self._value, list):
-            return
+        # if self._value is None:
+        #     return
 
         i = 0
         for item in self._value:
@@ -72,9 +101,13 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         """
         get with selector as lists
         """
-        print(f"list get_selector {sel_filter} + {selectors_as_list}")
+
+        if self._value is None:
+            return None
 
         if sel_filter is None:
+            if not selectors_as_list:
+                return self
             a = []
             for v in self._value:
                 result = v.get_selectors(None, selectors_as_list.copy())
@@ -83,8 +116,6 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             return a
 
         if re.match("^-*[0-9]+$", sel_filter):
-            if self._value is None:
-                return None
             try:
                 v = self._value[int(sel_filter)]
             except IndexError:

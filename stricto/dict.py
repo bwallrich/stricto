@@ -183,15 +183,23 @@ class Dict(GenericType):
         """
         equality test two objects
         """
-        if isinstance(other, GenericType) is False:
+        if other is None:
+            return False
+
+        if isinstance(other, Dict) is False:
             return False
 
         if self._keys != other._keys:
             return False
 
         for key in self._keys:
-            a = getattr(self, key)
-            o = getattr(other, key)
+            a = self.__dict__[key]
+            o = other.__dict__[key]
+            exists = a.exists()
+            if exists != o.exists():
+                return False
+            if exists is False:
+                continue
             if a != o:
                 return False
         return True
@@ -200,15 +208,23 @@ class Dict(GenericType):
         """
         equality test two objects
         """
-        if isinstance(other, GenericType) is False:
+        if other is None:
+            return True
+
+        if isinstance(other, Dict) is False:
             return True
 
         if self._keys != other._keys:
             return True
 
         for key in self._keys:
-            a = getattr(self, key)
-            o = getattr(other, key)
+            a = self.__dict__[key]
+            o = other.__dict__[key]
+            exists = a.exists()
+            if exists != o.exists():
+                return True
+            if exists is False:
+                continue
             if a != o:
                 return True
         return False
@@ -234,7 +250,9 @@ class Dict(GenericType):
             return None
         return v
 
-    def get_selectors(self, sel_filter, selectors_as_list): # pylint: disable=too-many-return-statements
+    def get_selectors(
+        self, sel_filter, selectors_as_list
+    ):  # pylint: disable=too-many-return-statements
         """
         get with selector as lists
         selectors_as_list is a list of tuples like
@@ -242,14 +260,14 @@ class Dict(GenericType):
         ( "toto", None ) -> toto
         """
         if sel_filter:
-            # Not yet implemented
+            # Not yet implemented
             sel_filter = None
 
         if not selectors_as_list:
             return self
 
         # The sel_filter is actually ignored.
-
+        # print(f"dict getselector '{sel_filter}' -> '{selectors_as_list}' {self}")
         (sel, sub_sel_filter) = selectors_as_list.pop(0)
         # apply selector to me
         if sel == "$":
@@ -259,9 +277,9 @@ class Dict(GenericType):
 
         if sel in self._keys:
             v = self.__dict__[sel]
-            if v.exists() is False:
-                return None
-            return v.get_selectors(sub_sel_filter, selectors_as_list)
+            if v.exists():
+                return v.get_selectors(sub_sel_filter, selectors_as_list)
+            return None
 
         # Selecing all
         if sel in ("", "*"):
@@ -274,7 +292,7 @@ class Dict(GenericType):
                         a.append(result)
             if not a:
                 return None
-            return a[0] if len(a)==1 else a
+            return a[0] if len(a) == 1 else a
 
         return None
 
