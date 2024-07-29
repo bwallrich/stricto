@@ -456,12 +456,14 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             self.assertEqual(root.b, 3)
             self.assertEqual(me, a.c)
 
-        def trigged_bb(event_name, root, me):
+        def trigged_bb(event_name, root, me, **kwargs):
             self.event_name = event_name
             self.assertEqual(event_name, "bb")
             self.assertEqual(root.a, 2)
             self.assertEqual(root.b, 3)
             self.assertEqual(me, a.c)
+            p = kwargs.pop("param_test", None)
+            self.assertEqual(p, 12)
 
         a = Dict(
             {
@@ -477,11 +479,10 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.event_name = None
         a.trigg("load")
         self.assertEqual(self.event_name, "load")
+
+        # An event with parameters
         self.event_name = None
-        a.trigg("bb", id(a))
-        self.assertEqual(self.event_name, "bb")
-        self.event_name = None
-        a.trigg("bb")
+        a.trigg("bb", id(a), param_test=12)
         self.assertEqual(self.event_name, "bb")
 
         # Must not work (not root)
@@ -604,3 +605,40 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(type(a.select("$.b.t")), Tuple)
         self.assertEqual(a.select("$.b.tt[1].i"), "bb")
         self.assertEqual(a.select("$.b.tt.i"), ("bb",))
+
+    def test_re_set(self):
+        """
+        Test re for a Dict
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "b": Dict({"l": List(Dict({"i": String()}))}),
+                "c": Tuple((Int(), String())),
+            }
+        )
+        a.set(
+            {
+                "a": 12,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ]
+                },
+                "c": (22, "h"),
+            }
+        )
+        a.set(
+            {
+                "a": 23,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                        {"i": "tre"},
+                    ]
+                },
+                "c": (23, "hh"),
+            }
+        )

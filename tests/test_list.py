@@ -274,6 +274,32 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(len(b), 4)
         self.assertEqual(type(b), List)
 
+    def test_in(self):
+        """
+        Test in
+        """
+        a = List(String())
+        a.set(["Ford", "BMW", "Volvo"])
+        b = String()
+        b.set("BMW")
+        self.assertEqual(b in a, True)
+        self.assertEqual("Volvo" in a, True)
+        self.assertEqual("Dacia" in a, False)
+        b.set("Jeep")
+        self.assertEqual(b in a, False)
+
+    def test_index(self):
+        """
+        Test index
+        """
+        a = List(String())
+        a.set(["Ford", "BMW", "Volvo"])
+        b = String()
+        b.set("BMW")
+        self.assertEqual(a.index(b), 1)
+        a.remove(b)
+        self.assertEqual(len(a), 2)
+
     def test_ref(self):
         """
         Test ref on list

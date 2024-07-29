@@ -88,7 +88,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         a = auto_set(root)
         self.set(a)
 
-    def trigg(self, event_name, from_id):
+    def trigg(self, event_name, from_id, **kwargs):
         """
         trig an event
         from_id is an id to avoid the event to call itself
@@ -101,7 +101,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         if event_name not in self._events:
             return
         for func in self._events[event_name]:
-            func(event_name, self.get_root(), self)
+            func(event_name, self.get_root(), self, **kwargs)
 
     def get_root(self):
         """

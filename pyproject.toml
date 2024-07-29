@@ -15,7 +15,7 @@ classifiers = [
 ]
 
 [project.urls]
-GitHub = "https://github.com/NiziL/esnpy"
+GitHub = "https://github.com/bwallrich/stricto"
 Homepage = "https://github.com/bwallrich/stricto"
 Issues = "https://github.com/bwallrich/stricto/issues"
 

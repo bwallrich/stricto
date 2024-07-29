@@ -57,7 +57,7 @@ class Tuple(GenericType):
 
         return None
 
-    def trigg(self, event_name, from_id=None):
+    def trigg(self, event_name, from_id=None, **kwargs):
         """
         trigg an event
         """
@@ -66,9 +66,9 @@ class Tuple(GenericType):
 
         if self._schema is not None:
             for element_schema in self._schema:
-                element_schema.trigg(event_name, from_id)
+                element_schema.trigg(event_name, from_id, **kwargs)
 
-        GenericType.trigg(self, event_name, from_id)
+        GenericType.trigg(self, event_name, from_id, **kwargs)
 
     def get_value(self):
         """

@@ -73,7 +73,7 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             item.attribute_name = f"[{i}]"
             i = i + 1
 
-    def trigg(self, event_name, from_id=None):
+    def trigg(self, event_name, from_id=None, **kwargs):
         """
         trigg an event
         """
@@ -82,9 +82,9 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
 
         if self._value is not None:
             for item in self._value:
-                item.trigg(event_name, from_id)
+                item.trigg(event_name, from_id, **kwargs)
 
-        GenericType.trigg(self, event_name, from_id)
+        GenericType.trigg(self, event_name, from_id, **kwargs)
 
     def __repr__(self):
         if self._value is None:

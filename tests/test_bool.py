@@ -61,3 +61,11 @@ class TestBool(unittest.TestCase):
         a.set(not a)
         self.assertNotEqual(a, True)
         self.assertEqual(a, False)
+
+    def test_re_set(self):
+        """
+        Test re for a boolean
+        """
+        a = Bool()
+        a.set(True)
+        a.set(False)

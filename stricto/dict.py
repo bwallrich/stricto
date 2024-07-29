@@ -154,7 +154,7 @@ class Dict(GenericType):
         result._locked = True
         return result
 
-    def trigg(self, event_name, from_id=None):
+    def trigg(self, event_name, from_id=None, **kwargs):
         """
         trigg an event
         """
@@ -166,9 +166,9 @@ class Dict(GenericType):
                 v = object.__getattribute__(self, key)
                 if v.exists() is False:
                     continue
-                v.trigg(event_name, from_id)
+                v.trigg(event_name, from_id, **kwargs)
 
-        GenericType.trigg(self, event_name, from_id)
+        GenericType.trigg(self, event_name, from_id, **kwargs)
 
     def __repr__(self):
         a = {}
