@@ -20,6 +20,14 @@ class String(GenericType):
         self._regexps = regexp if isinstance(regexp, list) else [regexp]
         GenericType.__init__(self, **kwargs)
 
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_schema(self)
+        a["regexp"] = self.get_as_string(self._regexps)
+        return a
+
     def __len__(self):
         return self._value.__len__()
 

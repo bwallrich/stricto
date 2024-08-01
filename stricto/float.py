@@ -20,6 +20,15 @@ class Float(GenericType):
         self._min = kwargs.pop("min", kwargs.pop("minimum", None))
         self._max = kwargs.pop("max", kwargs.pop("maximum", None))
 
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_schema(self)
+        a["min"] = self.get_as_string(self._min)
+        a["max"] = self.get_as_string(self._max)
+        return a
+
     def check_type(self, value):
         if isinstance(value, (float, Float)):
             return True

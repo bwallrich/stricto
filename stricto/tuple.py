@@ -30,6 +30,16 @@ class Tuple(GenericType):
 
         self._locked = True
 
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_schema(self)
+        a["sub_scheme"] = []
+        for schema in self._schema:
+            a["sub_scheme"].append(schema.get_schema())
+        return a
+
     def get_selectors(self, sel_filter, selectors_as_list):
         """
         get with selector in tuple

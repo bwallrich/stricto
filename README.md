@@ -527,6 +527,39 @@ user.dice2 # -> A number 1-6
 
 ```
 
+## Schemas
+
+You can extract a schema as a ```dict```
+Example :
+
+```python
+import stricto
+
+def check_pair():
+    pass
+
+a = Dict(
+    {
+        "b": List(String()),
+        "c": In([String(), Int( constraint=check_pair )]),
+        "d": Tuple([String(require=True), Bool()]),
+    }
+)
+b = Dict(
+    {
+        "b": List(String()),
+        "c": In([String(), Int( constraints=[check_pair])]),
+        "d": Tuple([String(), Bool()]),
+    }
+)
+
+a.get_schema() == b.get_schema() # False, a.d and b.d differs.
+```
+
+
+
+
+
 ## Tests & co
 
 ```bash

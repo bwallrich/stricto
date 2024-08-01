@@ -4,10 +4,11 @@ This class must not be used directly
 """
 import copy
 import re
+import inspect
 from .error import Error, ErrorType
 
 
-class GenericType:  # pylint: disable=too-many-instance-attributes
+class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """
     A generic type (class for int, string, etc)
     """
@@ -29,7 +30,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
         self._value = None
         self._old_value = None
         self._transform = None
-        self._descrition = kwargs.pop("description", None)
+        self._description = kwargs.pop("description", None)
         self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
         self._union = kwargs.pop("union", kwargs.pop("in", None))
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
@@ -79,6 +80,39 @@ class GenericType:  # pylint: disable=too-many-instance-attributes
             self._events["change"].append(
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
+
+    def get_as_string(self, value):
+        """
+        Return the value as a string
+        (used to build the schema structure (see self.schema()))
+        """
+        if isinstance(value, list):
+            a = []
+            for i in value:
+                a.append(self.get_as_string(i))
+            return f"[{', '.join(a)}]"
+        if callable(value):
+            return inspect.getsource(value)
+        return str(value)
+
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = {
+            "type": str(type(self)),
+            "decription": self.get_as_string(self._description),
+            "required": self.get_as_string(self._not_none),
+            "in": self.get_as_string(self._union),
+            "constraints": self.get_as_string(self._constraints),
+            "default": self.get_as_string(self._default),
+            "transform": self.get_as_string(self._transform),
+            "can_read": self.get_as_string(self._params["read"]),
+            "can_modify": self.get_as_string(self._params["modify"]),
+            "exists": self.get_as_string(self._exists)
+            # must add events and change functions
+        }
+        return a
 
     def change_trigg_wrap(self, root, auto_set):
         """

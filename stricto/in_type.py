@@ -16,6 +16,16 @@ class In(GenericType):
         self._models = models
         GenericType.__init__(self, **kwargs)
 
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_schema(self)
+        a["sub_scheme"] = []
+        for schema in self._models:
+            a["sub_scheme"].append(schema.get_schema())
+        return a
+
     def check(self, value):
         """
         check if complain to model or return a error string

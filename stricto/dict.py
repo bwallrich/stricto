@@ -47,6 +47,17 @@ class Dict(GenericType):
         self._keys.remove(key)
         self.__dict__["_locked"] = True
 
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_schema(self)
+        a["sub_scheme"] = {}
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            a["sub_scheme"][key] = v.get_schema()
+        return a
+
     def keys(self):
         """
         return all keys
@@ -121,6 +132,7 @@ class Dict(GenericType):
         if k in d:
             if obj.exists() is False:
                 raise AttributeError(f"'Dict' object has no attribute '{k}'")
+
         return obj
 
     def __copy__(self):
@@ -128,6 +140,9 @@ class Dict(GenericType):
         result = cls.__new__(cls)
         result._keys = self._keys.copy()
 
+        result.__dict__["_description"] = self.__dict__["_description"]
+        result.__dict__["_not_none"] = self.__dict__["_not_none"]
+        result.__dict__["_default"] = self.__dict__["_default"]
         result.__dict__["_constraints"] = self.__dict__["_constraints"].copy()
         result.__dict__["_transform"] = self.__dict__["_transform"]
         result.__dict__["_union"] = self.__dict__["_union"]

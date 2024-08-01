@@ -23,6 +23,17 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         GenericType.__init__(self, **kwargs)
         self.json_path_separator = ""
 
+    def get_schema(self):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_schema(self)
+        a["min"] = self.get_as_string(self._min)
+        a["max"] = self.get_as_string(self._max)
+        a["uniq"] = self.get_as_string(self._uniq)
+        a["sub_schema"] = self._type.get_schema()
+        return a
+
     def __len__(self):
         """
         calld by len()
