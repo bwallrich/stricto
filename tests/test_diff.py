@@ -4,7 +4,7 @@ test for Bool()
 import unittest
 import hashlib
 import json
-from stricto import Int, Dict, Bool, Tuple, Float, In, List, String, Error
+from stricto import Int, Dict, Bool, Tuple, Float, In, List, String
 
 
 def check_pair(value, o):  # pylint: disable=unused-argument
