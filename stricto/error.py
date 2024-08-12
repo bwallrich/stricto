@@ -25,6 +25,7 @@ class ErrorType(Enum):
     LENGTH = auto()
     DUP = auto()
     READONLY = auto()
+    NOT_IN_VIEW = auto()
 
     def __repr__(self):
         return PREFIX + self.name

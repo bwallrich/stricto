@@ -1,11 +1,11 @@
 """Module providing the List() Class"""
-import copy
 import re
 from .generic import GenericType
+from .list_and_tuple import ListAndTuple
 from .error import Error, ErrorType
 
 
-class List(GenericType):  # pylint: disable=too-many-instance-attributes
+class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
     """
     A Dict Type
     """
@@ -20,8 +20,9 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
         self._max = kwargs.pop("max", None)
         self._uniq = kwargs.pop("uniq", None)
 
-        GenericType.__init__(self, **kwargs)
+        ListAndTuple.__init__(self, **kwargs)
         self.json_path_separator = ""
+        self._have_sub_objects = True
 
     def get_schema(self):
         """
@@ -134,22 +135,6 @@ class List(GenericType):  # pylint: disable=too-many-instance-attributes
             return v.get_selectors(None, selectors_as_list)
 
         return None
-
-    def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.__dict__.update(self.__dict__)
-        result._value = None
-        if isinstance(self._value, list):
-            result._value = []
-            for i in self._value:
-                result._value.append(i.copy())
-        return result
-
-    def copy(self):
-        return copy.copy(self)
-
-    # self.__copy__()
 
     def clear(self):
         """

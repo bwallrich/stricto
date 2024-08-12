@@ -11,3 +11,4 @@ from .test_string import TestString
 from .test_list import TestList
 from .test_tuple import TestTuple
 from .test_diff import TestDiff
+from .test_view import TestView

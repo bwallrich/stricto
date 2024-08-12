@@ -3,10 +3,11 @@ import copy
 import re
 from .generic import GenericType
 from .list import List
+from .list_and_tuple import ListAndTuple
 from .error import Error, ErrorType
 
 
-class Tuple(GenericType):
+class Tuple(ListAndTuple):
     """
     A Tuple Type
     """
@@ -14,8 +15,10 @@ class Tuple(GenericType):
     def __init__(self, schema: tuple, **kwargs):
         """ """
 
-        GenericType.__init__(self, **kwargs)
+        ListAndTuple.__init__(self, **kwargs)
+
         self.json_path_separator = ""
+        self._have_sub_objects = True
 
         self._schema = []
         i = 0
@@ -29,6 +32,7 @@ class Tuple(GenericType):
             i = i + 1
 
         self._locked = True
+
 
     def get_schema(self):
         """

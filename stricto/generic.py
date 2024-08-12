@@ -5,7 +5,29 @@ This class must not be used directly
 import copy
 import re
 import inspect
+from enum import Enum, auto
 from .error import Error, ErrorType
+
+
+PREFIX = "MODEL_"
+
+
+class ViewType(Enum):
+    """
+    Specifics Vues answers
+    """
+
+    YES = auto()  # Must see in the view
+    NO = auto()  # Must not see in the view
+    # search for an non explicit view ("view") but dont know if must see or not, must check further
+    # (= in sub objects)
+    UNKNOWN = auto()
+    # search for an explicit view ("+view") but dont know if must see or not, must check further
+    # (= in sub objects)
+    EXPLICIT_UNKNOWN = auto()
+
+    def __repr__(self):
+        return self.name
 
 
 class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-public-methods
@@ -25,12 +47,14 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._params = {"exists": True, "read": True, "modify": True}
         self.parent = None
         self._exists = True
+        self._have_sub_objects = False
         self.attribute_name = "$"
         self.json_path_separator = "."
         self._value = None
         self._old_value = None
         self._transform = None
         self._description = kwargs.pop("description", None)
+        self._views = kwargs.pop("views", [])
         self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
         self._union = kwargs.pop("union", kwargs.pop("in", None))
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
@@ -113,6 +137,58 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             # must add events and change functions
         }
         return a
+
+    def belongs_to_view(self, view_name):
+        """
+        check if this object belongs to a view
+        (according to self._views = [ "-view1", "-view2" ] say ok to all views except thoses )
+        ( if view is like "+view3" must match explicitely
+        self._views = [ "view3" , ...] for example)
+        return True or False or None
+        True : Must be in
+        False : Must not be in the view
+        None : I dont know, must continue.
+        """
+        if view_name is None:
+            return ViewType.YES
+
+        # Explicite "+blabla"
+        match = re.match(r"^\+(.*)\s*$", view_name)
+        if match:
+            # return match.group(1) in self._views
+            if match.group(1) in self._views:
+                return ViewType.YES
+            if f"!{match.group(1)}" in self._views:
+                return ViewType.NO
+            return ViewType.EXPLICIT_UNKNOWN
+
+        # if "!view"
+        if f"!{view_name}" in self._views:
+            return ViewType.NO
+
+        return ViewType.UNKNOWN
+
+    def get_view(self, view_name, final=True):
+        """
+        Return all elements belonging to view_name
+        tue return is a subset of this Dict
+        """
+        my_view = self.belongs_to_view(view_name)
+
+        # print(f"{self.path_name()} -> {my_view}")
+
+        if my_view is ViewType.YES:
+            return (ViewType.YES, self.copy()) if final is False else self.copy()
+
+        if my_view is ViewType.UNKNOWN:
+            return (ViewType.YES, self.copy()) if final is False else self.copy()
+
+        if my_view is ViewType.NO:
+            return (ViewType.NO, None) if final is False else None
+
+
+        # my_view is ViewType.EXPLICIT_UNKNOWN:
+        return (ViewType.NO, None) if final is False else None
 
     def change_trigg_wrap(self, root, auto_set):
         """

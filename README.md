@@ -185,6 +185,7 @@ available options for all types ares :
 | ```can_read=func``` | True | a function to say if the object can be read. see  [can_read](#can_read) for details |
 | ```can_modify=func``` | True | a function to say if the object can be modified (read only value). see  [can_modify](#can_modify) for details |
 | ```on=(event_name, function)``` | None | trigged to an event. see  [events](#events) for details |
+| ```views=[ "view1", "!view2" ]``` | [] | Say if this element belong to a view. see  [views](#views) for details |
 
 See [functions](#functions) for mor details and examples how to use them.
 
@@ -526,6 +527,65 @@ user.dice1 # -> A number 1-6
 user.dice2 # -> A number 1-6
 
 ```
+
+## Views
+
+```Views```permits "extraction" of a sub objects.
+
+You can specify in views :
+
+* Belong *explicitely* to a view with ```views=[ "my_view" ]```
+* Belong *explicitely* not to be in a view with ```views=[ "!my_view" ]```
+
+You can specify in ```get_view()``` :
+
+* an view with all fields excepts those explixitely marked with a "!"with ```get_view("my_view")```
+* an explicite view (only those explicitely marked in view) with ```get_view("+my_view")```
+
+
+
+For example
+```python
+from stricto import Dict, Int, String
+
+# ISO 3166 country reference
+country=Dict({
+    "name" : String( view=[ "short" ] ),
+    "a2" : String( view=[ "short" ] ),
+    "a3" : String(),
+    "num" : String(),
+    "flag_url" : String( set=lambda o: f"https://flagcdn.com/256x192/{o.a2}.png", view=["!save", "short" ] ),
+})
+
+country.set({ "name" : "Ukraine", "a2" : "UA", a3 : "UKR", "num" : "804" })
+
+# Whant only fields explicitely in view "short"
+v = country.get_view("+short")
+# type(v) is a Dict
+# v = { "name" : "Ukraine", "a2" : "UA", "flag_url" : "https://flagcdn.com/256x192/UA.png" }
+
+# Whant all fields excepts those with "!short". so all
+l = country.get_view("short")
+# l == country
+
+s = country.get_view("save")
+# type(s) is a Dict
+# s = { "name" : "Ukraine", "a2" : "UA", a3 : "UKR", "num" : "804" }
+l = country.get_view("+save")
+# l == None
+
+l = country.get_view("blabla")
+# l == country
+l = country.get_view("+blabla")
+# l == None
+
+
+
+
+```
+
+
+
 
 ## Schemas
 

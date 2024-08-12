@@ -1,6 +1,6 @@
 """Module providing the Dict() Class"""
 import copy
-from .generic import GenericType
+from .generic import GenericType, ViewType
 from .error import Error, ErrorType
 
 
@@ -24,6 +24,7 @@ class Dict(GenericType):
             self._keys.append(key)
 
         GenericType.__init__(self, **kwargs)
+        self._have_sub_objects = True
         self._locked = True
 
     def add_to_model(self, key, model):
@@ -63,6 +64,49 @@ class Dict(GenericType):
         return all keys
         """
         return self._keys
+
+    def get_view(self, view_name, final=True):
+        """
+        Return all elements belonging to view_name
+        tue return is a subset of this Dict
+        """
+        my_view = self.belongs_to_view(view_name)
+
+        if my_view is ViewType.YES:
+            return (ViewType.YES, self.copy()) if final is False else self.copy()
+
+        if my_view is ViewType.NO:
+            return (ViewType.NO, None) if final is False else None
+
+        r = self.copy()
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            if v.exists() is False:
+                r.remove_model(key)
+                continue
+
+            s = v.get_view(view_name, False)
+
+            if s[0] is ViewType.YES:
+                object.__setattr__(r, key, s[1])
+                continue
+
+            if s[0] is ViewType.NO:
+                r.remove_model(key)
+                continue
+
+        if my_view is ViewType.EXPLICIT_UNKNOWN:
+            if len(r) == 0:
+                return (ViewType.NO, None) if final is False else None
+            return (ViewType.YES, r) if final is False else r
+
+        # my_view is ViewType.UNKNOWN:
+        if len(r) == 0:
+            return (ViewType.NO, None) if final is False else None
+        return (ViewType.YES, r) if final is False else r
+
+    def __len__(self):
+        return len(self._keys)
 
     def __getitem__(self, k):
         if k in self._keys:
@@ -106,9 +150,6 @@ class Dict(GenericType):
             raise Error(ErrorType.NOTALIST, "locked", f"{k}")
         self.__dict__[k] = value
 
-    def copy(self):
-        return copy.copy(self)
-
     def __getattr__(self, k):
         """ """
         return self.__getattribute__(k)
@@ -138,29 +179,20 @@ class Dict(GenericType):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result._keys = self._keys.copy()
-
-        result.__dict__["_description"] = self.__dict__["_description"]
-        result.__dict__["_not_none"] = self.__dict__["_not_none"]
-        result.__dict__["_default"] = self.__dict__["_default"]
-        result.__dict__["_constraints"] = self.__dict__["_constraints"].copy()
-        result.__dict__["_transform"] = self.__dict__["_transform"]
-        result.__dict__["_union"] = self.__dict__["_union"]
-        result.__dict__["parent"] = self.__dict__["parent"]
-        result.__dict__["json_path_separator"] = self.__dict__["json_path_separator"]
-        result.__dict__["attribute_name"] = self.__dict__["attribute_name"]
-        result.__dict__["_on_change"] = self.__dict__["_on_change"]
-        result.__dict__["_on"] = self.__dict__["_on"]
-        result.__dict__["_exists"] = self.__dict__["_exists"]
-        result.__dict__["_params"] = copy.copy(self.__dict__["_params"])
+        # result._keys = self._keys.copy()
+        result.__dict__["_locked"] = False
+        for key, v in self.__dict__.items():
+            if key == "_locked":
+                continue
+            if key == "parent":
+                continue
+            if key == "attribute_name":
+                continue
+            result.__dict__[key] = copy.copy(v)
 
         for key in self._keys:
-            result.__dict__[key] = self.__dict__[key].__copy__()
             result.__dict__[key].parent = result
             result.__dict__[key].attribute_name = key
-
-        # Events are copied
-        result.__dict__["_events"] = copy.copy(self.__dict__["_events"])
 
         # parent and attribute name are reseted
         result.parent = None

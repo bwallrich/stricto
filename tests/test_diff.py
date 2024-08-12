@@ -51,7 +51,7 @@ class TestDiff(unittest.TestCase):
         a = Dict(
             {
                 "b": List(String()),
-                "c": In([String(), Int( constraint=check_pair )]),
+                "c": In([String(), Int(constraint=check_pair)]),
                 "d": Tuple([String(require=True), Bool()]),
                 "f": f1,
             }
@@ -59,7 +59,7 @@ class TestDiff(unittest.TestCase):
         b = Dict(
             {
                 "b": List(String()),
-                "c": In([String(), Int( constraints=[check_pair])]),
+                "c": In([String(), Int(constraints=[check_pair])]),
                 "d": Tuple([String(require=True), Bool()]),
                 "f": f2,
             }
@@ -72,21 +72,15 @@ class TestDiff(unittest.TestCase):
         dhash2.update(encoded2)
         self.assertEqual(dhash1.hexdigest(), dhash2.hexdigest())
 
-
     def test_diff_simple(self):
         """
         Test a diff
         """
 
-        a = Dict(
-            {
-                "b": Int(),
-                "c": Int()
-            }
-        )
-        a.set({ "b" : 1, "c" : 2 })
+        a = Dict({"b": Int(), "c": Int()})
+        a.set({"b": 1, "c": 2})
         self.assertEqual(a.b, 1)
         self.assertEqual(a.c, 2)
-        a.set({ "b" : 12 })
+        a.set({"b": 12})
         self.assertEqual(a.b, 12)
         self.assertEqual(a.c, 2)

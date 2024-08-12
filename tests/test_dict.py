@@ -102,6 +102,13 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Dict({"b": Int(), "c": Int()})
         self.assertEqual(a.keys(), ["b", "c"])
 
+    def test_len(self):
+        """
+        test len
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        self.assertEqual(len(a), 2)
+
     def test_get_item(self):
         """
         test get item
