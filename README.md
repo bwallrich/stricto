@@ -1,7 +1,5 @@
 # stricto
 
-
-
 ![release](https://img.shields.io/github/v/release/bwallrich/stricto.svg?label=latest)
 
 
