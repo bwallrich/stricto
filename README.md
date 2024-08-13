@@ -724,3 +724,21 @@ coverage run -m unittest tests
 coverage html # report under htmlcov/index.html
 
 ```
+
+### Building a new release
+
+For personal use only
+
+```bash
+# Modify changelog
+# modify pyproject.toml
+git add -u
+git commit -am 'preparing 0.0.x'
+git push
+git tag -a 0.0.x -m '0.0.x'
+git push origin tag 0.0.x
+
+# publish a new relase in guthub interface, based on tag 
+```
+
+
