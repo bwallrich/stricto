@@ -285,6 +285,18 @@ class Dict(GenericType):
             a[key] = v.get_value()
         return a
 
+    def __json_encode__(self):
+        """
+        Called by the specific Encoder
+        """
+        a = {}
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            if v.exists() is False:
+                continue
+            a[key] = v
+        return a
+
     def get(self, key: str, default=None):
         """
         return the value of a key

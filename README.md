@@ -77,6 +77,7 @@ All basic class from python are implemented in ```stricto```.
 | list | List() |
 | dict | Dict() |
 | tuple | Tuple() |
+| bytes | Bytes() |
 | | In() |
 
 ```python
@@ -110,7 +111,7 @@ use ```.get_value()``` to extract a dict from a Dict and do the *json.dumps* lik
 
 ```python
 # example
-from stricto import Int, List, String, Dict, Error
+from stricto import Int, List, String, Dict, Error, StrictoEncoder
 import json
 
 model={
@@ -121,7 +122,7 @@ a=Dict(model)
 b=Dict(model)
 a.set({ "b" : 1, "e" : [ "aa", "bb"]})
 
-sa = json.dumps(a.get_value()) # json dumps 
+sa = json.dumps(a, cls=StrictoEncoder) # json dumps. Need to user StrictoEncoder for specific types (see extend)
 b.set( json.loads(sa) ) 
 b == a # return True
 ```
@@ -579,12 +580,7 @@ l = country.get_view("blabla")
 l = country.get_view("+blabla")
 # l == None
 
-
-
-
 ```
-
-
 
 
 ## Schemas
@@ -616,9 +612,98 @@ b = Dict(
 a.get_schema() == b.get_schema() # False, a.d and b.d differs.
 ```
 
+## extended types
+
+### Using Extend
+
+You can define your own *stricto compatible type* using ```Extend```.
+
+For that, you have to derivate your type from ```Extend```, and define methods for enconding and decoding the object.
+You can define the ```__repr__``` funtion too.
 
 
+Example with datetime :
 
+```python
+from datetime import datetime
+from stricto import Extend
+
+
+class Datetime(Extend):
+    """
+    A specific class to play with datetime
+    """
+
+    def __init__(self, **kwargs):
+        """
+        initialisation. Must pass the type (datetime) in args for Extend
+        """
+        super().__init__(datetime, **kwargs)
+
+    def __json_encode__(self):
+        """
+        Called by the specific Encoder
+        to encode datetime
+        """
+        return self.get_value().isoformat()
+
+    def __json_decode__(self, value):
+        """
+        Called by the specific Decoder
+        to decode a datetime
+        """
+        return self._type.fromisoformat(value)
+
+
+a=Datetime()
+a.set(datetime(2000, 1, 1))
+a.year # 2000 
+```
+
+### Using Dict
+
+You can define your own structure. An exemple with complex :
+
+```python
+from stricto import Dict, Float
+
+class Complex(Dict):
+    """
+    A specific class to play with Dict
+    """
+
+    def __init__(self, **kwargs):
+        """
+        initialisation. Must define the struct
+        """
+        super().__init__(
+            {
+            "real": Float(), 
+            "imag": Float()
+            },
+            **kwargs)
+
+    def __repr__(self):
+        return f"({self.real}+{self.imag}i)"
+
+    def __add__(self, other):
+        """
+        add two complex
+        """
+        if not isinstance(other, Complex):
+            raise TypeError("can only add Complex")
+
+        r = self.__copy__()
+        r.real = self.real + other.real
+        r.imag = self.imag + other.imag
+        return r
+
+a = Dict({"b": Complex(), "c": Int(default=0)})
+a.b.real = 12.0
+a.b.imag = 9.0
+self.assertEqual(repr(a.b), "(12.0+9.0i)")
+
+```
 
 ## Tests & co
 

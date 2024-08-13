@@ -25,8 +25,7 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
                 result._value.append(i.copy())
         return result
 
-
-    def get_view(self, view_name, final=True): # pylint: disable=protected-access
+    def get_view(self, view_name, final=True):  # pylint: disable=protected-access
         """
         Return all elements belonging to view_name
         tue return is a subset of this Dict
@@ -45,13 +44,13 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
-        result._value = [] # pylint: disable=protected-access
+        result._value = []  # pylint: disable=protected-access
         for v in self._value:
             if v.exists() is False:
                 continue
             s = v.get_view(view_name, False)
             if s[0] is ViewType.YES:
-                result._value.append(s[1]) # pylint: disable=protected-access
+                result._value.append(s[1])  # pylint: disable=protected-access
                 continue
             if s[0] is ViewType.NO:
                 continue

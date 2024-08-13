@@ -5,7 +5,7 @@ test for Dict()
 import unittest
 import json
 
-from stricto import String, Int, Dict, List, Bool, Error, Tuple
+from stricto import String, Int, Dict, List, Bool, Error, Tuple, StrictoEncoder
 
 
 class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -267,7 +267,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         b = Dict(model)
         a.set({"b": 1, "c": 2, "e": ["aa", "bb"]})
 
-        sa = json.dumps(a.get_value())
+        sa = json.dumps(a, cls=StrictoEncoder)
         b.set(json.loads(sa))
         self.assertEqual(b, a)
 

@@ -33,7 +33,6 @@ class Tuple(ListAndTuple):
 
         self._locked = True
 
-
     def get_schema(self):
         """
         Return a schema for this object

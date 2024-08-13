@@ -105,6 +105,18 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
 
+    def __json_encode__(self):
+        """
+        Called by the specific Encoder
+        """
+        return self.get_value()
+
+    def __json_decode__(self, value):
+        """
+        Called by the specific JSONDecoder
+        """
+        return value
+
     def get_as_string(self, value):
         """
         Return the value as a string
@@ -185,7 +197,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         if my_view is ViewType.NO:
             return (ViewType.NO, None) if final is False else None
-
 
         # my_view is ViewType.EXPLICIT_UNKNOWN:
         return (ViewType.NO, None) if final is False else None
@@ -497,6 +508,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             if type(value) == type(self)  # pylint: disable=unidiomatic-typecheck
             else value
         )
+
         if callable(self._transform):
             corrected_value = self._transform(corrected_value, root)
 
@@ -512,12 +524,16 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
         root = self.get_root()
+
         # transform the value before the check
         corrected_value = (
             value.get_value()
             if isinstance(value, GenericType)
             else value  # pylint: disable=unidiomatic-typecheck
         )
+
+        if isinstance(corrected_value, str):
+            corrected_value = self.__json_decode__(corrected_value)
 
         self._old_value = self._value
         self._value = self._default if corrected_value is None else corrected_value

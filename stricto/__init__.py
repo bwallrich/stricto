@@ -12,3 +12,8 @@ from .bool import Bool
 from .float import Float
 from .generic import GenericType, ViewType
 from .error import Error, ErrorType
+from .extend import Extend
+from .json_encoder import StrictoEncoder
+from .extended.bytes import Bytes
+from .extended.date_time import Datetime
+from .extended.complex import Complex
