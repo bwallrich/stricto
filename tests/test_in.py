@@ -1,6 +1,7 @@
 """
 test for In()
 """
+
 import unittest
 
 from stricto import In, String, Int, Error

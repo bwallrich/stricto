@@ -1,6 +1,7 @@
 """
 test for Float()
 """
+
 import unittest
 import math
 
@@ -77,7 +78,7 @@ class TestFloat(unittest.TestCase):
             self.assertEqual(c + d, 7)
             self.assertEqual(c - d, 3)
             self.assertEqual(c * d, 10)
-            self.assertEqual(c ** d, 25)
+            self.assertEqual(c**d, 25)
             self.assertEqual(c // d, 2)
             self.assertEqual(c / d, 2.5)
             self.assertEqual(c % d, 1)

@@ -1,6 +1,7 @@
 """
 test for views()
 """
+
 # pylint: disable=no-member
 import unittest
 
@@ -98,18 +99,18 @@ class TestView(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set({"b": [1], "c": [2], "d": [{}]})
 
         v3 = a.get_view("+v3")
-        self.assertEqual(v3.get_value(), {'b': [], 'c': [], 'd': [{'f': 'bb'}]})
+        self.assertEqual(v3.get_value(), {"b": [], "c": [], "d": [{"f": "bb"}]})
 
         v1 = a.get_view("v1")
-        self.assertEqual(v1.get_value(), {"b": [1], 'd': []})
+        self.assertEqual(v1.get_value(), {"b": [1], "d": []})
 
-        self.assertEqual(a.get_view("v2").get_value(), {'c': []})
+        self.assertEqual(a.get_view("v2").get_value(), {"c": []})
 
         all_object = a.get_view("chabadabada")
         self.assertEqual(all_object, a)
 
         empty_object = a.get_view("+chabadabada")
-        self.assertEqual(empty_object.get_value(), {'b': [], 'c': [], 'd': []})
+        self.assertEqual(empty_object.get_value(), {"b": [], "c": [], "d": []})
 
     def test_view_tuple(self):
         """

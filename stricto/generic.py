@@ -2,6 +2,7 @@
 Module providing the Generic() Class
 This class must not be used directly
 """
+
 import copy
 import re
 import inspect
@@ -145,7 +146,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             "transform": self.get_as_string(self._transform),
             "can_read": self.get_as_string(self._params["read"]),
             "can_modify": self.get_as_string(self._params["modify"]),
-            "exists": self.get_as_string(self._exists)
+            "exists": self.get_as_string(self._exists),
             # must add events and change functions
         }
         return a
@@ -452,28 +453,24 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         return self._value != self.get_other_value(other)
 
     def __lt__(self, other):
-
         """
         lt test two objects
         """
         return self._value < self.get_other_value(other)
 
     def __le__(self, other):
-
         """
         le test two objects
         """
         return self._value <= self.get_other_value(other)
 
     def __gt__(self, other):
-
         """
         gt test two objects
         """
         return self._value > self.get_other_value(other)
 
     def __ge__(self, other):
-
         """
         ge test two objects
         """

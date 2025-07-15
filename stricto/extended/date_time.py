@@ -1,6 +1,7 @@
 """
 Module for datetime
 """
+
 from datetime import datetime
 from stricto.extend import Extend
 

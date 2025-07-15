@@ -1,6 +1,7 @@
 """
 test for Int()
 """
+
 import unittest
 
 from stricto import Int, Error
@@ -132,7 +133,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
             self.assertEqual(a + b, 7)
             self.assertEqual(a - b, 3)
             self.assertEqual(a * b, 10)
-            self.assertEqual(a ** b, 25)
+            self.assertEqual(a**b, 25)
             self.assertEqual(a // b, 2)
             with self.assertRaises(Error) as e:
                 self.assertEqual(a / b, 2)

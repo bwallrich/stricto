@@ -1,4 +1,5 @@
 """Module providing the Dict() Class"""
+
 import copy
 from .generic import GenericType, ViewType
 from .error import Error, ErrorType

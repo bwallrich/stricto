@@ -1,4 +1,5 @@
 """Module providing the Tuple() Class"""
+
 import copy
 import re
 from .generic import GenericType
@@ -125,7 +126,6 @@ class Tuple(ListAndTuple):
         return t != self.get_other_value(other)
 
     def __lt__(self, other):
-
         """
         lt test two objects
         """
@@ -133,7 +133,6 @@ class Tuple(ListAndTuple):
         return t < self.get_other_value(other)
 
     def __le__(self, other):
-
         """
         le test two objects
         """
@@ -141,7 +140,6 @@ class Tuple(ListAndTuple):
         return t <= self.get_other_value(other)
 
     def __gt__(self, other):
-
         """
         gt test two objects
         """
@@ -149,7 +147,6 @@ class Tuple(ListAndTuple):
         return t > self.get_other_value(other)
 
     def __ge__(self, other):
-
         """
         ge test two objects
         """

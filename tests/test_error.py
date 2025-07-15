@@ -1,6 +1,7 @@
 """
 test for Errors()
 """
+
 import unittest
 
 from stricto import ErrorType, Error

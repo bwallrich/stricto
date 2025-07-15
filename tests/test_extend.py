@@ -1,6 +1,7 @@
 """
 test for views()
 """
+
 # pylint: disable=no-member
 import unittest
 import json
@@ -97,9 +98,9 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.imag = 9.0
         b.real = 12.0
         b.imag = 9.0
-        c = a+b
+        c = a + b
         self.assertEqual(isinstance(c, Complex), True)
         self.assertEqual(repr(c), "(24.0+18.0i)")
         with self.assertRaises(TypeError) as e:
-            c = a+12
+            c = a + 12
         self.assertEqual(e.exception.args[0], "can only add Complex")

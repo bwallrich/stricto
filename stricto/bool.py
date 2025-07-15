@@ -1,4 +1,5 @@
 """Module providing the Bool() Class"""
+
 from .generic import GenericType
 from .error import Error, ErrorType
 

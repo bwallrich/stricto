@@ -1,4 +1,5 @@
 """Module providing the Int() Class"""
+
 from .generic import GenericType
 from .error import Error, ErrorType
 

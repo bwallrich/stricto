@@ -1,6 +1,7 @@
 """
 test for String()
 """
+
 import unittest
 
 from stricto import String, Error

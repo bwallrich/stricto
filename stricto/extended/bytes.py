@@ -1,6 +1,7 @@
 """
 Module for bytes
 """
+
 import base64
 from stricto.extend import Extend
 

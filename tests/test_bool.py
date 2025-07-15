@@ -1,6 +1,7 @@
 """
 test for Bool()
 """
+
 import unittest
 
 from stricto import Bool, Error

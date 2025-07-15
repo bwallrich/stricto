@@ -2,6 +2,7 @@
 Module for complex
 (just for fun)
 """
+
 from stricto.dict import Dict
 from stricto.float import Float
 
@@ -18,12 +19,7 @@ class Complex(Dict):
         self.real = None
         self.imag = None
 
-        super().__init__(
-            {
-            "real": Float(), 
-            "imag": Float()
-            },
-            **kwargs)
+        super().__init__({"real": Float(), "imag": Float()}, **kwargs)
 
     def __repr__(self):
         return f"({self.real}+{self.imag}i)"

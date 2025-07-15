@@ -1,6 +1,7 @@
 """
 JSON Encoder for complex object
 """
+
 from json import JSONEncoder
 
 
@@ -21,4 +22,3 @@ class StrictoEncoder(JSONEncoder):
             return super().default(o)
 
         return encoder()
-        

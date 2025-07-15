@@ -1,4 +1,5 @@
 """Module providing Error management"""
+
 from enum import Enum, auto
 
 PREFIX = "MODEL_"

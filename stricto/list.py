@@ -1,4 +1,5 @@
 """Module providing the List() Class"""
+
 import re
 from .generic import GenericType
 from .list_and_tuple import ListAndTuple

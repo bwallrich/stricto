@@ -1,6 +1,7 @@
 """
 test for Bool()
 """
+
 import unittest
 import hashlib
 import json
