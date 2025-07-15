@@ -54,10 +54,10 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
                 continue
             if s[0] is ViewType.NO:
                 continue
-        if my_view is ViewType.EXPLICIT_UNKNOWN:
-            if len(result) == 0:
-                return (ViewType.NO, None) if final is False else None
-        if my_view is ViewType.UNKNOWN:
-            if len(result) == 0:
-                return (ViewType.NO, None) if final is False else None
+        # if my_view is ViewType.EXPLICIT_UNKNOWN:
+        #     if len(result) == 0:
+        #         return (ViewType.NO, None) if final is False else None
+        # if my_view is ViewType.UNKNOWN:
+        #     if len(result) == 0:
+        #        return (ViewType.NO, None) if final is False else None
         return (ViewType.YES, result) if final is False else result
