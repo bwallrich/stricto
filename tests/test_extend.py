@@ -29,10 +29,10 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Dict({"b": Datetime(), "c": Int(default=0)})
         with self.assertRaises(Error) as e:
             a.b = "dd"
-        self.assertEqual(e.exception.message, "Must be a <class 'datetime.datetime'>")
+        self.assertEqual(e.exception.message, "error json decode")
         with self.assertRaises(Error) as e:
             a.b = 23.45
-        self.assertEqual(e.exception.message, "Must be a <class 'datetime.datetime'>")
+        self.assertEqual(e.exception.message, "Must be a datetime")
         a.b = datetime(2000, 1, 1)
         self.assertEqual(a.b.year, 2000)
         self.assertEqual(a.b.day, 1)

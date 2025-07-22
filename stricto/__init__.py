@@ -18,3 +18,4 @@ from .json_encoder import StrictoEncoder
 from .extended.bytes import Bytes
 from .extended.date_time import Datetime
 from .extended.complex import Complex
+from .rights import Rights

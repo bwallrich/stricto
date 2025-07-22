@@ -47,7 +47,7 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
         result.__dict__.update(self.__dict__)
         result._value = []  # pylint: disable=protected-access
         for v in self._value:
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 continue
             s = v.get_view(view_name, False)
             if s[0] is ViewType.YES:

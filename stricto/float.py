@@ -37,7 +37,7 @@ class Float(GenericType):
 
     def check_constraints(self, value):
 
-        GenericType.check_constraints(self, value)
+        GenericType.check_constraints(self, value)  # pylint: disable=duplicate-code
 
         if self._min is not None and value < self._min:
             raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())

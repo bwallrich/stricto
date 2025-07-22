@@ -6,19 +6,6 @@ import unittest
 
 from stricto import Int, Error
 
-increment = 0  # pylint: disable=invalid-name
-
-
-def check_if_can_modify(value, root):  # pylint: disable=unused-argument
-    """
-    test
-    """
-    global increment  # pylint: disable=global-statement
-    increment += 1
-    if increment > 1:
-        return False
-    return True
-
 
 def pair_only(value, o):  # pylint: disable=unused-argument
     """
@@ -210,27 +197,3 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(self.on_change_bool, False)
         a.set(11)
         self.assertEqual(self.on_change_bool, True)
-
-    def test_read_only_error(self):
-        """
-        Test read only error
-        """
-        a = Int(default=10, can_modify=False)
-        with self.assertRaises(Error) as e:
-            a.set(11)
-        self.assertEqual(e.exception.message, "cannot modify value")
-        self.assertEqual(a, 10)
-        a.set(10)
-
-    def test_read_only_func(self):
-        """
-        Test read only with function
-        """
-        global increment  # pylint: disable=global-statement
-        increment = 0
-        a = Int(default=10, can_modify=check_if_can_modify)
-        a.set(12)
-        self.assertEqual(a, 12)
-        with self.assertRaises(Error) as e:
-            a.set(11)
-        self.assertEqual(e.exception.message, "cannot modify value")

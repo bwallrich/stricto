@@ -8,6 +8,7 @@ import re
 import inspect
 from enum import Enum, auto
 from .error import Error, ErrorType
+from .rights import Rights
 
 
 PREFIX = "MODEL_"
@@ -45,7 +46,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         notNone     : (boolean) must be required or not
 
         """
-        self._params = {"exists": True, "read": True, "modify": True}
+        self._rights = Rights()
         self.parent = None
         self._exists = True
         self._have_sub_objects = False
@@ -72,8 +73,16 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._transform = kwargs.pop("transform", None)
 
         # Set rights
-        self._params["read"] = kwargs.pop("can_read", True)
-        self._params["modify"] = kwargs.pop("can_modify", True)
+        if "can_read" not in kwargs:
+            kwargs["can_read"] = None
+
+        if "can_modify" not in kwargs:
+            kwargs["can_modify"] = None
+
+        for key, right in kwargs.items():
+            a = re.findall(r"^can_(.*)$", key)
+            if a:
+                self._rights.add_or_modify_right(a[0], right)
 
         # the  value is computed
         auto_set = kwargs.pop("set", kwargs.pop("compute", None))
@@ -99,12 +108,39 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # transform auto_set in events. adapt with a lambda function
         if auto_set is not None:
             # Cannot modify a value which is a result of a computation
-            # self._params["modify"] = False
             if "change" not in self._events:
                 self._events["change"] = []
             self._events["change"].append(
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
+
+    def has_right(self, right_name):
+        """
+        check the right "right_name"
+        """
+        rep = self._rights.has_right(right_name, self.get_root())
+        # --- the result is a bool. got it
+        if rep is not None:
+            return rep
+
+        # We are root. so None = True.
+        if self.parent is None:
+            return True
+
+        # We don-t know the right ( = None ). check the parent
+        return self.parent.has_right(right_name)
+
+    def can_read(self):
+        """
+        check right "read"
+        """
+        return self.has_right("read")
+
+    def can_modify(self):
+        """
+        check right "modify"
+        """
+        return self.has_right("modify")
 
     def __json_encode__(self):
         """
@@ -144,9 +180,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             "constraints": self.get_as_string(self._constraints),
             "default": self.get_as_string(self._default),
             "transform": self.get_as_string(self._transform),
-            "can_read": self.get_as_string(self._params["read"]),
-            "can_modify": self.get_as_string(self._params["modify"]),
             "exists": self.get_as_string(self._exists),
+            "rights": self._rights.get_as_dict_of_strings(),
             # must add events and change functions
         }
         return a
@@ -241,12 +276,24 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return True
         return False
 
-    def exists(self):
+    def exists_or_can_read(self):
+        """
+        check first if the object exists.
+        Then check if can be read.
+        return True otherwise False
+        """
+        if self.exists(None) is False:
+            return False
+        if self.has_right("read") is False:
+            return False
+        return True
+
+    def exists(self, value):
         """
         Return True if the object Exist, othewise False.
         exist can be a function to make this field dependant from the value of another
         """
-        response = self.get_args_or_execute_them(self._exists, None)
+        response = self.get_args_or_execute_them(self._exists, value)
         if response is False:
             return False
 
@@ -254,21 +301,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return True
 
         # return True
-        return self.parent.exists()
-
-    def can_read(self):
-        """
-        Return True if the object can be read.
-        can be a function to make this field dependant from the value of another
-        """
-        return self.get_args_or_execute_them(self._params["read"], None)
-
-    def can_modify(self):
-        """
-        Return True if the object can be modified.
-        can be a function to make this field dependant from the value of another
-        """
-        return self.get_args_or_execute_them(self._params["modify"], None)
+        return self.parent.exists(value)
 
     def path_name(self):
         """
@@ -495,7 +528,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         Fill with a value or raise an Error if not valid
         """
 
-        if self.exists() is False:
+        if self.exists_or_can_read() is False:
             raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
         root = self.get_root()
@@ -517,7 +550,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         return True if some changement, otherwise False
         """
 
-        if self.exists() is False:
+        if self.exists_or_can_read() is False:
             raise Error(ErrorType.NOTALIST, "locked", self.path_name())
 
         root = self.get_root()
@@ -530,7 +563,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         )
 
         if isinstance(corrected_value, str):
-            corrected_value = self.__json_decode__(corrected_value)
+            try:
+                corrected_value = self.__json_decode__(corrected_value)
+            except Exception:
+                raise Error(  # pylint: disable=raise-missing-from
+                    ErrorType.JSON, "error json decode", self.path_name()
+                )
 
         self._old_value = self._value
         self._value = self._default if corrected_value is None else corrected_value

@@ -1,4 +1,7 @@
-"""Module providing the Int() Class"""
+# pylint: disable=duplicate-code
+"""
+Module providing the Int() Class
+"""
 
 from .generic import GenericType
 from .error import Error, ErrorType
@@ -42,10 +45,8 @@ class Int(GenericType):
 
         GenericType.check_constraints(self, value)
 
-        if self._min is not None:
-            if value < self._min:
-                raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
-        if self._max is not None:
-            if value > self._max:
-                raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
+        if self._min is not None and value < self._min:
+            raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
+        if self._max is not None and value > self._max:
+            raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
         return True

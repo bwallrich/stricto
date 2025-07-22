@@ -14,3 +14,5 @@ from .test_tuple import TestTuple
 from .test_diff import TestDiff
 from .test_view import TestView
 from .test_extend import TestExtend
+from .test_rights import TestRights
+from .test_date import TestDate

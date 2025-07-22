@@ -82,7 +82,7 @@ class Dict(GenericType):
         r = self.copy()
         for key in self._keys:
             v = object.__getattribute__(self, key)
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 r.remove_model(key)
                 continue
 
@@ -112,7 +112,7 @@ class Dict(GenericType):
     def __getitem__(self, k):
         if k in self._keys:
             v = object.__getattribute__(self, k)
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 raise KeyError(k)
             return self.__dict__[k]
         return None
@@ -127,7 +127,7 @@ class Dict(GenericType):
 
         if k in _keys:
             v = object.__getattribute__(self, k)
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 raise AttributeError(f"'Dict' object has no attribute '{k}'")
 
             # a reference
@@ -172,7 +172,7 @@ class Dict(GenericType):
 
         obj = object.__getattribute__(self, k)
         if k in d:
-            if obj.exists() is False:
+            if obj.exists_or_can_read() is False:
                 raise AttributeError(f"'Dict' object has no attribute '{k}'")
 
         return obj
@@ -212,7 +212,7 @@ class Dict(GenericType):
         if self._keys is not None:
             for key in self._keys:
                 v = object.__getattribute__(self, key)
-                if v.exists() is False:
+                if v.exists_or_can_read() is False:
                     continue
                 v.trigg(event_name, from_id, **kwargs)
 
@@ -222,7 +222,7 @@ class Dict(GenericType):
         a = {}
         for key in self._keys:
             v = object.__getattribute__(self, key)
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 continue
             a[key] = getattr(self, key)
         return a.__repr__()
@@ -243,10 +243,10 @@ class Dict(GenericType):
         for key in self._keys:
             a = self.__dict__[key]
             o = other.__dict__[key]
-            exists = a.exists()
-            if exists != o.exists():
+            exists_or_can_read = a.exists_or_can_read()
+            if exists_or_can_read != o.exists_or_can_read():
                 return False
-            if exists is False:
+            if exists_or_can_read is False:
                 continue
             if a != o:
                 return False
@@ -268,10 +268,10 @@ class Dict(GenericType):
         for key in self._keys:
             a = self.__dict__[key]
             o = other.__dict__[key]
-            exists = a.exists()
-            if exists != o.exists():
+            exists_or_can_read = a.exists_or_can_read()
+            if exists_or_can_read != o.exists_or_can_read():
                 return True
-            if exists is False:
+            if exists_or_can_read is False:
                 continue
             if a != o:
                 return True
@@ -281,7 +281,7 @@ class Dict(GenericType):
         a = {}
         for key in self._keys:
             v = object.__getattribute__(self, key)
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 continue
             a[key] = v.get_value()
         return a
@@ -293,7 +293,7 @@ class Dict(GenericType):
         a = {}
         for key in self._keys:
             v = object.__getattribute__(self, key)
-            if v.exists() is False:
+            if v.exists_or_can_read() is False:
                 continue
             a[key] = v
         return a
@@ -306,7 +306,7 @@ class Dict(GenericType):
             return default
 
         v = object.__getattribute__(self, key)
-        if v.exists() is False:
+        if v.exists_or_can_read() is False:
             return None
         return v
 
@@ -337,7 +337,7 @@ class Dict(GenericType):
 
         if sel in self._keys:
             v = self.__dict__[sel]
-            if v.exists():
+            if v.exists_or_can_read():
                 return v.get_selectors(sub_sel_filter, selectors_as_list)
             return None
 
@@ -346,7 +346,7 @@ class Dict(GenericType):
             a = []
             for k in self._keys:
                 v = self.__dict__[k]
-                if v.exists():
+                if v.exists_or_can_read():
                     result = v.get_selectors(sub_sel_filter, selectors_as_list.copy())
                     if result is not None:
                         a.append(result)
@@ -371,7 +371,7 @@ class Dict(GenericType):
         if isinstance(value, dict):
             for key in self._keys:
                 key_object = self.__dict__[key]
-                if key_object.exists() is False:
+                if key_object.exists_or_can_read() is False:
                     continue
                 if key not in value:
                     continue
@@ -391,7 +391,7 @@ class Dict(GenericType):
         if isinstance(value, Dict):
             for key in self._keys:
                 key_object = self.__dict__[key]
-                # if key_object.exists() is False:
+                # if key_object.exists_or_can_read() is False:
                 #    continue
 
                 sub_value = value.get(key).get_value()
