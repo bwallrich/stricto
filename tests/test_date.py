@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 """
 test for Datetime()
 """
@@ -5,8 +6,8 @@ test for Datetime()
 import unittest
 import json
 
-from stricto import Error, Datetime, StrictoEncoder
 from datetime import datetime, timedelta
+from stricto import Error, Datetime, StrictoEncoder
 
 
 def strptime(value, o):  # pylint: disable=unused-argument
@@ -61,8 +62,8 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test min
         """
-        min = datetime.now() - timedelta(minutes=5)
-        a = Datetime(min=min)
+        five_min_ago = datetime.now() - timedelta(minutes=5)
+        a = Datetime(min=five_min_ago)
         with self.assertRaises(Error) as e:
             a.set(datetime.now() - timedelta(minutes=6))
         self.assertEqual(e.exception.message, "Must be above Minimal")
@@ -115,6 +116,7 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         b.set_now()
         with self.assertRaises(TypeError) as e:
             c = a + b
+            print(c)
         self.assertEqual(
             e.exception.args[0],
             "unsupported operand type(s) for +: 'datetime.datetime' and 'datetime.datetime'",
@@ -161,6 +163,5 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set_now()
 
         sa = json.dumps(a, cls=StrictoEncoder)
-        j = json.loads(sa)
         b.set(json.loads(sa))
         self.assertEqual(b, a)

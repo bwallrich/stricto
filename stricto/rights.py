@@ -15,8 +15,8 @@ class Rights:
 
         # All kwargs ar keys for rights
         self._rights = {}
-        for right_name in kwargs:
-            self._rights[right_name] = kwargs[right_name]
+        for right_name, r in kwargs.items():
+            self._rights[right_name] = r
 
     def add_or_modify_right(self, right_name, f):
         """

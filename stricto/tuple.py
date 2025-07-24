@@ -118,6 +118,18 @@ class Tuple(ListAndTuple):
         t = None if self._value is None else tuple(self._value)
         return t == self.get_other_value(other)
 
+    def match(self, other):
+        """
+        Check if equality with an object
+        """
+        if other is None:
+            return self._value is None
+
+        if isinstance(other, tuple) is False:
+            return False
+
+        return tuple(self._value) == other
+
     def __ne__(self, other):
         """
         equality test two objects

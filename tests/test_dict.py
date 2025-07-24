@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 """
 test for Dict()
 """
@@ -649,4 +650,80 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 },
                 "c": (23, "hh"),
             }
+        )
+
+    def test_match_equality(self):
+        """
+        Test dict matching equality
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "b": Dict({"l": List(Dict({"i": String()}))}),
+                "c": Tuple((Int(), String())),
+                "f": Dict({"F1": Int()}),
+            }
+        )
+        a.set(
+            {
+                "a": 12,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ]
+                },
+                "f": {"F1": 11},
+                "c": (22, "h"),
+            }
+        )
+        self.assertEqual(a.match({"a": 12}), True)
+        self.assertEqual(a.match({"a": 13}), False)
+        self.assertEqual(a.match({"gg": 13}), False)
+        self.assertEqual(a.match({"a": {"ff": False}}), False)
+        self.assertEqual(a.match({"f": {"F1": 11}}), True)
+        self.assertEqual(a.match({"f": {"F1": 12}}), False)
+        self.assertEqual(a.match({"c": (22, "h")}), True)
+        self.assertEqual(a.match({"c": (23, "h")}), False)
+
+    def test_match_equality_advance(self):
+        """
+        Test dict matching equality advanced
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "b": Dict({"l": List(Dict({"i": String()}))}),
+                "c": Tuple((Int(), String())),
+                "f": Dict({"F1": Int()}),
+            }
+        )
+        a.set(
+            {
+                "a": 12,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ]
+                },
+                "f": {"F1": 11},
+                "c": (22, "h"),
+            }
+        )
+        self.assertEqual(a.match({"a": ("$and", [("$gt", 11), ("$lt", 13)])}), True)
+        self.assertEqual(a.match({"a": ("$or", [("$gt", 11), ("$lt", 10)])}), True)
+
+        self.assertEqual(a.match({"a": ("$unknownoperator", 11)}), False)
+        self.assertEqual(a.match({"a": ("$gt", 11)}), True)
+        self.assertEqual(a.match({"a": ("$gt", 13)}), False)
+        self.assertEqual(a.match({"a": ("$not", ("$gt", 13))}), True)
+        self.assertEqual(a.match({"a": ("$reg", r"toto")}), False)
+        self.assertEqual(a.match({"a": ("$not", ("$reg", r"toto"))}), True)
+        self.assertEqual(a.match({"f": {"F1": ("$ne", 13)}}), True)
+
+        self.assertEqual(a.match({"b": {"l": ("$contains", {"i": "sec"})}}), True)
+        self.assertEqual(a.match({"b": {"l": ("$contains", {"i": "notfound"})}}), False)
+        self.assertEqual(
+            a.match({"b": {"l": ("$contains", {"i": ("$reg", r"sec")})}}), True
         )

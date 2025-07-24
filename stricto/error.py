@@ -27,6 +27,7 @@ class ErrorType(Enum):
     DUP = auto()
     READONLY = auto()
     NOT_IN_VIEW = auto()
+    DEVELOPPER = auto()
     JSON = auto()
 
     def __repr__(self):

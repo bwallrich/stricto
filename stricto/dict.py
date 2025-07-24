@@ -227,6 +227,31 @@ class Dict(GenericType):
             a[key] = getattr(self, key)
         return a.__repr__()
 
+    def match(self, other):
+        """
+        Check if equality with an object
+        example : me : { a :  12, b : 13, c : 14 }
+        match { b : 13 } -> True
+        match { a : 11 } -> False
+        match { a : 12, c : 14 } -> True
+        """
+        if other is None:
+            return self._value is None
+
+        if isinstance(other, dict) is False:
+            return False
+
+        for key, value in other.items():
+            if key not in self._keys:
+                return False
+            a = self.__dict__[key]
+            exists_or_can_read = a.exists_or_can_read()
+            if exists_or_can_read is False:
+                return False
+            if a.match(value) is False:
+                return False
+        return True
+
     def __eq__(self, other):
         """
         equality test two objects

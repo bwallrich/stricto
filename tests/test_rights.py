@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 """
 test for Rights()
 """
@@ -5,7 +6,7 @@ test for Rights()
 # pylint: disable=no-member
 import unittest
 
-from stricto import String, Int, Dict, List, Tuple, Error
+from stricto import String, Int, Dict, Error
 
 
 increment = 0  # pylint: disable=invalid-name

@@ -59,6 +59,58 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
 
         return True
 
+    def match_operator(self, operator, other):
+        """
+        Matching with an operator
+        """
+        if operator == "$contains":
+            if self._value is None:
+                return False
+            for item in self._value:
+                try:
+                    rep = item.match(other)
+                    if rep is True:
+                        return True
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+            return False
+
+        return ListAndTuple.match_operator(self, operator, other)
+
+    def match(self, other):  # pylint: disable=too-many-return-statements
+        """
+        Check if equality with an object
+        example : me : [ 12, 13, 14 ]
+        match [ 12 ] -> False
+        match [ 12, 13 ] -> False
+        match [ 12, 13, 14 ] -> True
+        """
+
+        if other is None:
+            return self._value is None
+
+        # A list. Do a patch on each element
+        if isinstance(other, list):
+            if self._value is None:
+                return False
+
+            if len(self._value) != len(other):
+                return False
+
+            index = 0
+            for item in self._value:
+                try:
+                    rep = item.match(other[index])
+                    index += 1
+                    if rep is False:
+                        return False
+                except Exception: # pylint: disable=broad-exception-caught
+                    return False
+            return True
+
+        return ListAndTuple.match(self, other)
+        # return self._value == other
+
     def __ne__(self, other):
         """
         equality test two Lists

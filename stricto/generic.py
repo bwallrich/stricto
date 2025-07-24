@@ -643,6 +643,89 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         # return True
 
+    def match_operator(self, operator, other): # pylint: disable=too-many-return-statements, too-many-branches
+        """
+        Matching with an operator
+        """
+
+        if operator == "$eq":
+            return self._value == other
+        if operator == "$gt":
+            return self._value > other
+        if operator == "$gte":
+            return self._value >= other
+        if operator == "$lte":
+            return self._value <= other
+        if operator == "$lt":
+            return self._value < other
+        if operator == "$ne":
+            return self._value != other
+        if operator == "$reg":
+            return re.match(other, self._value)
+        if operator in  { "$and", "$or" }:
+            if not isinstance(other, list):
+                raise Error(ErrorType.DEVELOPPER, "$and need a list", self.path_name())
+            for sub in other:
+                if (
+                    isinstance(sub, tuple)
+                    and len(sub) == 2
+                    and re.match(r"^\$", sub[0])
+                ):
+                    resp = None
+                    try:
+                        resp = self.match_operator(sub[0], sub[1])
+                    except Exception: # pylint: disable=broad-exception-caught
+                        resp = False
+                    if resp is False and operator == "$and":
+                        return False
+                    if resp is True and operator == "$or":
+                        return True
+                else:
+                    raise Error(
+                        ErrorType.DEVELOPPER,
+                        "$and/$or list item not a tuple of conditions",
+                        self.path_name(),
+                    )
+            return True
+
+        if operator == "$not":
+            if (   # pylint: disable=no-else-return
+                isinstance(other, tuple)
+                and len(other) == 2
+                and re.match(r"^\$", other[0])
+            ):
+                resp = None
+                try:
+                    resp = self.match_operator(other[0], other[1])
+                except Exception: # pylint: disable=broad-exception-caught
+                    resp = False
+                return not resp
+            else:
+                raise Error(
+                    ErrorType.DEVELOPPER,
+                    "$not condition must be a tuple",
+                    self.path_name(),
+                )
+
+        raise Error(
+            ErrorType.DEVELOPPER, "operator unknown", self.path_name()
+        )
+
+    def match(self, other):
+        """
+        Check if equality
+        """
+
+        # the value is a tuble with an operator ( '$gt', '$lt', etc... )
+        if isinstance(other, tuple) and len(other) == 2 and re.match(r"^\$", other[0]):
+            try:
+                resp = self.match_operator(other[0], other[1])
+                return resp
+            except Exception: # pylint: disable=broad-exception-caught
+                return False
+
+        return self._value == other
+
     def check_constraints(self, value):
         """
         Check all constraints
