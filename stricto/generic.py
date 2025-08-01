@@ -340,7 +340,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return None
 
-    def select(self, selectors):
+    def select(self, selectors: str):
         """
         Get values with selector acording to rfc 9535
         """
@@ -545,6 +545,37 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.check(corrected_value)
         return self.set_value_without_checks(corrected_value)
 
+    def patch_internal ( self, op:str, value):
+
+        if op == "replace":
+            return self.set( value )
+        if op == "test":
+            return self.check( value )
+        
+        raise Error(ErrorType.INVALID_OPERATOR, "invalid operator", self.path_name())
+
+
+    def patch( self, op:str, selectors, value = None):
+        """
+        patch is modifying a value. see
+        https://datatracker.ietf.org/doc/html/rfc6902
+        """
+        # -- remove with a select as list element
+        if op == 'remove':
+            match = re.search(r"(.*)\[(.*)\]$", selectors)
+            if match:
+                obj = self.select( match.group(1) )
+                return obj.patch_internal( op, int ( match.group(2)) )
+
+        obj = self.select( selectors )
+        if obj is None:
+            raise Error(ErrorType.NULL, "Attribut does not exists", self.path_name())
+
+
+        return obj.patch_internal( op, value )
+ 
+
+
     def set_value_without_checks(self, value):
         """
         return True if some changement, otherwise False
@@ -660,8 +691,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return self._value < other
         if operator == "$ne":
             return self._value != other
-        if operator == "$reg":
-            return re.match(other, self._value)
         if operator in  { "$and", "$or" }:
             if not isinstance(other, list):
                 raise Error(ErrorType.DEVELOPPER, "$and need a list", self.path_name())

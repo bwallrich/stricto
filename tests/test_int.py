@@ -39,6 +39,9 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(Error) as e:
             a.set(12.3)
         self.assertEqual(e.exception.message, "Must be a int")
+        with self.assertRaises(Error) as e:
+            a.set("12")
+        self.assertEqual(e.exception.message, "Must be a int")
 
     def test_default(self):
         """
@@ -96,6 +99,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertLess(a, b)
         self.assertGreaterEqual(b, a)
         self.assertLessEqual(a, b)
+        self.assertEqual(a > 8, True)
 
     def test_object_affectation(self):
         """

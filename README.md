@@ -126,93 +126,6 @@ b.set( json.loads(sa) )
 b == a # return True
 ```
 
-## selectors
-
-You can use json selectors to find the object according to [rfc9535](https://datatracker.ietf.org/doc/rfc9535/)
-
-
-```python
-from stricto import Int, List, String, Dict, Error
-
-a = Dict(
-    {
-        "a": Int(default=1),
-        "b": Dict({
-            "l" : List( Dict({
-                "i" : String()
-            }) )
-        }),
-        "c": Tuple( (Int(), String()) )
-    }
-)
-a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] }, "c" : ( 22, "h") })
-
-a.select('$.a') # 12
-
-# To make the difference :
-
-a.select('$.f.d') # None
-a.f.d # -> raise an error
-
-a.select("$.b.l[0].i") # "fir"
-a.select("$.*.l.i") # ["fir", "sec"]
-
-```
-
-## filtering and matching
-
-You can match an object with some kind of filters. 
-
-Example :
-
-```python
-from stricto import Int, List, String, Dict, Error
-
-a = Dict(
-    {
-        "name"    : String()
-        "surname" : String()
-        "incomes" : Dict({
-                "salary" : Int(),
-                "royalties" : Int(),
-                
-        }),
-    }
-)
-
-a.set( { "name" : "John", "surname" : "Doe", "incomes" : { "salary" : 50000 }})
-
-# Match with equality 
-a.match( { "surname" : "Doe" } ) -> return True
-a.match( { "incomes" : { "salary" : 20000 } } ) -> return False
-
-# Match with operators
-a.match( { "incomes" : { "salary" : ( "$gt", 20000 ) } } ) -> return True
-
-```
-
-Matching is done with ```match( dict )``` method.
-
-available operators :
-
-
-| operator | syntax | example | description |
-| - | - | - | - |
-| $and | ( "$and", [ condition, condition ] ) |  ( "\$and", [ ( "\$gt", 1 ), ( "$lt" : 2 )]) | Do an *and* on conditions.
-| $or | ( "$or", [ condition, condition ] ) |  ( "\$or", [ ( "\$gt", 10 ), ( "$eq" : 0 )]) | Do an *or* on conditions.
-| $eq | ( "$eq", value ) |  ( "\$eq", "toto" ) | Test the equality. |
-| $ne | ( "$ne", value ) |  ( "\$ne", "toto" ) | Not equal. |
-| $lt | ( "$lt", value ) |  ( "\$lt", 1 ) | less than. |
-| $lte | ( "$lte", value ) |  ( "\$lte", 1 ) | less than or equal. |
-| $gt | ( "$gt", value ) |  ( "\$gt", 1 ) | greater than. |
-| $gte | ( "$gte", value ) |  ( "\$gte", 1 ) | gtreater than or equal. |
-| $not | ( "$not", condition ) |  ( "\$not", ... ) | Not |
-| $reg | ( "$reg", regexp ) |  ( "\$reg", r'Jo' ) | A regexp. Match only on strings (match "start with Jo" in this example.) |
-| $contains | ( "$contains", condition ) |  ( "\$contains", ( "$reg", r'^Jo' ) ) | a list contains on pr more element matching the condition |
-
-
-
-
 
 ## Types and options
 
@@ -520,6 +433,22 @@ cat.female_infos.number_of_litter = 2 # -> Ok
 cat.female_infos # -> { "number_of_litter" : 2 }
 ```
 
+
+## rights
+
+You can defin all rights you want on each element. 
+a right is a ```can_<right>``` parameter in the object.
+
+actually 2 rights are defined
+
+| right | description |
+| - | - |
+| can_read | read : The ability to read the content of this field |
+| can_modify | modify : The ability to modify field |
+
+But you can add your own right.
+
+
 ### can_read
 
 A function wich must return ```True|False``` to say if this key can be read.
@@ -552,6 +481,124 @@ user.salary   # -> 20000
 
 user.name="Jack"
 user.salary # -> raise an error
+
+```
+
+
+
+
+
+## selectors
+
+You can use json selectors to find the object according to [rfc9535](https://datatracker.ietf.org/doc/rfc9535/)
+
+
+```python
+from stricto import Int, List, String, Dict, Error
+
+a = Dict(
+    {
+        "a": Int(default=1),
+        "b": Dict({
+            "l" : List( Dict({
+                "i" : String()
+            }) )
+        }),
+        "c": Tuple( (Int(), String()) )
+    }
+)
+a.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] }, "c" : ( 22, "h") })
+
+a.select('$.a') # 12
+
+# To make the difference :
+
+a.select('$.f.d') # None
+a.f.d # -> raise an error
+
+a.select("$.b.l[0].i") # "fir"
+a.select("$.*.l.i") # ["fir", "sec"]
+a.select("$.*.l[0:2].i") # ["fir", "sec"]
+
+```
+
+## filtering and matching
+
+You can match an object with some kind of filters. 
+
+Example :
+
+```python
+from stricto import Int, List, String, Dict, Error
+
+a = Dict(
+    {
+        "name"    : String()
+        "surname" : String()
+        "incomes" : Dict({
+                "salary" : Int(),
+                "royalties" : Int(),
+                
+        }),
+    }
+)
+
+a.set( { "name" : "John", "surname" : "Doe", "incomes" : { "salary" : 50000 }})
+
+# Match with equality 
+a.match( { "surname" : "Doe" } ) -> return True
+a.match( { "incomes" : { "salary" : 20000 } } ) -> return False
+
+# Match with operators
+a.match( { "incomes" : { "salary" : ( "$gt", 20000 ) } } ) -> return True
+
+```
+
+Matching is done with ```match( dict )``` method.
+
+available operators :
+
+
+| operator | syntax | example | description |
+| - | - | - | - |
+| $and | ( "$and", [ condition, condition ] ) |  ( "\$and", [ ( "\$gt", 1 ), ( "$lt" : 2 )]) | Do an *and* on conditions.
+| $or | ( "$or", [ condition, condition ] ) |  ( "\$or", [ ( "\$gt", 10 ), ( "$eq" : 0 )]) | Do an *or* on conditions.
+| $eq | ( "$eq", value ) |  ( "\$eq", "toto" ) | Test the equality. |
+| $ne | ( "$ne", value ) |  ( "\$ne", "toto" ) | Not equal. |
+| $lt | ( "$lt", value ) |  ( "\$lt", 1 ) | less than. |
+| $lte | ( "$lte", value ) |  ( "\$lte", 1 ) | less than or equal. |
+| $gt | ( "$gt", value ) |  ( "\$gt", 1 ) | greater than. |
+| $gte | ( "$gte", value ) |  ( "\$gte", 1 ) | gtreater than or equal. |
+| $not | ( "$not", condition ) |  ( "\$not", ... ) | Not |
+| $reg | ( "$reg", regexp ) |  ( "\$reg", r'Jo' ) | A regexp. Match only on strings (match "start with Jo" in this example.) |
+| $contains | ( "$contains", condition ) |  ( "\$contains", ( "$reg", r'^Jo' ) ) | a list contains on pr more element matching the condition |
+
+## patch
+
+You can patch object in the sense of https://datatracker.ietf.org/doc/html/rfc6902, but with a merge of [selectors]](#selectors).
+
+
+Example :
+
+```python
+from stricto import Int, List, String, Dict, Error
+
+a = Dict(
+    {
+        "name"    : String()
+        "surname" : String()
+        "incomes" : Dict({
+                "salary" : Int(),
+                "royalties" : Int(),
+                
+        }),
+    }
+)
+
+a.set( { "name" : "John", "surname" : "Doe", "incomes" : { "salary" : 50000 }})
+
+a.patch( 'replace', '$.name', "jenny" )
+# equivalent of a.name = jenny
 
 ```
 

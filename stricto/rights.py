@@ -47,6 +47,18 @@ class Rights:
 
         return None
 
+
+    def get_strict_right( self, right_name ):
+        """
+        Return the right only if not callable
+        """
+        right = self._rights.get(right_name, None)
+        if isinstance(right, bool):
+            return right
+        
+        return None
+
+
     def get_as_dict_of_strings(self):
         """
         Return the value as a string

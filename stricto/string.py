@@ -47,3 +47,14 @@ class String(GenericType):
                 raise Error(ErrorType.REGEXP, "Dont match regexp", self.path_name())
 
         return True
+
+    def match_operator(self, operator, other):
+        """
+        Matching with an operator
+        """
+        if operator == "$reg":
+            if re.match(other, self._value):
+                return True
+            return False
+
+        return GenericType.match_operator(self, operator, other)

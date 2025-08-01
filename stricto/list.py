@@ -77,6 +77,22 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
 
         return ListAndTuple.match_operator(self, operator, other)
 
+    def patch_internal( self, op:str, value):
+        """
+        patch is modifying a value. equivalent to set for a generic
+        https://datatracker.ietf.org/doc/html/rfc6902
+
+        if op == remove , the value is the key index to remove
+        """
+        if op == "add":
+            return self.append( value )
+        if op == "remove":
+            return self.__delitem__(value )
+
+        return ListAndTuple.patch(self, op, value)
+
+
+
     def match(self, other):  # pylint: disable=too-many-return-statements
         """
         Check if equality with an object
@@ -162,11 +178,29 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
     def __getitem__(self, index):
         return self._value[index]
 
+    def parse_slice(self, slice_as_string:str):
+        """
+        Parses a `slice()` from string, like `start:stop:step`.
+        """
+        parts = slice_as_string.split(':')
+        try :
+            if len(parts) == 1:
+                # slice(stop)                
+                return int( slice_as_string )            
+            if len(parts) == 2:
+                # slice(start,stop)
+                return slice( int ( parts[0] ) , int ( parts[1] )  )
+            if len(parts) == 3:
+                # slice(start,stop,step)
+                return slice( int ( parts[0] ) , int ( parts[1] ), int ( parts[2] )  )
+        except ValueError:
+            return None
+
+
     def get_selectors(self, sel_filter, selectors_as_list):
         """
         get with selector as lists
         """
-
         if self._value is None:
             return None
 
@@ -179,6 +213,23 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
                 if result is not None:
                     a.append(result)
             return a
+        sli = self.parse_slice(sel_filter)
+        try:            
+            v = self._value[ sli ]            
+        except IndexError:
+            return None
+        except TypeError:
+            return None
+
+        if isinstance(v, list):
+            l = []
+            for obj in v:
+                if obj.exists_or_can_read() is False:
+                    continue
+                l.append(obj.get_selectors(None, selectors_as_list.copy()))
+            return l
+        else:
+            return v.get_selectors(None, selectors_as_list)
 
         if re.match("^-*[0-9]+$", sel_filter):
             try:

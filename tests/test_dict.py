@@ -237,6 +237,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         b = Dict({"b": Int(), "d": List(Dict({"i": Int()}))})
         self.assertNotEqual(a, b)
 
+
     def test_copy_type(self):
         """
         Test copy
@@ -579,6 +580,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             }
         )
         self.assertEqual(a, a)
+
         self.assertEqual(a.b.select("$.a"), 12)
         self.assertEqual(a.a.select("$[ttt].a[tt]"), 12)
         self.assertEqual(a.select("$.a"), 12)
@@ -594,6 +596,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a.select("$.b.l[0].i"), "fir")
         self.assertEqual(a.select("$.b.l[20].i"), None)
         self.assertEqual(a.select("$.b.l[coucou].i"), None)
+        self.assertEqual(a.select("$.b.l[0:2].i"), ['fir', 'sec'])
+        self.assertEqual(a.select("$.b.l[-1].i"), "sec")
+        self.assertEqual(a.select("$.b.l[].i"), None)
         self.assertEqual(a.select("$.*.l.i"), ["fir", "sec"])
         self.assertEqual(a.select("$.*.t[0]"), None)
         self.assertEqual(a.select("$.b.t[vla]"), None)
@@ -614,6 +619,64 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(type(a.select("$.b.t")), Tuple)
         self.assertEqual(a.select("$.b.tt[1].i"), "bb")
         self.assertEqual(a.select("$.b.tt.i"), ("bb",))
+
+
+    def test_patch(self):
+        """
+        test patch (RFC6902)
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "not": Int(default=1, exists=False),
+                "b": Dict(
+                    {
+                        "l": List(Dict({"i": String()})),
+                        "t": Tuple((Int(), String())),
+                        "tt": Tuple((Int(), Dict({"i": String()}))),
+                    }
+                ),
+            }
+        )
+        a.set(
+            {
+                "a": 12,
+                "b": {
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ]
+                },
+            }
+        )
+        self.assertEqual(a, a)
+        a.patch( 'replace', '$.a', 13 )
+        self.assertEqual(a.a, 13)
+        with self.assertRaises(Error) as e:
+            a.patch( 'replace', '$.notexist', 13 )
+        self.assertEqual(e.exception.message, "Attribut does not exists")
+        with self.assertRaises(Error) as e:
+            a.patch( 'remove', '$.a' )
+        self.assertEqual(e.exception.message, "invalid operator")
+        a.patch( 'replace', '$.b.l[0]', { "i" : "tres"} )
+        self.assertEqual(a.b.l[0].i, "tres")
+        a.patch( 'replace', '$.b.l[0].i', "next" )
+        self.assertEqual(a.b.l[0].i, "next")
+        with self.assertRaises(Error) as e:
+            a.patch( 'replace', '$.b.l[69]', { "i" : "tres"} )
+        self.assertEqual(e.exception.message, "Attribut does not exists")
+        a.patch( 'add', '$.b.l', { "i" : "again" } )
+        self.assertEqual(len ( a.b.l ) , 3 )
+        self.assertEqual(a.b.l[2].i, "again")
+        a.patch( 'remove', '$.b.l[2]' )
+        self.assertEqual(len ( a.b.l ) , 2)
+        a.patch( 'remove', '$.b.l', 1 )
+        self.assertEqual(len ( a.b.l ) , 1)
+
+
+
+
+
 
     def test_re_set(self):
         """
@@ -677,6 +740,11 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 "c": (22, "h"),
             }
         )
+        self.assertEqual(a.match({}), True)
+        self.assertEqual(a.match(None), True)
+        self.assertEqual(a.match({"dosnotexist" : 23 }), False)
+        self.assertEqual(a.match({"dosnotexist" : None }), False)
+        self.assertEqual(a.match({"a": "12"}), False)
         self.assertEqual(a.match({"a": 12}), True)
         self.assertEqual(a.match({"a": 13}), False)
         self.assertEqual(a.match({"gg": 13}), False)
@@ -686,7 +754,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a.match({"c": (22, "h")}), True)
         self.assertEqual(a.match({"c": (23, "h")}), False)
 
-    def test_match_equality_advance(self):
+    def test_match_advance(self):
         """
         Test dict matching equality advanced
         """
@@ -696,6 +764,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 "b": Dict({"l": List(Dict({"i": String()}))}),
                 "c": Tuple((Int(), String())),
                 "f": Dict({"F1": Int()}),
+                "s": String(),
             }
         )
         a.set(
@@ -709,6 +778,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 },
                 "f": {"F1": 11},
                 "c": (22, "h"),
+                "s" : "bananas"
             }
         )
         self.assertEqual(a.match({"a": ("$and", [("$gt", 11), ("$lt", 13)])}), True)
@@ -716,6 +786,12 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         self.assertEqual(a.match({"a": ("$unknownoperator", 11)}), False)
         self.assertEqual(a.match({"a": ("$gt", 11)}), True)
+        # With wrong type
+        self.assertEqual(a.match({"a": ("$gt", "11")}), False)
+        self.assertEqual(a.match({"s": ("$reg", 'ban.*')}), True)
+        # try a reg to a int ??
+        self.assertEqual(a.match({"a": ("$reg", 'ban.*')}), False)
+        self.assertEqual(a.match({"s": ("$reg", 'Toto.*')}), False)
         self.assertEqual(a.match({"a": ("$gt", 13)}), False)
         self.assertEqual(a.match({"a": ("$not", ("$gt", 13))}), True)
         self.assertEqual(a.match({"a": ("$reg", r"toto")}), False)

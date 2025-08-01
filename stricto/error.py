@@ -28,6 +28,7 @@ class ErrorType(Enum):
     READONLY = auto()
     NOT_IN_VIEW = auto()
     DEVELOPPER = auto()
+    INVALID_OPERATOR = auto()
     JSON = auto()
 
     def __repr__(self):
