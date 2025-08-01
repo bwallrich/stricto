@@ -1,6 +1,5 @@
 """Module providing the List() Class"""
 
-import re
 from .generic import GenericType
 from .list_and_tuple import ListAndTuple
 from .error import Error, ErrorType
@@ -77,7 +76,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
 
         return ListAndTuple.match_operator(self, operator, other)
 
-    def patch_internal( self, op:str, value):
+    def patch_internal(self, op: str, value):
         """
         patch is modifying a value. equivalent to set for a generic
         https://datatracker.ietf.org/doc/html/rfc6902
@@ -85,13 +84,14 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         if op == remove , the value is the key index to remove
         """
         if op == "add":
-            return self.append( value )
+            self.append(value)
+            return
         if op == "remove":
-            return self.__delitem__(value )
+            # return self.__delitem__(value)
+            del self[value]
+            return
 
-        return ListAndTuple.patch(self, op, value)
-
-
+        ListAndTuple.patch_internal(self, op, value)
 
     def match(self, other):  # pylint: disable=too-many-return-statements
         """
@@ -120,7 +120,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
                     index += 1
                     if rep is False:
                         return False
-                except Exception: # pylint: disable=broad-exception-caught
+                except Exception:  # pylint: disable=broad-exception-caught
                     return False
             return True
 
@@ -178,26 +178,28 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
     def __getitem__(self, index):
         return self._value[index]
 
-    def parse_slice(self, slice_as_string:str):
+    def _parse_slice(self, slice_as_string: str):
         """
         Parses a `slice()` from string, like `start:stop:step`.
         """
-        parts = slice_as_string.split(':')
-        try :
+        parts = slice_as_string.split(":")
+        try:
             if len(parts) == 1:
-                # slice(stop)                
-                return int( slice_as_string )            
+                # slice(stop)
+                return int(slice_as_string)
             if len(parts) == 2:
                 # slice(start,stop)
-                return slice( int ( parts[0] ) , int ( parts[1] )  )
+                return slice(int(parts[0]), int(parts[1]))
             if len(parts) == 3:
                 # slice(start,stop,step)
-                return slice( int ( parts[0] ) , int ( parts[1] ), int ( parts[2] )  )
+                return slice(int(parts[0]), int(parts[1]), int(parts[2]))
         except ValueError:
-            return None
+            pass
+        return None
 
-
-    def get_selectors(self, sel_filter, selectors_as_list):
+    def get_selectors(
+        self, sel_filter, selectors_as_list
+    ):  # pylint: disable=too-many-return-statements
         """
         get with selector as lists
         """
@@ -213,9 +215,11 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
                 if result is not None:
                     a.append(result)
             return a
-        sli = self.parse_slice(sel_filter)
-        try:            
-            v = self._value[ sli ]            
+
+        # With a sel_filter = A slice fir the list
+        sli = self._parse_slice(sel_filter)
+        try:
+            v = self._value[sli]
         except IndexError:
             return None
         except TypeError:
@@ -228,17 +232,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
                     continue
                 l.append(obj.get_selectors(None, selectors_as_list.copy()))
             return l
-        else:
-            return v.get_selectors(None, selectors_as_list)
-
-        if re.match("^-*[0-9]+$", sel_filter):
-            try:
-                v = self._value[int(sel_filter)]
-            except IndexError:
-                return None
-            return v.get_selectors(None, selectors_as_list)
-
-        return None
+        return v.get_selectors(None, selectors_as_list)
 
     def clear(self):
         """

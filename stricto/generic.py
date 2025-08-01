@@ -545,36 +545,36 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.check(corrected_value)
         return self.set_value_without_checks(corrected_value)
 
-    def patch_internal ( self, op:str, value):
-
+    def patch_internal(self, op: str, value):
+        """
+        Patch this object himself. calld by self.patch method after selection with select.
+        """
         if op == "replace":
-            return self.set( value )
+            self.set(value)
+            return
         if op == "test":
-            return self.check( value )
-        
+            self.check(value)
+            return
+
         raise Error(ErrorType.INVALID_OPERATOR, "invalid operator", self.path_name())
 
-
-    def patch( self, op:str, selectors, value = None):
+    def patch(self, op: str, selectors, value=None):
         """
         patch is modifying a value. see
         https://datatracker.ietf.org/doc/html/rfc6902
         """
-        # -- remove with a select as list element
-        if op == 'remove':
+        # -- remove with a select as list element
+        if op == "remove":
             match = re.search(r"(.*)\[(.*)\]$", selectors)
             if match:
-                obj = self.select( match.group(1) )
-                return obj.patch_internal( op, int ( match.group(2)) )
+                obj = self.select(match.group(1))
+                return obj.patch_internal(op, int(match.group(2)))
 
-        obj = self.select( selectors )
+        obj = self.select(selectors)
         if obj is None:
             raise Error(ErrorType.NULL, "Attribut does not exists", self.path_name())
 
-
-        return obj.patch_internal( op, value )
- 
-
+        return obj.patch_internal(op, value)
 
     def set_value_without_checks(self, value):
         """
@@ -674,7 +674,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         # return True
 
-    def match_operator(self, operator, other): # pylint: disable=too-many-return-statements, too-many-branches
+    def match_operator(
+        self, operator, other
+    ):  # pylint: disable=too-many-return-statements, too-many-branches
         """
         Matching with an operator
         """
@@ -691,7 +693,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return self._value < other
         if operator == "$ne":
             return self._value != other
-        if operator in  { "$and", "$or" }:
+        if operator in {"$and", "$or"}:
             if not isinstance(other, list):
                 raise Error(ErrorType.DEVELOPPER, "$and need a list", self.path_name())
             for sub in other:
@@ -703,7 +705,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                     resp = None
                     try:
                         resp = self.match_operator(sub[0], sub[1])
-                    except Exception: # pylint: disable=broad-exception-caught
+                    except Exception:  # pylint: disable=broad-exception-caught
                         resp = False
                     if resp is False and operator == "$and":
                         return False
@@ -718,7 +720,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return True
 
         if operator == "$not":
-            if (   # pylint: disable=no-else-return
+            if (  # pylint: disable=no-else-return
                 isinstance(other, tuple)
                 and len(other) == 2
                 and re.match(r"^\$", other[0])
@@ -726,7 +728,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 resp = None
                 try:
                     resp = self.match_operator(other[0], other[1])
-                except Exception: # pylint: disable=broad-exception-caught
+                except Exception:  # pylint: disable=broad-exception-caught
                     resp = False
                 return not resp
             else:
@@ -736,9 +738,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                     self.path_name(),
                 )
 
-        raise Error(
-            ErrorType.DEVELOPPER, "operator unknown", self.path_name()
-        )
+        raise Error(ErrorType.DEVELOPPER, "operator unknown", self.path_name())
 
     def match(self, other):
         """
@@ -750,7 +750,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             try:
                 resp = self.match_operator(other[0], other[1])
                 return resp
-            except Exception: # pylint: disable=broad-exception-caught
+            except Exception:  # pylint: disable=broad-exception-caught
                 return False
 
         return self._value == other
