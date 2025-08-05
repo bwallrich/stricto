@@ -545,7 +545,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.check(corrected_value)
         return self.set_value_without_checks(corrected_value)
 
-    def patch_internal(self, op: str, value):
+    def patch_internal(self, op: str, value) -> None:
         """
         Patch this object himself. calld by self.patch method after selection with select.
         """
@@ -558,19 +558,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         raise Error(ErrorType.INVALID_OPERATOR, "invalid operator", self.path_name())
 
-    def patch(self, op: str, selectors, value=None):
+    def patch(self, op: str, selector: str, value=None) -> None:
         """
         patch is modifying a value. see
         https://datatracker.ietf.org/doc/html/rfc6902
         """
         # -- remove with a select as list element
         if op == "remove":
-            match = re.search(r"(.*)\[(.*)\]$", selectors)
+            match = re.search(r"(.*)\[(.*)\]$", selector)
             if match:
                 obj = self.select(match.group(1))
                 return obj.patch_internal(op, int(match.group(2)))
 
-        obj = self.select(selectors)
+        obj = self.select(selector)
         if obj is None:
             raise Error(ErrorType.NULL, "Attribut does not exists", self.path_name())
 
@@ -625,6 +625,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
     def __repr__(self):
         return self._value.__repr__()
 
+    def __str__(self):
+        return self._value.__str__()
+
     def check(self, value):
         """
         check if complain to model or return an Error
@@ -634,7 +637,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         if self.can_read() is False:
             raise Error(
-                ErrorType.READONLY, "cannot read (and modify) value", self.path_name()
+                ErrorType.UNREADABLE, "cannot read (and modify) value", self.path_name()
             )
 
         # transform the value before the check

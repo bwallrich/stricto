@@ -69,14 +69,14 @@ All basic class from python are implemented in ```stricto```.
 | python class | type in stricto |
 | - | - |
 | bool | Bool() |
-| int | Int() |
-| float | Float() |
-| string | String() |
-| list | List() |
+| int | [Int()](#int) |
+| float | [Float()](#float) |
+| string | [String()](#string) |
+| list | [List()](#list) |
 | dict | Dict() |
-| tuple | Tuple() |
+| tuple | [Tuple()](#tuple) |
 | bytes | Bytes() |
-| | In() |
+| | [In()](#in) |
 | datetime | Datetime() |
 
 ```python
@@ -103,9 +103,6 @@ test.a = "the number of the beast" # raise an error
 ```
 
 ## json
-
-
-use ```.get_value()``` to extract a dict from a Dict and do the *json.dumps* like usual.
 
 
 ```python
@@ -597,8 +594,8 @@ a = Dict(
 
 a.set( { "name" : "John", "surname" : "Doe", "incomes" : { "salary" : 50000 }})
 
-a.patch( 'replace', '$.name', "jenny" )
-# equivalent of a.name = jenny
+a.patch( 'replace', '$.name', "Jenny" )
+# equivalent of a.name = Jenny
 
 ```
 
@@ -711,6 +708,22 @@ b = Dict(
 
 a.get_schema() == b.get_schema() # False, a.d and b.d differs.
 ```
+
+You can also extend an existing schema :
+
+```python
+# Adding a new 'key' in the previous schema
+a.add_to_model(
+            "e", String()
+        )
+a.e='it works !'
+# now a.e exists
+
+a.remove_model( 'e' )
+a.e # raise an error.
+
+```
+
 
 ## extended types
 

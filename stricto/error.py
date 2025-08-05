@@ -25,6 +25,7 @@ class ErrorType(Enum):
     REGEXP = auto()
     LENGTH = auto()
     DUP = auto()
+    UNREADABLE = auto()
     READONLY = auto()
     NOT_IN_VIEW = auto()
     DEVELOPPER = auto()
