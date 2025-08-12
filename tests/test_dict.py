@@ -453,6 +453,29 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.b.set({"d": 2})
         self.assertEqual(a.b.d, 2)
 
+    def test_rollback(self):
+        """
+        test rollback
+        """
+        a = Dict(
+            {
+                "a": Int(),
+                "b": Int(default=3, required=True),
+            }
+        )
+        a.set({ "a" : 1 , "b" : 33 })
+        self.assertEqual(a.b, 33)
+        self.assertEqual(a.a, 1)
+        a.rollback()
+        self.assertEqual(a.b, 3)
+        self.assertEqual(a.a, None)
+        a.set({ "a" : 1 , "b" : 33 })
+        with self.assertRaises(Error) as e:
+            a.set({ "a" : 11 , "b" : "coucou" })
+        self.assertEqual(a.b, 33)
+        self.assertEqual(a.a, 1)
+
+
     def test_event(self):
         """
         test for events

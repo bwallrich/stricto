@@ -820,6 +820,8 @@ self.assertEqual(repr(a.b), "(12.0+9.0i)")
 
 ## Tests & co
 
+For personal use only
+
 ```bash
 # all tests
 python -m unittest tests
@@ -853,7 +855,7 @@ git push
 git tag -a 0.0.x -m '0.0.x'
 git push origin tag 0.0.x
 
-# publish a new relase in guthub interface, based on tag 
+# publish a new relase in github interface, based on tag 
 ```
 
 

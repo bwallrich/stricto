@@ -267,6 +267,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a.insert(key, model)
         self.check(a)
 
+        self._old_value = self.duplicate_in_list()
         if not isinstance(self._value, list):
             self._value = []
 
@@ -291,6 +292,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
             a.__setitem__(key, models)
             self.check(a)
 
+            self._old_value = self.duplicate_in_list()
             self._value.__setitem__(key, models)
         else:
             model = self._type.copy()
@@ -300,6 +302,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
             a[key].set(value)
             self.check(a)
 
+            self._old_value = self.duplicate_in_list()
             self._value.__setitem__(key, model)
 
     def __delitem__(self, key):
@@ -312,6 +315,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a.__delitem__(key)
         self.check(a)
 
+        self._old_value = self.duplicate_in_list()
         self._value.__delitem__(key)
         self.reset_attribute_name()
 
@@ -341,6 +345,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a.pop(key)
         self.check(a)
 
+        self._old_value = self.duplicate_in_list()
         popped = self._value.pop(key)
         self.reset_attribute_name()
         return popped
@@ -355,6 +360,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a.remove(value)
         self.check(a)
 
+        self._old_value = self.duplicate_in_list()
         removed = self._value.remove(value)
         self.reset_attribute_name()
         return removed
@@ -374,6 +380,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a.append(model)
         self.check(a)
 
+        self._old_value = self.duplicate_in_list()
         if not isinstance(self._value, list):
             self._value = []
 
@@ -397,6 +404,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
             i = i + 1
         self.check(a)
 
+        self._old_value = self.duplicate_in_list()
         if not isinstance(self._value, list):
             self._value = []
 
@@ -468,6 +476,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         GenericType.check_constraints(self, value)
 
         if self._min is not None:
+            # print(f'List check {self.get_value()} value={value} ')
             if len(value) < self._min:
                 raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
         if self._max is not None:

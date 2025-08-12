@@ -30,6 +30,17 @@ class TestBool(unittest.TestCase):
         self.assertEqual(a, True)
         self.assertEqual(not a, False)
 
+    def test_rollback(self):
+        """
+        test rollback
+        """
+        a = Bool(default=True)
+        self.assertEqual(a, True)
+        a.set(False)
+        self.assertEqual(a, False)
+        a.rollback()
+        self.assertEqual(a, True)
+
     def test_not(self):
         """
         Test not

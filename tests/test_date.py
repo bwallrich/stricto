@@ -116,7 +116,6 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         b.set_now()
         with self.assertRaises(TypeError) as e:
             c = a + b
-            print(c)
         self.assertEqual(
             e.exception.args[0],
             "unsupported operand type(s) for +: 'datetime.datetime' and 'datetime.datetime'",
@@ -153,6 +152,19 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(Error) as e:
             a.set("coucou")
         self.assertEqual(e.exception.message, "error json decode")
+
+    def test_rollback(self):
+        """
+        test rollback
+        """
+        a = Datetime()
+        now = datetime.now()
+        a.set(now)
+        self.assertEqual(a, now)
+        a.set(datetime.strptime("2025/01/25", "%Y/%m/%d"))
+        self.assertNotEqual(a, now)
+        a.rollback()
+        self.assertEqual(a, now)
 
     def test_json(self):
         """

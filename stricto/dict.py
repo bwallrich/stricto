@@ -136,6 +136,7 @@ class Dict(GenericType):
                 self.__dict__[k] = value
             else:
                 v.set(self.get_other_value(value))
+                self.release_events()
             return
 
         if k in ["root", "parent", "attribute_name"]:
@@ -303,6 +304,9 @@ class Dict(GenericType):
         return False
 
     def get_value(self):
+        """
+        return the value
+        """
         a = {}
         for key in self._keys:
             v = object.__getattribute__(self, key)
@@ -310,6 +314,27 @@ class Dict(GenericType):
                 continue
             a[key] = v.get_value()
         return a
+
+    def rollback(self):
+        """
+        reset to the old value
+        """
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            v.rollback()
+
+    def get_old_value(self):
+        """
+        Return the previous version of values
+        """
+        a = {}
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            if v.exists_or_can_read() is False:
+                continue
+            a[key] = v.get_old_value()
+        return a
+
 
     def __json_encode__(self):
         """
@@ -352,7 +377,6 @@ class Dict(GenericType):
             return self
 
         # The sel_filter is actually ignored.
-        # print(f"dict getselector '{sel_filter}' -> '{selectors_as_list}' {self}")
         (sel, sub_sel_filter) = selectors_as_list.pop(0)
         # apply selector to me
         if sel == "$":

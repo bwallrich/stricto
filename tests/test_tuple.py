@@ -82,6 +82,24 @@ class TestTuple(unittest.TestCase):
             a.set(b)
         self.assertEqual(e.exception.message, "Must be below Maximal")
 
+
+
+
+    def test_rollback(self):
+        """
+        test rollback
+        """
+        a = Tuple((Bool(), Int()))
+        a.set( ( True, 1 ))
+        self.assertEqual(len(a), 2)
+        self.assertEqual(a[0], True)
+        self.assertEqual(a[1], 1)
+        a.set( ( False, 1 ) )
+        self.assertEqual(a[0], False)
+        a.rollback()
+        self.assertEqual(a[0], True)
+        self.assertEqual(a[1], 1)
+
     def test_bad_type(self):
         """
         Test bad definition type

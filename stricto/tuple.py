@@ -185,6 +185,12 @@ class Tuple(ListAndTuple):
         return self._value[index]
 
     def set_value_without_checks(self, value):
+
+        if self._value is None:
+            self._old_value = None
+        else:
+            self._old_value = self._value.copy()
+
         if value is None:
             self._value = None
             return

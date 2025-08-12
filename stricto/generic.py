@@ -62,12 +62,34 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
         self._constraints = constraint if isinstance(constraint, list) else [constraint]
 
+        # for events
+        self._on = kwargs.pop("on", None)
+        self._events = {}
+        self._pushed_events = {}
+        self._trigging_events = False
+        
+        if self._on is not None:
+            l = self._on if isinstance(self._on, list) else [self._on]
+            for event in l:
+                if not isinstance(event, tuple):
+                    continue
+                if not callable(event[1]):
+                    continue
+                if event[0] not in self._events:
+                    self._events[event[0]] = []
+                self._events[event[0]].append(event[1])
+        # transform auto_set in events. adapt with a lambda function
+        if "change" not in self._events:
+            self._events["change"] = []
+
+
         # Set the default value
         self._default = kwargs.pop("default", None)
         self.check(self._default)
         if self._default is not None:
             self.set_value_without_checks(self._default)
             self._old_value = self._value
+
 
         # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
@@ -91,28 +113,20 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # this object exist
         self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
-        # for events
-        self._on = kwargs.pop("on", None)
-        self._events = {}
-        if self._on is not None:
-            l = self._on if isinstance(self._on, list) else [self._on]
-            for event in l:
-                if not isinstance(event, tuple):
-                    continue
-                if not callable(event[1]):
-                    continue
-                if event[0] not in self._events:
-                    self._events[event[0]] = []
-                self._events[event[0]].append(event[1])
 
-        # transform auto_set in events. adapt with a lambda function
         if auto_set is not None:
             # Cannot modify a value which is a result of a computation
-            if "change" not in self._events:
-                self._events["change"] = []
             self._events["change"].append(
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
+        self._events["change"].append(
+             lambda event_name, root, self: self.changewrap()
+        )
+
+
+
+    def changewrap( self ):
+        self.check( self.get_value() )
 
     def has_right(self, right_name):
         """
@@ -223,8 +237,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         my_view = self.belongs_to_view(view_name)
 
-        # print(f"{self.path_name()} -> {my_view}")
-
         if my_view is ViewType.YES:
             return (ViewType.YES, self.copy()) if final is False else self.copy()
 
@@ -245,11 +257,50 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         a = auto_set(root)
         self.set(a)
 
+    def push_event(self, event_name, from_id, **kwargs):
+        """
+
+        """
+        if event_name not in self._pushed_events:
+            self.__dict__['_pushed_events'][event_name] = {
+                "from_id" : from_id,
+                "kwargs" : kwargs
+            }
+
+    def release_events( self ):
+        """
+        
+        """
+        # Already triggin events, avoid reccursion
+        if self._trigging_events is True:
+            return
+        
+        self.__dict__['_trigging_events'] = True
+
+        events = self._pushed_events.copy()
+        self.__dict__['_pushed_events']= {}
+
+        for event_name, v in events.items():
+            try:
+                self.trigg( event_name, v['from_id'], **v['kwargs'] )
+            except Exception as e:
+                self.rollback()
+                self.__dict__['_trigging_events'] = False
+                raise e
+                
+        self.__dict__['_trigging_events'] = False
+
+        # somme events added during last trigged events, restart
+        if len ( self._pushed_events.keys() ) != 0:
+            self.release_events()
+
+
     def trigg(self, event_name, from_id, **kwargs):
         """
         trig an event
         from_id is an id to avoid the event to call itself
         """
+        # print(f'trigg {event_name} {type(self)} {self.path_name()} {self._value}  {self._events}')
 
         if self._events is None:
             return
@@ -543,7 +594,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             corrected_value = self._transform(corrected_value, root)
 
         self.check(corrected_value)
-        return self.set_value_without_checks(corrected_value)
+        self.set_value_without_checks(corrected_value)
+
+        # Release all events 
+        if self.am_i_root():
+            self.release_events()
+        
+        return
 
     def patch_internal(self, op: str, value) -> None:
         """
@@ -612,7 +669,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # Trigd a 'change' event to recompute
         if not self.am_i_root():
-            root.trigg("change", id(self))
+            root.push_event( 'change', id(self) )
+            # root.trigg("change", id(self))
 
         return True
 
@@ -621,6 +679,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         get the value
         """
         return self._value
+    
+    def rollback(self):
+        """
+        reset to the old value
+        """
+        self.__dict__['_value'] = self._old_value
 
     def __repr__(self):
         return self._value.__repr__()

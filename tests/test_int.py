@@ -5,7 +5,7 @@ test for Int()
 
 import unittest
 
-from stricto import Int, Error
+from stricto import Dict, Int, Error
 
 
 def pair_only(value, o):  # pylint: disable=unused-argument
@@ -202,3 +202,49 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(self.on_change_bool, False)
         a.set(11)
         self.assertEqual(self.on_change_bool, True)
+
+    def test_check_value(self):
+        """
+        Test check value ( b > a )
+        """
+        def must_be_above_a( value, o ):
+
+            if o.a == None:
+                return True
+
+            if value > o.a: 
+                return True
+            
+            return False
+
+        d = Dict({
+            "a" : Int( max=99 ),
+            "b" : Int( max=99, constraint=must_be_above_a )
+        })
+        self.assertEqual(d.check({ "a": 4 }), None)
+ 
+        with self.assertRaises(Error) as e:
+            d.check({ "a": 100 })
+        self.assertEqual(e.exception.message, "Must be below Maximal")
+
+        with self.assertRaises(Error) as e:
+            d.set({ "a": 20, "b" : 10 })
+        self.assertEqual(e.exception.message, "constraint not validated")
+
+        self.assertEqual(d.a, None)
+        self.assertEqual(d.b, None)
+        with self.assertRaises(Error) as e:
+            d.set({ "a" : 20, "b": 10 })
+        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(d.a, None)
+        self.assertEqual(d.b, None)
+
+        # set a below b -> must rais an error
+        d.set({ "b" : 20, "a": 10 })
+        self.assertEqual(d.a, 10)
+        self.assertEqual(d.b, 20)
+        with self.assertRaises(Error) as e:
+            d.a=22
+        self.assertEqual(e.exception.message, "constraint not validated")
+
+
