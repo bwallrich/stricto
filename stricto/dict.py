@@ -335,7 +335,6 @@ class Dict(GenericType):
             a[key] = v.get_old_value()
         return a
 
-
     def __json_encode__(self):
         """
         Called by the specific Encoder

@@ -115,7 +115,7 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         b = Datetime()
         b.set_now()
         with self.assertRaises(TypeError) as e:
-            c = a + b
+            print(a + b)
         self.assertEqual(
             e.exception.args[0],
             "unsupported operand type(s) for +: 'datetime.datetime' and 'datetime.datetime'",

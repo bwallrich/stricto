@@ -67,7 +67,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._events = {}
         self._pushed_events = {}
         self._trigging_events = False
-        
+
         if self._on is not None:
             l = self._on if isinstance(self._on, list) else [self._on]
             for event in l:
@@ -82,14 +82,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if "change" not in self._events:
             self._events["change"] = []
 
-
         # Set the default value
         self._default = kwargs.pop("default", None)
         self.check(self._default)
         if self._default is not None:
             self.set_value_without_checks(self._default)
             self._old_value = self._value
-
 
         # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
@@ -113,20 +111,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # this object exist
         self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
-
         if auto_set is not None:
             # Cannot modify a value which is a result of a computation
             self._events["change"].append(
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
-        self._events["change"].append(
-             lambda event_name, root, self: self.changewrap()
-        )
+        self._events["change"].append(lambda event_name, root, self: self.wrap_recheck_value())
 
-
-
-    def changewrap( self ):
-        self.check( self.get_value() )
+    def wrap_recheck_value(self):
+        """
+        called by event "change" (another value as changed in the object)
+        Recheck the value because constraint can be dependant on the changed value.        
+        """
+        self.check(self.get_value())
 
     def has_right(self, right_name):
         """
@@ -258,49 +255,53 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.set(a)
 
     def push_event(self, event_name, from_id, **kwargs):
-        """
-
+        """ 
+        Add event to the list of events. 
+        This is used to avoid calling the same event twice, or calling an event 
+        while doing the modifications due to an event.
+        this func fill the dict _pushed_events
         """
         if event_name not in self._pushed_events:
-            self.__dict__['_pushed_events'][event_name] = {
-                "from_id" : from_id,
-                "kwargs" : kwargs
+            self.__dict__["_pushed_events"][event_name] = {
+                "from_id": from_id,
+                "kwargs": kwargs,
             }
 
-    def release_events( self ):
-        """
-        
+    def release_events(self):
+        """ 
+        Send all avents. called by root an trigg events.
+        At the end, if some events ar added during modifications to event, 
+        trig them again.
         """
         # Already triggin events, avoid reccursion
         if self._trigging_events is True:
             return
-        
-        self.__dict__['_trigging_events'] = True
+
+        self.__dict__["_trigging_events"] = True
 
         events = self._pushed_events.copy()
-        self.__dict__['_pushed_events']= {}
+        self.__dict__["_pushed_events"] = {}
 
         for event_name, v in events.items():
             try:
-                self.trigg( event_name, v['from_id'], **v['kwargs'] )
+                self.trigg(event_name, v["from_id"], **v["kwargs"])
             except Exception as e:
                 self.rollback()
-                self.__dict__['_trigging_events'] = False
+                self.__dict__["_trigging_events"] = False
                 raise e
-                
-        self.__dict__['_trigging_events'] = False
+
+        self.__dict__["_trigging_events"] = False
 
         # somme events added during last trigged events, restart
-        if len ( self._pushed_events.keys() ) != 0:
+        if len(self._pushed_events.keys()) != 0:
             self.release_events()
-
 
     def trigg(self, event_name, from_id, **kwargs):
         """
         trig an event
         from_id is an id to avoid the event to call itself
         """
-        # print(f'trigg {event_name} {type(self)} {self.path_name()} {self._value}  {self._events}')
+        # print(f'trigg {event_name} {type(self)} {self.path_name()} {self._value}  {self._events}')
 
         if self._events is None:
             return
@@ -596,11 +597,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.check(corrected_value)
         self.set_value_without_checks(corrected_value)
 
-        # Release all events 
+        # Release all events
         if self.am_i_root():
             self.release_events()
-        
-        return
+
 
     def patch_internal(self, op: str, value) -> None:
         """
@@ -669,7 +669,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # Trigd a 'change' event to recompute
         if not self.am_i_root():
-            root.push_event( 'change', id(self) )
+            root.push_event("change", id(self))
             # root.trigg("change", id(self))
 
         return True
@@ -679,12 +679,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         get the value
         """
         return self._value
-    
+
     def rollback(self):
         """
         reset to the old value
         """
-        self.__dict__['_value'] = self._old_value
+        self.__dict__["_value"] = self._old_value
 
     def __repr__(self):
         return self._value.__repr__()
