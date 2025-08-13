@@ -1,6 +1,6 @@
 # pylint: disable=duplicate-code
 """
-test for Rights()
+test for Permissions()
 """
 
 # pylint: disable=no-member
@@ -25,7 +25,7 @@ def check_if_can_modify(value, root, other=None):  # pylint: disable=unused-argu
 
 class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
-    test for Rights()
+    test for Permissions()
     """
 
     def __init__(self, *args, **kwargs):
@@ -52,14 +52,14 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
             can_gloups=False,
         )
 
-        self.assertEqual(a.has_right("bloblo"), True)
-        self.assertEqual(a.has_right("read"), True)
-        self.assertEqual(a.has_right("modify"), True)
-        self.assertEqual(a.has_right("unknown_right"), True)
-        self.assertEqual(a.has_right("gloups"), False)
-        self.assertEqual(a.e.f.has_right("gloups"), True)
-        self.assertEqual(a.e.f.has_right("gloups"), True)
-        self.assertEqual(a.e.has_right("gloups"), False)
+        self.assertEqual(a.is_allowed_to("bloblo"), True)
+        self.assertEqual(a.is_allowed_to("read"), True)
+        self.assertEqual(a.is_allowed_to("modify"), True)
+        self.assertEqual(a.is_allowed_to("unknown_right"), True)
+        self.assertEqual(a.is_allowed_to("gloups"), False)
+        self.assertEqual(a.e.f.is_allowed_to("gloups"), True)
+        self.assertEqual(a.e.f.is_allowed_to("gloups"), True)
+        self.assertEqual(a.e.is_allowed_to("gloups"), False)
 
         a.set({"b": 1, "c": "top"})
         with self.assertRaises(Error) as e:

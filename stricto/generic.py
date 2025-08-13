@@ -8,7 +8,7 @@ import re
 import inspect
 from enum import Enum, auto
 from .error import Error, ErrorType
-from .rights import Rights
+from .permissions import Permissions
 
 
 PREFIX = "MODEL_"
@@ -46,7 +46,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         notNone     : (boolean) must be required or not
 
         """
-        self._rights = Rights()
+        self._permissions = Permissions()
         self.parent = None
         self._exists = True
         self._have_sub_objects = False
@@ -102,7 +102,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         for key, right in kwargs.items():
             a = re.findall(r"^can_(.*)$", key)
             if a:
-                self._rights.add_or_modify_right(a[0], right)
+                self._permissions.add_or_modify_permission(a[0], right)
 
         # the  value is computed
         auto_set = kwargs.pop("set", kwargs.pop("compute", None))
@@ -127,11 +127,11 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         self.check(self.get_value())
 
-    def has_right(self, right_name):
+    def is_allowed_to(self, right_name):
         """
         check the right "right_name"
         """
-        rep = self._rights.has_right(right_name, self.get_root())
+        rep = self._permissions.is_allowed_to(right_name, self.get_root())
         # --- the result is a bool. got it
         if rep is not None:
             return rep
@@ -141,19 +141,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return True
 
         # We don-t know the right ( = None ). check the parent
-        return self.parent.has_right(right_name)
+        return self.parent.is_allowed_to(right_name)
 
     def can_read(self):
         """
         check right "read"
         """
-        return self.has_right("read")
+        return self.is_allowed_to("read")
 
     def can_modify(self):
         """
         check right "modify"
         """
-        return self.has_right("modify")
+        return self.is_allowed_to("modify")
 
     def __json_encode__(self):
         """
@@ -194,7 +194,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             "default": self.get_as_string(self._default),
             "transform": self.get_as_string(self._transform),
             "exists": self.get_as_string(self._exists),
-            "rights": self._rights.get_as_dict_of_strings(),
+            "rights": self._permissions.get_as_dict_of_strings(),
             # must add events and change functions
         }
         return a
@@ -338,7 +338,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         if self.exists(None) is False:
             return False
-        if self.has_right("read") is False:
+        if self.is_allowed_to("read") is False:
             return False
         return True
 
