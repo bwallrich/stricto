@@ -422,6 +422,10 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
             self._value = []
 
         self._value.clear()
+
+        if not isinstance(value, (List, list)):
+            return
+
         i = 0
         for v in value:
             model = self._type.copy()
@@ -431,7 +435,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
             self._value.append(model)
             i = i + 1
 
-    def check(self, value):
+    def check(self, value) -> None:
         GenericType.check(self, value)
 
         # check all values

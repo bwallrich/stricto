@@ -41,6 +41,17 @@ class TestFloat(unittest.TestCase):
             a.set("dd")
         self.assertEqual(e.exception.message, "Must be a float")
 
+    def test_set_value_without_check(self):
+        """
+        check for putting abnormal values
+        """
+        a = Float()
+        a.set_value_without_checks(23)
+        a.set_value_without_checks([])
+        a.set_value_without_checks((1, 2))
+        a.set_value_without_checks({})
+        a.set_value_without_checks("true")
+
     def test_default(self):
         """
         Test default value

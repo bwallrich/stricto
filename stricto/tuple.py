@@ -196,6 +196,10 @@ class Tuple(ListAndTuple):
             return
 
         self._value = []
+
+        if not isinstance(value, (tuple, Tuple, list, List)):
+            return
+
         i = 0
         for element in value:
             mm = copy.copy(self._schema[i])
@@ -205,7 +209,7 @@ class Tuple(ListAndTuple):
             self._value.append(mm)
             i = i + 1
 
-    def check(self, value):
+    def check(self, value) -> None:
         GenericType.check(self, value)
 
         if isinstance(value, (tuple, Tuple, list, List)):

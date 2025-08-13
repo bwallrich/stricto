@@ -49,6 +49,17 @@ class TestTuple(unittest.TestCase):
         self.assertEqual(a, b)
         self.assertNotEqual(a, b[0])
 
+    def test_set_value_without_check(self):
+        """
+        check for putting abnormal values
+        """
+        a = Tuple((Bool(), Int()))
+        a.set_value_without_checks(23)
+        a.set_value_without_checks(["coucou"])
+        a.set_value_without_checks((1, "toto"))
+        a.set_value_without_checks({})
+        a.set_value_without_checks("true")
+
     def test_list_to_type(self):
         """
         Test list to tuple

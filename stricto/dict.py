@@ -405,12 +405,14 @@ class Dict(GenericType):
         return None
 
     def set_value_without_checks(self, value):
+        if not isinstance(value, (dict, Dict)):
+            return
         for key in self._keys:
             if key in value:
                 v = value.get(key)
                 self.__dict__[key].set_value_without_checks(v)
 
-    def check(self, value):
+    def check(self, value) -> None:
         # self.check_type(value)
         # self.check_constraints(value)
         GenericType.check(self, value)

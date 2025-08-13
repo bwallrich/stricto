@@ -192,6 +192,17 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a[0] = 22
         self.assertEqual(a[0], 22)
 
+    def test_set_value_without_check(self):
+        """
+        check for putting abnormal values
+        """
+        a = List(Int())
+        a.set_value_without_checks(23)
+        a.set_value_without_checks(["coucou"])
+        a.set_value_without_checks((1, 2))
+        a.set_value_without_checks({})
+        a.set_value_without_checks("true")
+
     def test_set_item_slice(self):
         """
         Test set a[i:j]=[...]

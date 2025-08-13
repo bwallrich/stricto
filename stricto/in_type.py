@@ -28,7 +28,7 @@ class In(GenericType):
             a["sub_scheme"].append(schema.get_schema())
         return a
 
-    def check(self, value):
+    def check(self, value) -> None:
         """
         check if complain to model or return a error string
         """

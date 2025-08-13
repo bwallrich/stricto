@@ -827,3 +827,64 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(
             a.match({"b": {"l": ("$contains", {"i": ("$reg", r"sec")})}}), True
         )
+
+    def test_set_value_without_check(self):
+        """
+        check for putting abnormal values
+        """
+        d = Dict({"a": Int(), "b": Int()})
+        d.set_value_without_checks({"a": "coucou", "b": 10})
+        self.assertEqual(d.get_value(), {"a": "coucou", "b": 10})
+        d.set_value_without_checks(23)
+        d.set_value_without_checks([])
+        d.set_value_without_checks((1, 2))
+
+    def test_check_value(self):
+        """
+        Test check value ( b > a )
+        """
+
+        def must_be_above_a(value, o):
+
+            if o.a == None:  # pylint: disable=singleton-comparison
+                return True
+
+            if value > o.a:
+                return True
+
+            return False
+
+        d = Dict({"a": Int(max=99), "b": Int(max=99, constraint=must_be_above_a)})
+        self.assertEqual(d.check({"a": 4}), None)
+        self.assertEqual(d.a.check(4), None)
+        with self.assertRaises(Error) as e:
+            d.a.check("hello")
+        self.assertEqual(e.exception.message, "Must be a int")
+
+        with self.assertRaises(Error) as e:
+            d.check({"a": 100})
+            d.a.check(100)
+        self.assertEqual(e.exception.message, "Must be below Maximal")
+
+        with self.assertRaises(Error) as e:
+            d.set({"a": 20, "b": 10})
+        self.assertEqual(e.exception.message, "constraint not validated")
+
+        self.assertEqual(d.a, None)
+        self.assertEqual(d.b, None)
+        with self.assertRaises(Error) as e:
+            d.set({"a": 20, "b": 10})
+        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(d.a, None)
+        self.assertEqual(d.b, None)
+
+        # set a below b -> must rais an error
+        d.set({"b": 20, "a": 10})
+        self.assertEqual(d.a, 10)
+        self.assertEqual(d.b, 20)
+        with self.assertRaises(Error) as e:
+            d.a = 22
+        self.assertEqual(e.exception.message, "constraint not validated")
+
+        d.set_value_without_checks({"a": 20, "b": 10})
+        self.assertEqual(d.get_value(), {"a": 20, "b": 10})

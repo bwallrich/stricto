@@ -693,7 +693,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
     def __str__(self):
         return self._value.__str__()
 
-    def check(self, value):
+    def check(self, value) -> None:
         """
         check if complain to model or return an Error
         """
@@ -714,7 +714,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if corrected_value is None:
             if self._not_none is True:
                 raise Error(ErrorType.NULL, "Cannot be empty", self.path_name())
-            return True
+            return
 
         # Check correct type or raise an Error
         self.check_type(corrected_value)
@@ -725,8 +725,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # check constraints or raise an Error
         self.check_constraints(corrected_value)
-
-        return True
 
     def __getattr__(self, k):
         """

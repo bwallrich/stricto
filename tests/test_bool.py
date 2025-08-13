@@ -50,6 +50,17 @@ class TestBool(unittest.TestCase):
         a.set(not a)
         self.assertEqual(a, False)
 
+    def test_set_value_without_check(self):
+        """
+        check for putting abnormal values
+        """
+        a = Bool()
+        a.set_value_without_checks(23)
+        a.set_value_without_checks([])
+        a.set_value_without_checks((1, 2))
+        a.set_value_without_checks({})
+        a.set_value_without_checks("true")
+
     def test_not_null(self):
         """
         Test notnull for a bool
