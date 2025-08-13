@@ -111,17 +111,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # this object exist
         self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
+        self._events["change"].insert(
+            0, lambda event_name, root, self: self.wrap_recheck_value()
+        )
         if auto_set is not None:
             # Cannot modify a value which is a result of a computation
             self._events["change"].append(
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
-        self._events["change"].append(lambda event_name, root, self: self.wrap_recheck_value())
 
     def wrap_recheck_value(self):
         """
         called by event "change" (another value as changed in the object)
-        Recheck the value because constraint can be dependant on the changed value.        
+        Recheck the value because constraint can be dependant on the changed value.
         """
         self.check(self.get_value())
 
@@ -255,9 +257,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.set(a)
 
     def push_event(self, event_name, from_id, **kwargs):
-        """ 
-        Add event to the list of events. 
-        This is used to avoid calling the same event twice, or calling an event 
+        """
+        Add event to the list of events.
+        This is used to avoid calling the same event twice, or calling an event
         while doing the modifications due to an event.
         this func fill the dict _pushed_events
         """
@@ -268,9 +270,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             }
 
     def release_events(self):
-        """ 
+        """
         Send all avents. called by root an trigg events.
-        At the end, if some events ar added during modifications to event, 
+        At the end, if some events ar added during modifications to event,
         trig them again.
         """
         # Already triggin events, avoid reccursion
@@ -601,7 +603,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if self.am_i_root():
             self.release_events()
 
-
     def patch_internal(self, op: str, value) -> None:
         """
         Patch this object himself. calld by self.patch method after selection with select.
@@ -719,7 +720,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.check_type(corrected_value)
 
         if self.can_modify() is False:
-            if corrected_value != self._value:
+            if corrected_value != self.get_value():
                 raise Error(ErrorType.READONLY, "cannot modify value", self.path_name())
 
         # check constraints or raise an Error

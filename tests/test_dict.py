@@ -56,6 +56,15 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             a.set({"b": 1, "c": 2, "d": "yolo"})
         self.assertEqual(e.exception.message, "Unknown content")
 
+    def test_default(self):
+        """
+        test default values
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        self.assertEqual(a.get_value(), {"b": None, "c": None})
+        a = Dict({"b": Dict({"e": Int(), "f": Int()}), "c": Int()})
+        self.assertEqual(a.get_value(), {"b": {"e": None, "f": None}, "c": None})
+
     def test_set_with_dict(self):
         """
         test set non existing value

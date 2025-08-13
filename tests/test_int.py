@@ -188,8 +188,10 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int()
         self.assertEqual(a, None)
         self.assertEqual(a is None, False)
-        self.assertEqual(a.get_value() is None, True) # pylint: disable=singleton-comparison
-        self.assertEqual(a == None, True) # pylint: disable=singleton-comparison
+        self.assertEqual(
+            a.get_value() is None, True
+        )  # pylint: disable=singleton-comparison
+        self.assertEqual(a == None, True)  # pylint: disable=singleton-comparison
 
     def test_transform_on_change(self):
         """
