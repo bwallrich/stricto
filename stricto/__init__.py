@@ -17,5 +17,6 @@ from .extend import Extend
 from .json_encoder import StrictoEncoder
 from .extended.bytes import Bytes
 from .extended.date_time import Datetime
+from .extended.free_dict import FreeDict
 from .permissions import Permissions
 from .extended.complex import Complex

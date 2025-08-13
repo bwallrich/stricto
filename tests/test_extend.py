@@ -7,7 +7,7 @@ test for views()
 import unittest
 import json
 from datetime import datetime
-from stricto import Datetime, Dict, Int, Error, StrictoEncoder, Bytes, Complex
+from stricto import Datetime, Dict, Int, Error, StrictoEncoder, Bytes, Complex, FreeDict
 
 
 class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -105,3 +105,15 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(TypeError) as e:
             c = a + 12
         self.assertEqual(e.exception.args[0], "can only add Complex")
+
+    def test_free_object(self):
+        """
+        Test free object
+
+        """
+        a = FreeDict()
+        with self.assertRaises(TypeError) as e:
+            a.set(12)
+        self.assertEqual(e.exception.args[0], "Must be a <class 'dict'>")
+        a.set({})
+        a.set({"top": 1})
