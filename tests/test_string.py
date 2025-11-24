@@ -92,10 +92,11 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         String not null
         """
+        a = String(required=True)
         with self.assertRaises(Error) as e:
-            a = String(notNone=True)
+            a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")
-        a = String(notNone=True, default="")
+        a = String(required=True, default="")
         with self.assertRaises(Error) as e:
             a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")
@@ -111,7 +112,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         test count function
         """
-        a = String(notNone=True, default="yoyo")
+        a = String(required=True, default="yoyo")
         self.assertEqual(a.count("y"), 2)
 
     def test_regexp(self):

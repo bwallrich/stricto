@@ -52,6 +52,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
             can_gloups=False,
         )
 
+        a.enable_permissions()
         self.assertEqual(a.is_allowed_to("bloblo"), True)
         self.assertEqual(a.is_allowed_to("read"), True)
         self.assertEqual(a.is_allowed_to("modify"), True)
@@ -71,6 +72,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test read only error
         """
         a = Int(default=10, can_modify=False)
+        a.enable_permissions()
         with self.assertRaises(Error) as e:
             a.set(11)
         self.assertEqual(e.exception.message, "cannot modify value")
@@ -84,6 +86,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         global increment  # pylint: disable=global-statement
         increment = 0
         a = Int(default=10, can_modify=check_if_can_modify)
+        a.enable_permissions()
         a.set(12)
         self.assertEqual(a, 12)
         with self.assertRaises(Error) as e:
@@ -101,6 +104,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
             },
         )
 
+        a.enable_permissions()
         with self.assertRaises(Error) as e:
             a.set({"b": 1, "c": "test"})
         self.assertEqual(e.exception.message, "locked")
@@ -108,3 +112,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(AttributeError) as e:
             self.assertEqual(a.c, "toto")
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'c'")
+
+        a.disable_permissions()
+        a.set({"b": 1, "c": "test"})
+        self.assertEqual(a.c, "test")

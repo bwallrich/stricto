@@ -5,7 +5,6 @@ This class must not be used directly
 
 import copy
 import re
-import inspect
 from enum import Enum, auto
 from .error import Error, ErrorType
 from .permissions import Permissions
@@ -55,6 +54,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._value = None
         self._old_value = None
         self._transform = None
+        self._default_value = None
         self._description = kwargs.pop("description", None)
         self._views = kwargs.pop("views", [])
         self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
@@ -84,10 +84,11 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # Set the default value
         self._default = kwargs.pop("default", None)
-        self.check(self._default)
-        if self._default is not None:
-            self.set_value_without_checks(self._default)
-            self._old_value = self._value
+        self._default_value = self._default
+        # self.check(self._default)
+        # if self._default is not None:
+        #     self.set_value_without_checks(self._default)
+        #     self._old_value = self._value
 
         # transformation of the value before setting
         self._transform = kwargs.pop("transform", None)
@@ -119,6 +120,18 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             self._events["change"].append(
                 lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
             )
+
+    def enable_permissions(self):
+        """
+        set permissions to on
+        """
+        self._permissions.enable()
+
+    def disable_permissions(self):
+        """
+        set permissions to off
+        """
+        self._permissions.disable()
 
     def wrap_recheck_value(self):
         """
@@ -176,18 +189,22 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             a = []
             for i in value:
                 a.append(self.get_as_string(i))
-            return f"[{', '.join(a)}]"
+            # return f"[{', '.join(a)}]"
+            return a
         if callable(value):
-            return inspect.getsource(value)
-        return str(value)
+            return "func"  # inspect.getsource(value)
+        return value
 
     def get_schema(self):
         """
         Return a schema for this object
         """
+        ty = str(type(self))
+
         a = {
-            "type": str(type(self)),
-            "decription": self.get_as_string(self._description),
+            "type": ty,
+            "type_short": re.sub(r".*\.|'>", "", ty),
+            "description": self.get_as_string(self._description),
             "required": self.get_as_string(self._not_none),
             "in": self.get_as_string(self._union),
             "constraints": self.get_as_string(self._constraints),
@@ -197,6 +214,42 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             "rights": self._permissions.get_as_dict_of_strings(),
             # must add events and change functions
         }
+        return a
+
+    def get_current_meta(self, parent: dict = None):
+        """
+        Return a schema with all rights correctly set depending on fonctions
+        """
+        if parent is None and self.am_i_root() is False:
+            raise Error(
+                ErrorType.MUSTSTARTATROOT,
+                "get_current_meta must start at root",
+                self.path_name(),
+            )
+
+        ty = str(type(self))
+
+        rights = self._permissions.check_all(self.get_root())
+        for right_name, value in rights.items():
+            if value is None:
+                if parent is None:
+                    rights[right_name] = True
+                else:
+                    rights[right_name] = parent.get("rights").get(right_name, False)
+
+        a = {
+            "type": ty,
+            "type_short": re.sub(r".*\.|'>", "", ty),
+            "description": self.get_as_string(self._description),
+            "required": self.get_as_string(self._not_none),
+            "in": self.get_as_string(self._union),
+            "constraints": self.get_as_string(self._constraints),
+            "default": self.get_as_string(self._default),
+            "exists": self.exists(self.get_value()),
+            "rights": rights,
+            # must add events and change functions
+        }
+
         return a
 
     def belongs_to_view(self, view_name):
@@ -347,6 +400,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         Return True if the object Exist, othewise False.
         exist can be a function to make this field dependant from the value of another
         """
+
         response = self.get_args_or_execute_them(self._exists, value)
         if response is False:
             return False
@@ -422,7 +476,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         add two objects
         """
-        b = self._value + self.get_other_value(other)
+        b = self.get_value() + self.get_other_value(other)
         r = self.__copy__()
 
         r.set(b)
@@ -432,7 +486,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         sub two objects
         """
-        b = self._value - self.get_other_value(other)
+        b = self.get_value() - self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -468,7 +522,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         pow two objects
         """
-        b = self._value ** self.get_other_value(other)
+        b = self.get_value() ** self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -477,7 +531,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         mod two objects
         """
-        b = self._value % self.get_other_value(other)
+        b = self.get_value() % self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -486,7 +540,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         __rshift__ two objects
         """
-        b = self._value >> self.get_other_value(other)
+        b = self.get_value() >> self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -495,7 +549,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         __lshift__ two objects
         """
-        b = self._value << self.get_other_value(other)
+        b = self.get_value() << self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -504,7 +558,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         __and__ two objects
         """
-        b = self._value & self.get_other_value(other)
+        b = self.get_value() & self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -513,7 +567,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         __or__ two objects
         """
-        b = self._value | self.get_other_value(other)
+        b = self.get_value() | self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -522,7 +576,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         __xor__ two objects
         """
-        b = self._value ^ self.get_other_value(other)
+        b = self.get_value() ^ self.get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
@@ -531,37 +585,37 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         equality test two objects
         """
-        return self._value == self.get_other_value(other)
+        return self.get_value() == self.get_other_value(other)
 
     def __ne__(self, other):
         """
         ne test two objects
         """
-        return self._value != self.get_other_value(other)
+        return self.get_value() != self.get_other_value(other)
 
     def __lt__(self, other):
         """
         lt test two objects
         """
-        return self._value < self.get_other_value(other)
+        return self.get_value() < self.get_other_value(other)
 
     def __le__(self, other):
         """
         le test two objects
         """
-        return self._value <= self.get_other_value(other)
+        return self.get_value() <= self.get_other_value(other)
 
     def __gt__(self, other):
         """
         gt test two objects
         """
-        return self._value > self.get_other_value(other)
+        return self.get_value() > self.get_other_value(other)
 
     def __ge__(self, other):
         """
         ge test two objects
         """
-        return self._value >= self.get_other_value(other)
+        return self.get_value() >= self.get_other_value(other)
 
     def __copy__(self):
         cls = self.__class__
@@ -666,7 +720,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return False
 
         if callable(self._on_change):
-            self._on_change(self._old_value, self._value, root)
+            self._on_change(self._old_value, self.get_value(), root)
 
         # Trigd a 'change' event to recompute
         if not self.am_i_root():
@@ -679,6 +733,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         get the value
         """
+        if self._default_value is not None and self._value is None:
+            if callable(self._default_value):
+                self._value = self._default_value(self.get_root())
+            else:
+                self._value = self._default_value
+
         return self._value
 
     def rollback(self):
@@ -688,10 +748,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self.__dict__["_value"] = self._old_value
 
     def __repr__(self):
-        return self._value.__repr__()
+        return self.get_value().__repr__()
 
     def __str__(self):
-        return self._value.__str__()
+        return self.get_value().__str__()
 
     def check(self, value) -> None:
         """
@@ -730,7 +790,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         replicate all atributes from value, but prefere self attribute first.
         """
-        return getattr(self._value, k, None)
+        return getattr(self.get_value(), k, None)
         # return None
 
     def check_type(self, value):  # pylint: disable=unused-argument
@@ -748,17 +808,17 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
 
         if operator == "$eq":
-            return self._value == other
+            return self.get_value() == other
         if operator == "$gt":
-            return self._value > other
+            return self.get_value() > other
         if operator == "$gte":
-            return self._value >= other
+            return self.get_value() >= other
         if operator == "$lte":
-            return self._value <= other
+            return self.get_value() <= other
         if operator == "$lt":
-            return self._value < other
+            return self.get_value() < other
         if operator == "$ne":
-            return self._value != other
+            return self.get_value() != other
         if operator in {"$and", "$or"}:
             if not isinstance(other, list):
                 raise Error(ErrorType.DEVELOPPER, "$and need a list", self.path_name())
@@ -819,7 +879,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             except Exception:  # pylint: disable=broad-exception-caught
                 return False
 
-        return self._value == other
+        return self.get_value() == other
 
     def check_constraints(self, value):
         """

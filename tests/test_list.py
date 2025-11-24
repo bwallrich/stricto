@@ -39,8 +39,9 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test notnull value
         """
+        a = List(Int(), notNone=True)
         with self.assertRaises(Error) as e:
-            a = List(Int(), notNone=True)
+            a.set(None)
         self.assertEqual(e.exception.message, "Cannot be empty")
         a = List(Int(), notNone=True, default=[])
         with self.assertRaises(Error) as e:
@@ -96,9 +97,10 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(len(a), 1)
         self.assertEqual(a[0], 12)
 
-        with self.assertRaises(Error) as e:
-            a = List(Int(), default=22)
-        self.assertEqual(e.exception.message, "Must be a list")
+        a = List(Int(), default=22)
+        with self.assertRaises(TypeError) as e:
+            self.assertEqual(a[0], 12)
+        self.assertEqual(e.exception.args[0], "'int' object is not subscriptable")
 
     def test_clear(self):
         """

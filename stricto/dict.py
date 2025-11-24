@@ -60,6 +60,35 @@ class Dict(GenericType):
             a["sub_scheme"][key] = v.get_schema()
         return a
 
+    def get_current_meta(self, parent: dict = None):
+        """
+        Return a schema for this object
+        """
+        a = GenericType.get_current_meta(self, parent)
+        a["sub_scheme"] = {}
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            a["sub_scheme"][key] = v.get_current_meta(a)
+        return a
+
+    def enable_permissions(self):
+        """
+        set permissions to on
+        """
+        GenericType.enable_permissions(self)
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            v.enable_permissions()
+
+    def disable_permissions(self):
+        """
+        set permissions to off
+        """
+        GenericType.disable_permissions(self)
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            v.disable_permissions()
+
     def keys(self):
         """
         return all keys
@@ -237,7 +266,7 @@ class Dict(GenericType):
         match { a : 12, c : 14 } -> True
         """
         if other is None:
-            return self._value is None
+            return self.get_value() is None
 
         if isinstance(other, dict) is False:
             return False

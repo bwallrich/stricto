@@ -765,7 +765,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             }
         )
         self.assertEqual(a.match({}), True)
-        self.assertEqual(a.match(None), True)
+        self.assertEqual(a.match(None), False)
         self.assertEqual(a.match({"dosnotexist": 23}), False)
         self.assertEqual(a.match({"dosnotexist": None}), False)
         self.assertEqual(a.match({"a": "12"}), False)

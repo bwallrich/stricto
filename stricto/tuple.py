@@ -39,9 +39,22 @@ class Tuple(ListAndTuple):
         Return a schema for this object
         """
         a = GenericType.get_schema(self)
-        a["sub_scheme"] = []
+        a["sub_types"] = []
         for schema in self._schema:
-            a["sub_scheme"].append(schema.get_schema())
+            a["sub_types"].append(schema.get_schema())
+        return a
+
+    def get_current_meta(self, parent: dict = None):
+        """
+        Return a schema for this object
+        """
+        a = ListAndTuple.get_current_meta(self, parent)
+
+        a["sub_types"] = []
+
+        v = GenericType.get_value(self)
+        for i in v:
+            a["sub_types"].append(i.get_current_meta(a))
         return a
 
     def get_selectors(self, sel_filter, selectors_as_list):
@@ -49,22 +62,23 @@ class Tuple(ListAndTuple):
         get with selector in tuple
         """
 
+        v = GenericType.get_value(self)
         if sel_filter is None:
             if not selectors_as_list:
                 return self
 
             list_of_result = []
-            for v in self._value:
-                result = v.get_selectors(None, selectors_as_list.copy())
+            for i in v:
+                result = i.get_selectors(None, selectors_as_list.copy())
                 if result is not None:
                     list_of_result.append(result)
             return tuple(list_of_result)
 
         if re.match("^[0-9]+$", sel_filter):
-            if self._value is None:
+            if v is None:
                 return None
             try:
-                sub_object = self._value[int(sel_filter)]
+                sub_object = v[int(sel_filter)]
             except IndexError:
                 return None
             return sub_object.get_selectors(None, selectors_as_list)
@@ -88,20 +102,22 @@ class Tuple(ListAndTuple):
         """
         get the value
         """
-        if self._value is None:
+        v = GenericType.get_value(self)
+        if v is None:
             return None
 
         a = []
-        for sub_value in self._value:
+        for sub_value in v:
             a.append(sub_value.get_value())
         return tuple(a)
 
     def __repr__(self):
         a = []
-        if self._value is None:
+        v = GenericType.get_value(self)
+        if v is None:
             return "None"
 
-        for sub_value in self._value:
+        for sub_value in v:
             a.append(sub_value)
         return tuple(a).__repr__()
 
@@ -115,54 +131,61 @@ class Tuple(ListAndTuple):
         """
         equality test tuple
         """
-        t = None if self._value is None else tuple(self._value)
+        v = GenericType.get_value(self)
+        t = None if v is None else tuple(v)
         return t == self.get_other_value(other)
 
     def match(self, other):
         """
         Check if equality with an object
         """
+        v = GenericType.get_value(self)
         if other is None:
-            return self._value is None
+            return v is None
 
         if isinstance(other, tuple) is False:
             return False
 
-        return tuple(self._value) == other
+        return tuple(v) == other
 
     def __ne__(self, other):
         """
         equality test two objects
         """
-        t = None if self._value is None else tuple(self._value)
+        v = GenericType.get_value(self)
+        t = None if v is None else tuple(v)
         return t != self.get_other_value(other)
 
     def __lt__(self, other):
         """
         lt test two objects
         """
-        t = None if self._value is None else tuple(self._value)
+        v = GenericType.get_value(self)
+        t = None if v is None else tuple(v)
         return t < self.get_other_value(other)
 
     def __le__(self, other):
         """
         le test two objects
         """
-        t = None if self._value is None else tuple(self._value)
+        v = GenericType.get_value(self)
+        t = None if v is None else tuple(v)
         return t <= self.get_other_value(other)
 
     def __gt__(self, other):
         """
         gt test two objects
         """
-        t = None if self._value is None else tuple(self._value)
+        v = GenericType.get_value(self)
+        t = None if v is None else tuple(v)
         return t > self.get_other_value(other)
 
     def __ge__(self, other):
         """
         ge test two objects
         """
-        t = None if self._value is None else tuple(self._value)
+        v = GenericType.get_value(self)
+        t = None if v is None else tuple(v)
         return t >= self.get_other_value(other)
 
     def __add__(self, other):
@@ -176,13 +199,15 @@ class Tuple(ListAndTuple):
             raise TypeError("can only concatenate Tuple to Tuple")
 
         r = Tuple(tuple(self._schema) + tuple(other._schema))
-        r._value = self._value + other._value
+        v = GenericType.get_value(self)
+        r._value = v + GenericType.get_value(other)
         return r
 
     def __getitem__(self, index):
-        if self._value is None:
+        v = GenericType.get_value(self)
+        if v is None:
             return None
-        return self._value[index]
+        return v[index]
 
     def set_value_without_checks(self, value):
 

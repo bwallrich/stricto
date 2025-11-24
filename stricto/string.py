@@ -30,7 +30,7 @@ class String(GenericType):
         return a
 
     def __len__(self):
-        return self._value.__len__()
+        return self.get_value().__len__()
 
     def check_type(self, value):
         if isinstance(value, (str, String)):
@@ -53,7 +53,7 @@ class String(GenericType):
         Matching with an operator
         """
         if operator == "$reg":
-            if re.match(other, self._value):
+            if re.match(other, self.get_value()):
                 return True
             return False
 

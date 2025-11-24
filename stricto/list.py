@@ -5,7 +5,7 @@ from .list_and_tuple import ListAndTuple
 from .error import Error, ErrorType
 
 
-class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
+class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """
     A Dict Type
     """
@@ -32,28 +32,44 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a["min"] = self.get_as_string(self._min)
         a["max"] = self.get_as_string(self._max)
         a["uniq"] = self.get_as_string(self._uniq)
-        a["sub_schema"] = self._type.get_schema()
+        a["sub_type"] = self._type.get_schema()
+        return a
+
+    def get_current_meta(self, parent: dict = None):
+        """
+        Return a schema for this object
+        """
+        a = ListAndTuple.get_current_meta(self, parent)
+
+        a["sub_type"] = []
+
+        v = GenericType.get_value(self)
+        if isinstance(v, list):
+            for i in v:
+                a["sub_type"].append(i.get_current_meta(a))
         return a
 
     def __len__(self):
         """
         calld by len()
         """
-        if not isinstance(self._value, list):
+        v = GenericType.get_value(self)
+        if not isinstance(v, list):
             return 0
-        return self._value.__len__()
+        return v.__len__()
 
     def __eq__(self, other):
         """
         equality test two Lists
         """
+        v = GenericType.get_value(self)
         if other is None:
-            return self._value is None
+            return v is None
 
         if isinstance(other, List) is False:
             return False
 
-        if self._value != other._value:
+        if v != GenericType.get_value(other):
             return False
 
         return True
@@ -63,9 +79,10 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         Matching with an operator
         """
         if operator == "$contains":
-            if self._value is None:
+            v = GenericType.get_value(self)
+            if v is None:
                 return False
-            for item in self._value:
+            for item in v:
                 try:
                     rep = item.match(other)
                     if rep is True:
@@ -102,19 +119,20 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         match [ 12, 13, 14 ] -> True
         """
 
+        v = GenericType.get_value(self)
         if other is None:
-            return self._value is None
+            return v is None
 
         # A list. Do a patch on each element
         if isinstance(other, list):
             if self._value is None:
                 return False
 
-            if len(self._value) != len(other):
+            if len(v) != len(other):
                 return False
 
             index = 0
-            for item in self._value:
+            for item in v:
                 try:
                     rep = item.match(other[index])
                     index += 1
@@ -125,19 +143,19 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
             return True
 
         return ListAndTuple.match(self, other)
-        # return self._value == other
 
     def __ne__(self, other):
         """
         equality test two Lists
         """
+        v = GenericType.get_value(self)
         if other is None:
-            return self._value is not None
+            return v is not None
 
         if isinstance(other, List) is False:
             return True
 
-        if self._value == other._value:
+        if v == GenericType.get_value(other):
             return False
         return True
 
@@ -150,9 +168,11 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         #     return
 
         i = 0
-        for item in self._value:
-            item.attribute_name = f"[{i}]"
-            i = i + 1
+        v = GenericType.get_value(self)
+        if isinstance(v, list):
+            for item in v:
+                item.attribute_name = f"[{i}]"
+                i = i + 1
 
     def trigg(self, event_name, from_id=None, **kwargs):
         """
@@ -161,22 +181,25 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         if from_id is None:
             from_id = id(self)
 
-        if self._value is not None:
-            for item in self._value:
+        v = GenericType.get_value(self)
+        if isinstance(v, list):
+            for item in v:
                 item.trigg(event_name, from_id, **kwargs)
 
         GenericType.trigg(self, event_name, from_id, **kwargs)
 
     def __repr__(self):
-        if self._value is None:
+        v = GenericType.get_value(self)
+        if v is None:
             return repr(None)
         a = []
-        for i in self._value:
-            a.append(i)
+        if isinstance(v, list):
+            for i in v:
+                a.append(i)
         return a.__repr__()
 
     def __getitem__(self, index):
-        return self._value[index]
+        return GenericType.get_value(self)[index]
 
     def _parse_slice(self, slice_as_string: str):
         """
@@ -203,15 +226,16 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         """
         get with selector as lists
         """
-        if self._value is None:
+        v = GenericType.get_value(self)
+        if v is None:
             return None
 
         if sel_filter is None:
             if not selectors_as_list:
                 return self
             a = []
-            for v in self._value:
-                result = v.get_selectors(None, selectors_as_list.copy())
+            for i in v:
+                result = i.get_selectors(None, selectors_as_list.copy())
                 if result is not None:
                     a.append(result)
             return a
@@ -219,20 +243,20 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         # With a sel_filter = A slice fir the list
         sli = self._parse_slice(sel_filter)
         try:
-            v = self._value[sli]
+            i = v[sli]
         except IndexError:
             return None
         except TypeError:
             return None
 
-        if isinstance(v, list):
+        if isinstance(i, list):
             l = []
-            for obj in v:
+            for obj in i:
                 if obj.exists_or_can_read() is False:
                     continue
                 l.append(obj.get_selectors(None, selectors_as_list.copy()))
             return l
-        return v.get_selectors(None, selectors_as_list)
+        return i.get_selectors(None, selectors_as_list)
 
     def clear(self):
         """
@@ -247,11 +271,13 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         used to check() on this list before modification
         """
         a = []
-        if not isinstance(self._value, list):
+        v = GenericType.get_value(self)
+
+        if not isinstance(v, list):
             return a
 
-        for v in self._value:
-            a.append(v.copy())
+        for i in v:
+            a.append(i.copy())
         return a
 
     def insert(self, key, value):
@@ -268,7 +294,8 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         self._old_value = self.duplicate_in_list()
-        if not isinstance(self._value, list):
+        v = GenericType.get_value(self)
+        if not isinstance(v, list):
             self._value = []
 
         self._value.insert(key, model)
@@ -329,7 +356,8 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         a.sort(**kwarg)
         self.check(a)
 
-        if not isinstance(self._value, list):
+        v = GenericType.get_value(self)
+        if not isinstance(v, list):
             self._value = []
 
         return self._value.sort(**kwarg)
@@ -346,7 +374,9 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         self._old_value = self.duplicate_in_list()
-        popped = self._value.pop(key)
+
+        v = GenericType.get_value(self)
+        popped = v.pop(key)
         self.reset_attribute_name()
         return popped
 
@@ -381,7 +411,8 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         self._old_value = self.duplicate_in_list()
-        if not isinstance(self._value, list):
+        v = GenericType.get_value(self)
+        if not isinstance(v, list):
             self._value = []
 
         self._value.append(model)
@@ -405,7 +436,8 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         self.check(a)
 
         self._old_value = self.duplicate_in_list()
-        if not isinstance(self._value, list):
+        v = GenericType.get_value(self)
+        if not isinstance(v, list):
             self._value = []
 
         self._value.extend(models)
@@ -456,11 +488,12 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes
         """
         @overwrite GenericType.get_value()
         """
-        if self._value is None:
+        v = GenericType.get_value(self)
+        if v is None:
             return None
 
         a = []
-        for element in self._value:
+        for element in v:
             a.append(element.get_value())
         return a
 
