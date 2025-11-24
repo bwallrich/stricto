@@ -64,7 +64,7 @@ c == b # return False
 
 ## Basic types
 
-All basic class from python are implemented in ```stricto```.
+All Python basic classes are implemented in ```stricto```.
 
 | python class | type in stricto |
 | - | - |
@@ -79,8 +79,8 @@ All basic class from python are implemented in ```stricto```.
 | | [In()](#in) |
 | datetime | Datetime() |
 
+### Example
 ```python
-# example
 from stricto import Dict, Int
 
 a = Int()
@@ -99,12 +99,9 @@ test=Dict({
 test.a = 22 # -> ok
 test.a = 23.1 # raise an error
 test.a = "the number of the beast" # raise an error
-
 ```
 
-## json
-
-
+## JSON
 ```python
 # example
 from stricto import Int, List, String, Dict, Error, StrictoEncoder
@@ -123,51 +120,46 @@ b.set( json.loads(sa) )
 b == a # return True
 ```
 
+## Types
+### Common options
 
-## Types and options
-
-### All types
-
-available options for all types ares :
+Commonly available options for any type are:
 
 | Option | Default | Description |
 | - | - | - |
-| ```notNone=True\|False``` | False | cannot be **None** |
-| ```required=True\|False``` | False | similar to ```notNone``` |
-| ```description="whatever you want"``` | None | a description of this object |
-| ```default=666``` | None | the default value |
-| ```in=[ 1, 2, 3, 5 ]\|func``` | None | the value must be one of those elements |
-| ```union=[ 1, 2, 3, 5 ]\|func``` | None | similar to ```in```  |
-| ```transform=func``` | None | a [function](#functions) to [transform](#transform) the value before setting it |
-| ```constraint=func``` | None | a [constraints](#constraints) to check the value before setting it |
-| ```constraints=[func]``` | None | a list of [constraints](#constraints) to check the value before setting it |
-| ```onchange=func``` | None | a [onchange](#onchange) function trigged when the value change |
-| ```onChange=func``` | None | similar to ```onchange``` |
-| ```set=func``` | None | a read only value, calculated from other .See [set or compute function](#set-or-compute) |
-| ```compute=func``` | None | similar to ```set``` |
-| ```exists=func``` | True | a function to say if the object "exists", depending on values from other attributs. See  [exists](#exists) for details |
-| ```can_read=func``` | True | a function to say if the object can be read. see  [can_read](#can_read) for details |
-| ```can_modify=func``` | True | a function to say if the object can be modified (read only value). see  [can_modify](#can_modify) for details |
-| ```on=(event_name, function)``` | None | trigged to an event. see  [events](#events) for details |
-| ```views=[ "view1", "!view2" ]``` | [] | Say if this element belong to a view. see  [views](#views) for details |
+| ```required=True\|False``` | False | Check whether the field must have a value. |
+| ```description="whatever you want"``` | None | Set a description for the item |
+| ```default=666``` | None | set a default value |
+| ```in=[ 1, 2, 3, 5 ]\|func``` | None | Value must be in the list or pass the function check. |
+| ```union=[ 1, 2, 3, 5 ]\|func``` | None | Alias for ```in```  |
+| ```transform=func``` | None | Set a [function](#functions) that [transforms](#transform) the value before assignment. |
+| ```constraint=func``` | None | Set a function to [check](#constraints) the value before asssignment. |
+| ```constraints=[func]``` | None | Same as above but for a list of [constraints](#constraints) |
+| ```onchange=func``` | None | set [onchange](#onchange) a function that will be trigged when the value change. |
+| ```onChange=func``` | None | Alias for ```onchange``` |
+| ```set=func``` | None | For read-only items ; set a function that will compute the value from others attributes. See [set or compute function](#set-or-compute) |
+| ```compute=func``` | None | Alias for ```set``` |
+| ```exists=func``` | True | Set a function to check whether the object exists based on values from other attributes. See  [exists](#exists) for details |
+| ```can_read=func``` | True | Set a function to check whether the object is readable. see  [can_read](#can_read) for details |
+| ```can_modify=func``` | True | Set a function to check whether the object is changeable (read-only value). see  [can_modify](#can_modify) for details |
+| ```on=(event_name, function)``` | None | Register a function to be trigged when the specified event occurs. see  [events](#events) for details |
+| ```views=[ "view1", "!view2" ]``` | [] | Define the views this attribute is included or excluded from.. see  [views](#views) for details |
 
 See [functions](#functions) for mor details and examples how to use them.
 
 ### Int()
+```Int( options )``` maps the Python built-in `int` type.
 
-```Int( options )``` is for integer.
-
-```Int( options )``` use [generic options](#all-types).
-
-available specific options for Int() ares :
+In addition to the [generic options](#all-types), it supports specific options:
 
 | Option | Default | Description |
 | - | - | - |
-| ```min=``` | None | minimum value |
-| ```minimum=21``` | None | similar to ```min``` |
-| ```max=99``` | None | maximum value |
-| ```maximum=99``` | None | similar to ```max=99``` |
+| ```min=``` | None | Minimum value |
+| ```minimum=21``` | None | Alias for  ```min``` |
+| ```max=99``` | None | Maximum value |
+| ```maximum=99``` | None | Alias for ```max=99``` |
 
+#### Example
 ```python
 # example
 from stricto import Dict, Int, String
@@ -185,20 +177,17 @@ newAge = 1+client.age # -> Ok (newAge is implicitly an int)
 
 ### String()
 
-```String( options )``` is for strings.
+```String( options )``` maps the Python built-in `str` string type.
 
-```String( options )``` use [generic options](#all-types).
-
-available specific options for Int() ares :
+In addition to the [generic options](#all-types), it supports specific options:
 
 | Option | Default | Description |
 | - | - | - |
-| ```pattern=regexp``` | None | must match this regexp |
-| ```patterns=[reg1, reg2]``` | None | must match all regexps |
-| ```regexp=``` | None | similar to ```pattern``` |
+| ```pattern=regexp``` | None | Must match this `regexp` |
+| ```patterns=[reg1, reg2]``` | None | Must match all the regular expressions in the list |
+| ```regexp=``` | None | Alias for ```pattern``` |
 
-Examples
-
+#### Example
 ```python
 a=String( pattern='^A' )
 a.set('Foo')        # -> raise an error
@@ -217,21 +206,19 @@ a.set('AtoZ')        # OK
 ```
 
 ### List()
+```List( options )``` maps the Python built-in `list` type.
 
-```List( options )``` is for list.
-
-```List( options )``` use [generic options](#all-types).
-
-available specific options for List() ares :
+In addition to the [generic options](#all-types), it supports specific options:
 
 | Option | Default | Description |
 | - | - | - |
-| ```min=``` | None | minimum number of elements in the list |
-| ```minimum=21``` | None | similar to ```min``` |
-| ```max=99``` | None | maximum number of elements in the list |
-| ```maximum=99``` | None | similar to ```max=99``` |
-| ```uniq=True``` | None | duplicate values are forbidden |
+| ```min=``` | None | Minimum number of elements in the list |
+| ```minimum=21``` | None | Alias for  ```min``` |
+| ```max=99``` | None | Maximum number of elements in the list |
+| ```maximum=99``` | None | Alias for `max` |
+| ```uniq=True``` | None | Forbid duplicate values |
 
+#### Example
 ```python
 # example
 from stricto import Dict, List
@@ -246,13 +233,11 @@ client.nicknames.append( "Ed" ) # -> raise an error (must be uniq)
 ```
 
 ### Tuple()
+```Tuple( options )``` maps the Python built-in `tuple` type.
 
-```Tuple( options )``` is for tuple.
+It supports all the [generic options](#all-types).
 
-```Tuple( options )``` use [generic options](#all-types).
-
-Ther is no available specific options for Tuple().
-
+#### Example
 ```python
 # example
 from stricto import Dict, Tuple
@@ -266,16 +251,14 @@ client.address = ( 12, "accacia avenue" )  # -> Ok
 client.address[1] # -> "acacia avenue"
 client.address[0] = 13  # -> raise an error like a standard tuple
 client.address = ( 13, "accacia avenue" )  # -> Ok
-
 ```
 
 ### In()
+```In( [ Array of types ] )``` builds the union of several types ; in other words, it allows the attribute to be set with values of different types.
 
-```In( [ Array of types ] )``` is not a type, but an **union** of diffferent types.
+It supports all the [generic options](#all-types).
 
-```In( options )``` use [generic options](#all-types).
-
-
+#### Example
 ```python
 # example
 from stricto import In, Int, String
@@ -294,12 +277,13 @@ a.set(3.14) # -> raise an error
 
 ## Functions
 
- a ```func``` can return a value to adapt the result. It can bee a lambda too.
+A `func` can return a value to modify the result. It can also be a lambda.
 
 ### transform
 
- Please see [transform function](#all-types)
+Please refer to [transform function](#all-types)
 
+#### Example
 ```python
 # example
 from stricto import Dict, Int, String
@@ -321,8 +305,13 @@ company.name="worldcompagny"
 print(company.name) # -> "WORLDCOMPAGNY"
 ```
 
-### set or compute
+### set / compute
 
+It allows to define a function that will compute the field's value.
+
+This computed field is read-only.
+
+#### Example
 ```python
 # example
 from stricto import Dict, Int, String
@@ -344,11 +333,12 @@ print(a.d) # -> 4
 ```
 
 ### constraints
+It allows to define a function that checks whether the constraint on the attribute's value is respected.
 
+#### Example
 ```python
 # example
 from stricto import Dict, Int, String
-
 
 
 def check_pair(value, o): # pylint: disable=unused-argument
@@ -367,15 +357,12 @@ a.b = 2 # OK
 a.c = 3 # -> raise an error
 ```
 
+### onchange / onChange
+It allows to define a listener function about the attribute value change event.
 
-
-### onchange
-
+#### Example
 ```python
-# example
 from stricto import Dict, Int, String
-
-
 
 def change_test(old_value, value, o): # pylint: disable=unused-argument
     """
@@ -395,9 +382,9 @@ a.b = 3-1   # -> nothing displayed
 ```
 
 ### exists
+It allows to define a function that checks the attribute's existence.
 
-A function wich must return ```True|False``` to say if this key exists.
-
+#### Example
 ```python
 # example
 from stricto import Dict, Int, String
@@ -431,26 +418,26 @@ cat.female_infos # -> { "number_of_litter" : 2 }
 ```
 
 
-## rights
+## Permissions
+Each attribute can have its own set of permissions.
+A Permission is materialized by a ```can_<permission>``` parameter for the attribute.
 
-You can defin all rights you want on each element. 
-a right is a ```can_<right>``` parameter in the object.
+Currently 2 permissions are defined:
 
-actually 2 rights are defined
-
-| right | description |
+| Permission | description |
 | - | - |
-| can_read | read : The ability to read the content of this field |
-| can_modify | modify : The ability to modify field |
+| can_read | read : The ability to read the attribute's value |
+| can_modify | modify : The ability to modify the attribute |
 
-But you can add your own right.
-
+The developer is free to add any permission he needs.
 
 ### can_read
 
-A function wich must return ```True|False``` to say if this key can be read.
-Differ from [exists](#exists) in the sens a object can exists but currently not be readable
+It allows to define a function that checks whether the attribute is readable ; returns a boolean.
 
+It shall not be confused with [exists](#exists) : an attribute can exist but not be readable for such user.
+
+#### Example
 ```python
 # example
 from stricto import Dict, Int, String
@@ -478,11 +465,7 @@ user.salary   # -> 20000
 
 user.name="Jack"
 user.salary # -> raise an error
-
 ```
-
-
-
 
 
 ## selectors
@@ -519,11 +502,30 @@ a.select("$.*.l[0:2].i") # ["fir", "sec"]
 
 ```
 
-## filtering and matching
+## Matching
 
 You can match an object with some kind of filters. 
 
-Example :
+Matching is done with ```match( dict )``` method.
+
+Available operators are :
+
+| operator | syntax | example | description |
+| - | - | - | - |
+| $and | ( "$and", [ condition, condition ] ) |  ( "\$and", [ ( "\$gt", 1 ), ( "$lt" : 2 )]) | Do an *and* on conditions
+| $or | ( "$or", [ condition, condition ] ) |  ( "\$or", [ ( "\$gt", 10 ), ( "$eq" : 0 )]) | Do an *or* on conditions
+| $eq | ( "$eq", value ) |  ( "\$eq", "toto" ) | Equality |
+| $ne | ( "$ne", value ) |  ( "\$ne", "toto" ) | Not equal |
+| $lt | ( "$lt", value ) |  ( "\$lt", 1 ) | Less than |
+| $lte | ( "$lte", value ) |  ( "\$lte", 1 ) | Less than or equal |
+| $gt | ( "$gt", value ) |  ( "\$gt", 1 ) | Greater than |
+| $gte | ( "$gte", value ) |  ( "\$gte", 1 ) | Greater than or equal |
+| $not | ( "$not", condition ) |  ( "\$not", ... ) | Not |
+| $reg | ( "$reg", regexp ) |  ( "\$reg", r'Jo' ) | A regular expression; match only on strings (match "start with Jo" in this example.) |
+| $contains | ( "$contains", condition ) |  ( "\$contains", ( "$reg", r'^Jo' ) ) | a list contains one or more elements matching the condition |
+
+
+### Example
 
 ```python
 from stricto import Int, List, String, Dict, Error
@@ -548,35 +550,13 @@ a.match( { "incomes" : { "salary" : 20000 } } ) -> return False
 
 # Match with operators
 a.match( { "incomes" : { "salary" : ( "$gt", 20000 ) } } ) -> return True
-
 ```
-
-Matching is done with ```match( dict )``` method.
-
-available operators :
-
-
-| operator | syntax | example | description |
-| - | - | - | - |
-| $and | ( "$and", [ condition, condition ] ) |  ( "\$and", [ ( "\$gt", 1 ), ( "$lt" : 2 )]) | Do an *and* on conditions.
-| $or | ( "$or", [ condition, condition ] ) |  ( "\$or", [ ( "\$gt", 10 ), ( "$eq" : 0 )]) | Do an *or* on conditions.
-| $eq | ( "$eq", value ) |  ( "\$eq", "toto" ) | Test the equality. |
-| $ne | ( "$ne", value ) |  ( "\$ne", "toto" ) | Not equal. |
-| $lt | ( "$lt", value ) |  ( "\$lt", 1 ) | less than. |
-| $lte | ( "$lte", value ) |  ( "\$lte", 1 ) | less than or equal. |
-| $gt | ( "$gt", value ) |  ( "\$gt", 1 ) | greater than. |
-| $gte | ( "$gte", value ) |  ( "\$gte", 1 ) | gtreater than or equal. |
-| $not | ( "$not", condition ) |  ( "\$not", ... ) | Not |
-| $reg | ( "$reg", regexp ) |  ( "\$reg", r'Jo' ) | A regexp. Match only on strings (match "start with Jo" in this example.) |
-| $contains | ( "$contains", condition ) |  ( "\$contains", ( "$reg", r'^Jo' ) ) | a list contains on pr more element matching the condition |
 
 ## patch
 
 You can patch object in the sense of https://datatracker.ietf.org/doc/html/rfc6902, but with a merge of [selectors]](#selectors).
 
-
-Example :
-
+### Example
 ```python
 from stricto import Int, List, String, Dict, Error
 
@@ -603,6 +583,7 @@ a.patch( 'replace', '$.name', "Jenny" )
 
 A stricto object can be trigged by custom events.
 
+### Example
 ```python
 import random
 from stricto import Dict, Int, String
@@ -623,12 +604,11 @@ user.set({ "name" : "dice1and2" })
 user.trigg('roll')
 user.dice1 # -> A number 1-6
 user.dice2 # -> A number 1-6
-
 ```
 
 ## Views
 
-```Views```permits "extraction" of a sub objects.
+```Views``` allows to define partial versions of a Stricto Item, i.e. versions that include only a subset of the attributes. 
 
 You can specify in views :
 
@@ -641,8 +621,7 @@ You can specify in ```get_view()``` :
 * an explicite view (only those explicitely marked in view) with ```get_view("+my_view")```
 
 
-
-For example
+### Example
 ```python
 from stricto import Dict, Int, String
 
@@ -676,15 +655,14 @@ l = country.get_view("blabla")
 # l == country
 l = country.get_view("+blabla")
 # l == None
-
 ```
-
 
 ## Schemas
 
-You can extract a schema as a ```dict```
-Example :
+You can extract a schema as a ```dict```.
 
+
+### Example
 ```python
 import stricto
 
@@ -721,21 +699,23 @@ a.e='it works !'
 
 a.remove_model( 'e' )
 a.e # raise an error.
-
 ```
 
 
-## extended types
+## Extended types
+An extented type is a type that inherits some of its properties from a *parent* type.
 
 ### Using Extend
 
 You can define your own *stricto compatible type* using ```Extend```.
 
-For that, you have to derivate your type from ```Extend```, and define methods for enconding and decoding the object.
-You can define the ```__repr__``` funtion too.
+For that, you have to extend your type from ```Extend```, and define methods for encoding and decoding the object.
+
+You have to the ```__repr__``` funtion too.
 
 
-Example with datetime :
+#### Example
+In the example below we define a *Datetime* type, which extends the *datetime* Python type.
 
 ```python
 from datetime import datetime
@@ -775,8 +755,9 @@ a.year # 2000
 
 ### Using Dict
 
-You can define your own structure. An exemple with complex :
+By this way, you have the possibility to define the type's custom structure.
 
+#### Example
 ```python
 from stricto import Dict, Float
 
@@ -815,7 +796,6 @@ a = Dict({"b": Complex(), "c": Int(default=0)})
 a.b.real = 12.0
 a.b.imag = 9.0
 self.assertEqual(repr(a.b), "(12.0+9.0i)")
-
 ```
 
 ## Tests & co
