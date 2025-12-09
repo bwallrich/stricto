@@ -6,6 +6,7 @@ from .generic import GenericType
 from .list import List
 from .list_and_tuple import ListAndTuple
 from .error import Error, ErrorType
+from .selector import Selector
 
 
 class Tuple(ListAndTuple):
@@ -57,31 +58,31 @@ class Tuple(ListAndTuple):
             a["sub_types"].append(i.get_current_meta(a))
         return a
 
-    def get_selectors(self, sel_filter, selectors_as_list):
+    def get_selectors(self, index_or_slice, sel: Selector):
         """
         get with selector in tuple
         """
 
         v = GenericType.get_value(self)
-        if sel_filter is None:
-            if not selectors_as_list:
+        if index_or_slice is None:
+            if sel.empty():
                 return self
 
             list_of_result = []
             for i in v:
-                result = i.get_selectors(None, selectors_as_list.copy())
+                result = i.get_selectors(None, sel.copy())
                 if result is not None:
                     list_of_result.append(result)
             return tuple(list_of_result)
 
-        if re.match("^[0-9]+$", sel_filter):
+        if re.match("^[0-9]+$", index_or_slice):
             if v is None:
                 return None
             try:
-                sub_object = v[int(sel_filter)]
+                sub_object = v[int(index_or_slice)]
             except IndexError:
                 return None
-            return sub_object.get_selectors(None, selectors_as_list)
+            return sub_object.get_selectors(None, sel)
 
         return None
 

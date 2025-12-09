@@ -8,6 +8,7 @@ import re
 from enum import Enum, auto
 from .error import Error, ErrorType
 from .permissions import Permissions
+from .selector import Selector
 
 
 PREFIX = "MODEL_"
@@ -425,44 +426,48 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             parent = parent.parent
         return "".join(p)
 
-    def get_selectors(self, sel_filter, selectors_as_list):
+    def get_selectors(self, index_or_slice: str, sel: Selector):
         """
         get with selector as lists
         """
+
+        # Cannot have index or slice on a generic
+        if index_or_slice:
+            return None
+
         # A sub object behing a generic ? -> No
-        if not selectors_as_list:
+        if sel is None:
+            return None
+        if sel.empty():
             return self
-
-        (sel, sub_sel_filter) = selectors_as_list[0]
-        # apply selector to me
-        if sel == "$":
-            selectors_as_list.pop(0)
-            return self.get_root().get_selectors(sub_sel_filter, selectors_as_list)
-        if sel == "@":
-            selectors_as_list.pop(0)
-            return self.get_selectors(sub_sel_filter, selectors_as_list)
-
-        if sel_filter:
-            # Not yet implemented
-            sel_filter = None
 
         return None
 
-    def select(self, selectors: str):
+    def select(self, selector_as_string: str):
         """
         Get values with selector acording to rfc 9535
         """
-        a = []
-        for sel in selectors.split("."):
-            # selector like blabla[...] or blabla or [...]
-            match = re.search(r"(.*)\[(.*)\]", sel)
-            if not match:
-                a.append((sel, None))
-                continue
-            a.append((match.group(1), match.group(2)))
+        sel = Selector(selector_as_string)
+        (key, sub_index_or_slice) = sel.pop()
 
-        # sel, sel_filter) = a.pop(0)
-        return self.get_selectors(None, a)
+        if key == "$":
+            return self.get_root().get_selectors(sub_index_or_slice, sel)
+        if key == "@":
+            return self.get_selectors(sub_index_or_slice, sel)
+
+        # Cannot start without "$" or "@"
+        return None
+
+    def multi_select(self, selector_as_list_of_string: list[str]):
+        """
+
+        selectors: a list of selector, like [ [ "$", "name" ], [ "$", "address", "town" ] ]
+        """
+        final_response = []
+        for sel_as_string in selector_as_list_of_string:
+            final_response.append(self.select(sel_as_string))
+
+        return final_response
 
     def get_other_value(self, other):
         """

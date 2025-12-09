@@ -3,6 +3,7 @@
 import copy
 from .generic import GenericType, ViewType
 from .error import Error, ErrorType
+from .selector import Selector
 
 
 class Dict(GenericType):
@@ -389,7 +390,7 @@ class Dict(GenericType):
         return v
 
     def get_selectors(
-        self, sel_filter, selectors_as_list
+        self, index_or_slice, sel: Selector
     ):  # pylint: disable=too-many-return-statements
         """
         get with selector as lists
@@ -397,34 +398,30 @@ class Dict(GenericType):
         ( "a" , 0 ) -> a[0]
         ( "toto", None ) -> toto
         """
-        if sel_filter:
-            # Not yet implemented
-            sel_filter = None
 
-        if not selectors_as_list:
+        # Cannot have index or slice on a dict
+        if index_or_slice:
+            return None
+
+        if sel.empty():
             return self
 
-        # The sel_filter is actually ignored.
-        (sel, sub_sel_filter) = selectors_as_list.pop(0)
-        # apply selector to me
-        if sel == "$":
-            return self.get_root().get_selectors(sub_sel_filter, selectors_as_list)
-        if sel == "@":
-            return self.get_selectors(sub_sel_filter, selectors_as_list)
+        # The index_or_slice is actually ignored.
+        (key, sub_index_or_slice) = sel.pop()
 
-        if sel in self._keys:
-            v = self.__dict__[sel]
+        if key in self._keys:
+            v = self.__dict__[key]
             if v.exists_or_can_read():
-                return v.get_selectors(sub_sel_filter, selectors_as_list)
+                return v.get_selectors(sub_index_or_slice, sel)
             return None
 
         # Selecing all
-        if sel in ("", "*"):
+        if key in ("", "*"):
             a = []
             for k in self._keys:
                 v = self.__dict__[k]
                 if v.exists_or_can_read():
-                    result = v.get_selectors(sub_sel_filter, selectors_as_list.copy())
+                    result = v.get_selectors(sub_index_or_slice, sel.copy())
                     if result is not None:
                         a.append(result)
             if not a:

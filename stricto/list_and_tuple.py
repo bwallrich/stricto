@@ -47,7 +47,6 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
             for i in v:
                 i.disable_permissions()
 
-
     def get_current_meta(self, parent: dict = None):
         """
         Return a schema for this object
@@ -58,7 +57,6 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
         a["uniq"] = self.get_as_string(self._uniq)
 
         return a
-
 
     def get_view(self, view_name, final=True):  # pylint: disable=protected-access
         """

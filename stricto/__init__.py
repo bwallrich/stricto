@@ -20,3 +20,4 @@ from .extended.date_time import Datetime
 from .extended.free_dict import FreeDict
 from .permissions import Permissions
 from .extended.complex import Complex
+from .selector import Selector

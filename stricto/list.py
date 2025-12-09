@@ -3,9 +3,12 @@
 from .generic import GenericType
 from .list_and_tuple import ListAndTuple
 from .error import Error, ErrorType
+from .selector import Selector
 
 
-class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes, too-many-public-methods
+class List(
+    ListAndTuple
+):  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """
     A Dict Type
     """
@@ -221,7 +224,7 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes, too-m
         return None
 
     def get_selectors(
-        self, sel_filter, selectors_as_list
+        self, index_or_slice: str, sel: Selector
     ):  # pylint: disable=too-many-return-statements
         """
         get with selector as lists
@@ -230,18 +233,18 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes, too-m
         if v is None:
             return None
 
-        if sel_filter is None:
-            if not selectors_as_list:
+        if index_or_slice is None:
+            if sel.empty():
                 return self
             a = []
             for i in v:
-                result = i.get_selectors(None, selectors_as_list.copy())
+                result = i.get_selectors(None, sel.copy())
                 if result is not None:
                     a.append(result)
             return a
 
         # With a sel_filter = A slice fir the list
-        sli = self._parse_slice(sel_filter)
+        sli = self._parse_slice(index_or_slice)
         try:
             i = v[sli]
         except IndexError:
@@ -254,9 +257,9 @@ class List(ListAndTuple):  # pylint: disable=too-many-instance-attributes, too-m
             for obj in i:
                 if obj.exists_or_can_read() is False:
                     continue
-                l.append(obj.get_selectors(None, selectors_as_list.copy()))
+                l.append(obj.get_selectors(None, sel.copy()))
             return l
-        return i.get_selectors(None, selectors_as_list)
+        return i.get_selectors(None, sel)
 
     def clear(self):
         """

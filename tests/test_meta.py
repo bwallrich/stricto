@@ -25,17 +25,17 @@ class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test views
         """
 
-        def is_adult(value, o): # pylint: disable=unused-argument
+        def is_adult(value, o):  # pylint: disable=unused-argument
             if o.age and o.age >= 18:
                 return True
             return False
 
-        def read_salary(right_name, o, other): # pylint: disable=unused-argument
+        def read_salary(right_name, o, other):  # pylint: disable=unused-argument
             if o.age and o.age >= 20:
                 return True
             return False
 
-        def modify_salary(right_name, o, other): # pylint: disable=unused-argument
+        def modify_salary(right_name, o, other):  # pylint: disable=unused-argument
             if o.age and o.age >= 20:
                 return True
             return False

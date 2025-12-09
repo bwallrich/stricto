@@ -17,3 +17,4 @@ from .test_extend import TestExtend
 from .test_rights import TestRights
 from .test_date import TestDate
 from .test_meta import TestMeta
+from .test_selectors import TestSelectors

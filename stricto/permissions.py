@@ -24,7 +24,7 @@ class Permissions:
         """
         self._enabled = True
 
-    def disable(self) -> None :
+    def disable(self) -> None:
         """
         disable permission
         """
@@ -32,11 +32,11 @@ class Permissions:
 
     def get_permissions_status(self) -> bool:
         """
-        Return if permission is on or off 
+        Return if permission is on or off
         """
         return self._enabled
 
-    def add_or_modify_permission(self, right_name, f) -> None :
+    def add_or_modify_permission(self, right_name, f) -> None:
         """
         Add or modify a right
         """
@@ -73,7 +73,9 @@ class Permissions:
         return all rights with functions executed
         """
         r = {}
-        for right_name in self._permissions.keys(): # pylint: disable=consider-iterating-dictionary
+        for (
+            right_name
+        ) in self._permissions.keys():  # pylint: disable=consider-iterating-dictionary
             r[right_name] = self.is_allowed_to(right_name, o)
         return r
 
