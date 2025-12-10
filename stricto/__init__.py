@@ -13,7 +13,7 @@ from .bool import Bool
 from .float import Float
 from .generic import GenericType, ViewType
 from .error import (
-    ErrorFormat,
+    StrictoError,
     STypeError,
     SAttributError,
     SKeyError,

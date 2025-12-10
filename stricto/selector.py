@@ -12,7 +12,7 @@ class Selector:
     A Selector object
     """
 
-    def __init__(self, selector_as_string: str):
+    def __init__(self, selector_as_string: str | None):
         """
 
         selector_as_string : A string to describe the object like "$.name" or "$.address.street"
@@ -22,13 +22,14 @@ class Selector:
         # this is an array of tuple (selector_name, index or slices (in case of list))
         self.selector = []
 
-        for sel in selector_as_string.split("."):
-            # selector like blabla[...] or blabla or [...]
-            match = re.search(r"(.*)\[(.*)\]", sel)
-            if not match:
-                self.selector.append((sel, None))
-                continue
-            self.selector.append((match.group(1), match.group(2)))
+        if selector_as_string is not None:
+            for sel in selector_as_string.split("."):
+                # selector like blabla[...] or blabla or [...]
+                match = re.search(r"(.*)\[(.*)\]", sel)
+                if not match:
+                    self.selector.append((sel, None))
+                    continue
+                self.selector.append((match.group(1), match.group(2)))
 
     def empty(self):
         """

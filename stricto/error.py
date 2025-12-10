@@ -5,7 +5,7 @@ Module providing Error management
 from copy import deepcopy
 
 
-class ErrorFormat:
+class StrictoError:
     """
     Formating Error class and keeping agrguments
 
@@ -28,7 +28,7 @@ class ErrorFormat:
         return self.string_format.format(*self._my_args, **self._my_kwargs)
 
 
-class STypeError(TypeError, ErrorFormat):
+class STypeError(TypeError, StrictoError):
     """
     Stricto TypeError extention
     """
@@ -37,14 +37,14 @@ class STypeError(TypeError, ErrorFormat):
         """
         init with all params
         """
-        ErrorFormat.__init__(self, message, *args, **kwargs)
+        StrictoError.__init__(self, message, *args, **kwargs)
         super().__init__(message, *args)
 
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
 
-class SAttributError(AttributeError, ErrorFormat):
+class SAttributError(AttributeError, StrictoError):
     """
     Stricto AttributeError extention
     """
@@ -53,14 +53,14 @@ class SAttributError(AttributeError, ErrorFormat):
         """
         init with all params
         """
-        ErrorFormat.__init__(self, message, *args, **kwargs)
+        StrictoError.__init__(self, message, *args, **kwargs)
         super().__init__(message, *args)
 
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
 
-class SKeyError(KeyError, ErrorFormat):
+class SKeyError(KeyError, StrictoError):
     """
     Stricto KeyError extention
     """
@@ -69,14 +69,14 @@ class SKeyError(KeyError, ErrorFormat):
         """
         init with all params
         """
-        ErrorFormat.__init__(self, message, *args, **kwargs)
+        StrictoError.__init__(self, message, *args, **kwargs)
         super().__init__(message, *args)
 
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
 
-class SSyntaxError(SyntaxError, ErrorFormat):
+class SSyntaxError(SyntaxError, StrictoError):
     """
     Stricto SyntaxError extention
     """
@@ -85,14 +85,14 @@ class SSyntaxError(SyntaxError, ErrorFormat):
         """
         init with all params
         """
-        ErrorFormat.__init__(self, message, *args, **kwargs)
+        StrictoError.__init__(self, message, *args, **kwargs)
         super().__init__(message)
 
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
 
-class SConstraintError(Exception, ErrorFormat):
+class SConstraintError(Exception, StrictoError):
     """
     Stricto Constraints Errors
     """
@@ -101,14 +101,14 @@ class SConstraintError(Exception, ErrorFormat):
         """
         init with all params
         """
-        ErrorFormat.__init__(self, message, *args, **kwargs)
+        StrictoError.__init__(self, message, *args, **kwargs)
         super().__init__(message, *args)
 
     def __repr__(self):
         return f'ConstraintsError("{self.to_string()}")'
 
 
-class SRightError(Exception, ErrorFormat):
+class SRightError(Exception, StrictoError):
     """
     Stricto Rights Errors
     """
@@ -117,14 +117,14 @@ class SRightError(Exception, ErrorFormat):
         """
         init with all params
         """
-        ErrorFormat.__init__(self, message, *args, **kwargs)
+        StrictoError.__init__(self, message, *args, **kwargs)
         super().__init__(message, *args)
 
     def __repr__(self):
         return f'RightsError("{self.to_string()}")'
 
 
-class SError(Exception, ErrorFormat):
+class SError(Exception, StrictoError):
     """
     Stricto encasulation Errors
     """
@@ -134,7 +134,7 @@ class SError(Exception, ErrorFormat):
         init with all params
         """
         self.exception = exception
-        ErrorFormat.__init__(self, exception.args[0], *args, **kwargs)
+        StrictoError.__init__(self, exception.args[0], *args, **kwargs)
         super().__init__(exception.args[0], *args)
 
     def __repr__(self):

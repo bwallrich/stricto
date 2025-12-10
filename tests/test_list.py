@@ -340,8 +340,11 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = List(String())
         a.set(["Ford", "BMW", "Volvo"])
         b = a.copy()
+        self.assertEqual(isinstance(b, List), True)
         b[1] = "Renault"
         self.assertEqual(a[1], "BMW")
+        self.assertEqual(b[1], "Renault")
+        a.clear()
         self.assertEqual(b[1], "Renault")
 
     def test_uniq(self):

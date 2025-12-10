@@ -5,7 +5,7 @@ test for Errors()
 
 import unittest
 
-from stricto import ErrorFormat, STypeError, SError
+from stricto import StrictoError, STypeError, SError
 
 
 class TestError(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestError(unittest.TestCase):
         """
         test the error format string
         """
-        a = ErrorFormat("my error {0}, {1}, {name}", "one", 2, name="hop")
+        a = StrictoError("my error {0}, {1}, {name}", "one", 2, name="hop")
         self.assertEqual(repr(a), "my error one, 2, hop")
         self.assertEqual(a.to_string(), "my error one, 2, hop")
 

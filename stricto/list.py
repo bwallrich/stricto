@@ -229,6 +229,7 @@ class List(
         """
         get with selector as lists
         """
+
         v = GenericType.get_value(self)
         if v is None:
             return None
@@ -237,7 +238,7 @@ class List(
             if sel.empty():
                 return self
             a = []
-            for i in v:
+            for i in self._value:
                 result = i.get_selectors(None, sel.copy())
                 if result is not None:
                     a.append(result)

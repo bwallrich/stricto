@@ -44,6 +44,15 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(sel.pop(), ("$", None))
         self.assertEqual(sel.pop(), ("name", "1:2"))
 
+    def test_empty_selector(self):
+        """
+        test empty selectors
+        """
+        sel = Selector(None)
+        self.assertEqual(sel.empty(), True)
+        sel = Selector("")
+        self.assertEqual(sel.pop(), ("", None))
+
     def test_selector_copy(self):
         """
         test selectors
@@ -69,7 +78,11 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(a, a)
 
         self.assertEqual(a.select("$[0].i"), "aa")
-        self.assertEqual(a.select("$[0:1].i"), ["aa"])
+        se = a.select("$[0:1].i")
+        self.assertEqual(se, ["aa"])
+        self.assertEqual(isinstance(se, List), False)
+        self.assertEqual(isinstance(a.select("$"), List), True)
+
         self.assertEqual(a.select("$[0:2].i"), ["aa", "bb"])
         self.assertEqual(a.select("$.i"), ["aa", "bb"])
 
