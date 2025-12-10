@@ -1,7 +1,7 @@
 """Module providing the Float() Class"""
 
 from .generic import GenericType
-from .error import Error, ErrorType
+from .error import STypeError, SConstraintError
 
 
 class Float(GenericType):
@@ -33,14 +33,18 @@ class Float(GenericType):
     def check_type(self, value):
         if isinstance(value, (float, Float)):
             return True
-        raise Error(ErrorType.WRONGTYPE, "Must be a float", self.path_name())
+        raise STypeError("Not a float", path=self.path_name(), value=value)
 
     def check_constraints(self, value):
 
         GenericType.check_constraints(self, value)  # pylint: disable=duplicate-code
 
         if self._min is not None and value < self._min:
-            raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
+            raise SConstraintError(
+                "Must be above Minimal", self.path_name(), value=value
+            )
         if self._max is not None and value > self._max:
-            raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
+            raise SConstraintError(
+                "Must be below Maximal", self.path_name(), value=value
+            )
         return True

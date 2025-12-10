@@ -2,7 +2,7 @@
 
 import copy
 from .generic import GenericType, ViewType
-from .error import Error, ErrorType
+from .error import SSyntaxError, STypeError, SAttributError
 from .selector import Selector
 
 
@@ -18,7 +18,7 @@ class Dict(GenericType):
         for key in schema.keys():
             m = schema.get(key)
             if isinstance(m, GenericType) is False:
-                raise Error(ErrorType.NOTATYPE, "Not a schema")
+                raise SSyntaxError("Not a schema", schema=m)
             mm = copy.copy(m)
             mm.parent = self
             mm.attribute_name = key
@@ -179,7 +179,7 @@ class Dict(GenericType):
             locked = False
 
         if locked is True:
-            raise Error(ErrorType.NOTALIST, "locked", f"{k}")
+            raise SAttributError("locked", f"{k}")
         self.__dict__[k] = value
 
     def __getattr__(self, k):
@@ -457,10 +457,8 @@ class Dict(GenericType):
             # check if a non-described value
             for key in value:
                 if key not in self._keys:
-                    raise Error(
-                        ErrorType.UNKNOWNCONTENT,
-                        "Unknown content",
-                        self.path_name() + f".{key}",
+                    raise SAttributError(
+                        "Unknown content", self.path_name() + f".{key}"
                     )
             return
 
@@ -484,7 +482,7 @@ class Dict(GenericType):
         if isinstance(value, Dict):
             return True
 
-        raise Error(ErrorType.NOTALIST, "Must be a dict", self.path_name())
+        raise STypeError("Must be a dict", self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)

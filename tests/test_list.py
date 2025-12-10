@@ -5,7 +5,14 @@ test for List()
 
 import unittest
 
-from stricto import List, Dict, Int, String, Error
+from stricto import (
+    List,
+    Dict,
+    Int,
+    String,
+    STypeError,
+    SConstraintError,
+)
 
 
 class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -26,12 +33,12 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test error
         """
         a = List(Int())
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.message, "Must be a list")
-        with self.assertRaises(Error) as e:
+        self.assertEqual(e.exception.to_string(), "Must be a list")
+        with self.assertRaises(STypeError) as e:
             a.set(["toto"])
-        self.assertEqual(e.exception.message, "Must be a int")
+        self.assertEqual(e.exception.to_string(), "Must be a int")
         a.set([11])
         self.assertEqual(a[0], 11)
 
@@ -40,13 +47,13 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test notnull value
         """
         a = List(Int(), notNone=True)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.message, "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), "Cannot be empty")
         a = List(Int(), notNone=True, default=[])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.message, "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), "Cannot be empty")
         a = List(Int())
         a.set(None)
         self.assertEqual(a, None)
@@ -343,12 +350,12 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         a = List(String(), uniq=True)
         a.set(["Ford", "BMW", "Volvo"])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a[1] = "Ford"
-        self.assertEqual(e.exception.message, "duplicate value in list")
-        with self.assertRaises(Error) as e:
+        self.assertEqual(e.exception.to_string(), "duplicate value in list")
+        with self.assertRaises(SConstraintError) as e:
             a = a + ["BMW", "yolo"]
-        self.assertEqual(e.exception.message, "duplicate value in list")
+        self.assertEqual(e.exception.to_string(), "duplicate value in list")
 
     def test_rollback(self):
         """
@@ -373,32 +380,12 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test min and max()
         """
-        # with self.assertRaises(Error) as e:
-        #     a = List(String(), min=2, default=["zaza"])
-        # self.assertEqual(e.exception.message, "Must be above Minimal"# )
 
         a = List(String(), min=2, default=["a", "b"])  #
-        # with self.assertRaises(Error) as e:
-        #     a.set(["Ford"])
-        # self.assertEqual(e.exception.message, "Must be above Minimal")
         a.set(["Ford", "BMW"])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.pop()
-        self.assertEqual(e.exception.message, "Must be above Minimal")
-        # with self.assertRaises(Error) as e:
-        #     a.clear()
-        # self.assertEqual(e.exception.message, "Must be above Minimal")
-        # self.assertEqual(a[1], "BMW")
-
-    #
-    # a = List(String(), max=2)
-    # with self.assertRaises(Error) as e:
-    #     a.set(["Ford", "BMW", "Volvo"])
-    # self.assertEqual(e.exception.message, "Must be below Maximal")
-    # a.set(["Ford", "BMW"])
-    # with self.assertRaises(Error) as e:
-    #     a.append("yolo")
-    # self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be above Minimal")
 
     def test_event(self):
         """

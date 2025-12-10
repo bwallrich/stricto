@@ -5,7 +5,7 @@ Module for datetime
 
 from datetime import datetime
 from stricto.extend import Extend
-from stricto import Error, ErrorType
+from stricto import STypeError, SConstraintError
 
 
 class Datetime(Extend):
@@ -47,7 +47,7 @@ class Datetime(Extend):
     ):
         if isinstance(value, (datetime, Datetime, str)):
             return True
-        raise Error(ErrorType.WRONGTYPE, "Must be a datetime", self.path_name())
+        raise STypeError("Must be a datetime", self.path_name(), value=value)
 
     def set_now(self):
         """
@@ -60,7 +60,11 @@ class Datetime(Extend):
         Extend.check_constraints(self, value)
 
         if self._min is not None and value < self._min:
-            raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
+            raise SConstraintError(
+                "Must be above Minimal", self.path_name(), value=value
+            )
         if self._max is not None and value > self._max:
-            raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
+            raise SConstraintError(
+                "Must be below Maximal", self.path_name(), value=value
+            )
         return True

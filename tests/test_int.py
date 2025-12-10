@@ -5,7 +5,7 @@ test for Int()
 
 import unittest
 
-from stricto import Int, Error
+from stricto import Int, SConstraintError, STypeError, SSyntaxError
 
 
 def pair_only(value, o):  # pylint: disable=unused-argument
@@ -36,12 +36,12 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test error of type
         """
         a = Int()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.message, "Must be a int")
-        with self.assertRaises(Error) as e:
+        self.assertEqual(e.exception.to_string(), "Must be a int")
+        with self.assertRaises(STypeError) as e:
             a.set("12")
-        self.assertEqual(e.exception.message, "Must be a int")
+        self.assertEqual(e.exception.to_string(), "Must be a int")
 
     def test_default(self):
         """
@@ -59,18 +59,18 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test min
         """
         a = Int(min=10)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(9)
-        self.assertEqual(e.exception.message, "Must be above Minimal")
+        self.assertEqual(e.exception.to_string(), "Must be above Minimal")
 
     def test_max(self):
         """
         Test max
         """
         a = Int(max=10)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
 
     def test_copy(self):
         """
@@ -80,9 +80,9 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set(9)
         b = a.copy()
         self.assertEqual(b, 9)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             b.set(a + 3)
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
 
     def test_comparison(self):
         """
@@ -109,9 +109,9 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set(9)
         b = Int()
         b.set(9)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             c = a + b
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
         c = b + a
         self.assertEqual(type(c), Int)
         self.assertEqual(c, 18)
@@ -127,9 +127,9 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
             self.assertEqual(a * b, 10)
             self.assertEqual(a**b, 25)
             self.assertEqual(a // b, 2)
-            with self.assertRaises(Error) as e:
+            with self.assertRaises(STypeError) as e:
                 self.assertEqual(a / b, 2)
-            self.assertEqual(e.exception.message, "Must be a int")
+            self.assertEqual(e.exception.to_string(), "Must be a int")
             self.assertEqual(a % b, 1)
             self.assertEqual(a >> b, 1)
             self.assertEqual(a << b, 20)
@@ -162,13 +162,13 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test constraints
         """
         a = Int(constraint=check_pair)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(e.exception.to_string(), "Constraint not validated")
         a = Int(constraint=[check_pair])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(e.exception.to_string(), "Constraint not validated")
         a.set(10)
         self.assertEqual(a, 10)
 
@@ -177,9 +177,9 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test constraint error
         """
         a = Int(constraint="coucou")
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SSyntaxError) as e:
             a.set(11)
-        self.assertEqual(e.exception.message, "constraint not callable")
+        self.assertEqual(e.exception.to_string(), "Constraint not callable")
 
     def test_singleton_comparison(self):
         """

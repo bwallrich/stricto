@@ -3,11 +3,8 @@ Module providing to manage selectors
 according to rfc 9535
 """
 
-import copy
 import re
-from enum import Enum, auto
-from .error import Error, ErrorType
-from .permissions import Permissions
+from copy import deepcopy
 
 
 class Selector:
@@ -50,7 +47,10 @@ class Selector:
         return n
 
     def copy(self):
-        return self.__copy__()
+        """
+        Wrapper for copy()
+        """
+        return deepcopy(self)
 
     def pop(self):
         """

@@ -1,7 +1,7 @@
 """Module providing the In() sur-Class"""
 
 from .generic import GenericType
-from .error import Error, ErrorType
+from .error import STypeError
 
 
 class In(GenericType):
@@ -41,10 +41,12 @@ class In(GenericType):
             try:
                 if value is not None:
                     model.check_type(value)
-            except Error:
+            except Exception:  # pylint: disable=broad-exception-caught
                 continue
 
             # check if OK to the model
             return model.check(value)
 
-        raise Error(ErrorType.WRONGTYPE, "Match no model", self.path_name())
+        raise STypeError(
+            "Match no model", self.path_name(), value=value, models=self._models
+        )

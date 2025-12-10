@@ -6,7 +6,7 @@ test for Meta informations()
 # pylint: disable=no-member
 import unittest
 
-from stricto import String, Int, Dict, Bool, Error
+from stricto import String, Int, Dict, Bool, SSyntaxError
 
 
 class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -65,9 +65,9 @@ class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         a.age = 19
 
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SSyntaxError) as e:
             a.work.get_current_meta()
-        self.assertEqual(e.exception.message, "get_current_meta must start at root")
+        self.assertEqual(e.exception.to_string(), "get_current_meta must start at root")
 
         dump_main = a.get_current_meta()
 

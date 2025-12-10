@@ -5,7 +5,7 @@ test for Bool()
 
 import unittest
 
-from stricto import Bool, Error
+from stricto import Bool, STypeError, SConstraintError
 
 
 class TestBool(unittest.TestCase):
@@ -18,9 +18,9 @@ class TestBool(unittest.TestCase):
         Test error type
         """
         a = Bool()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.message, "Must be a bool")
+        self.assertEqual(e.exception.to_string(), "Not a bool")
 
     def test_default(self):
         """
@@ -66,13 +66,13 @@ class TestBool(unittest.TestCase):
         Test notnull for a bool
         """
         a = Bool(notNone=True)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.message, "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), "Cannot be empty")
         a = Bool(notNone=True, default=True)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.message, "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), "Cannot be empty")
         a = Bool()
         a.set(None)
 

@@ -2,7 +2,7 @@
 
 import re
 from .generic import GenericType
-from .error import Error, ErrorType
+from .error import STypeError, SConstraintError
 
 
 class String(GenericType):
@@ -35,7 +35,7 @@ class String(GenericType):
     def check_type(self, value):
         if isinstance(value, (str, String)):
             return True
-        raise Error(ErrorType.WRONGTYPE, "Must be a string", self.path_name())
+        raise STypeError("Must be a string", self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)
@@ -44,7 +44,9 @@ class String(GenericType):
         for regexp in self._regexps:
             reg = self.get_args_or_execute_them(regexp, value)
             if not re.match(reg, value):
-                raise Error(ErrorType.REGEXP, "Dont match regexp", self.path_name())
+                raise SConstraintError(
+                    "Dont match regexp", self.path_name(), value=value
+                )
 
         return True
 

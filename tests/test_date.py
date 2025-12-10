@@ -7,7 +7,13 @@ import unittest
 import json
 
 from datetime import datetime, timedelta
-from stricto import Error, Datetime, StrictoEncoder
+from stricto import (
+    Datetime,
+    StrictoEncoder,
+    STypeError,
+    SConstraintError,
+    SError,
+)
 
 
 def strptime(value, o):  # pylint: disable=unused-argument
@@ -42,9 +48,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test error of type
         """
         a = Datetime()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.message, "Must be a datetime")
+        self.assertEqual(e.exception.to_string(), "Must be a datetime")
 
     def test_set_value_without_check(self):
         """
@@ -74,18 +80,18 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         five_min_ago = datetime.now() - timedelta(minutes=5)
         a = Datetime(min=five_min_ago)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(datetime.now() - timedelta(minutes=6))
-        self.assertEqual(e.exception.message, "Must be above Minimal")
+        self.assertEqual(e.exception.to_string(), "Must be above Minimal")
 
     def test_max(self):
         """
         Test max
         """
         a = Datetime(max=datetime.now())
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(datetime.now() + timedelta(minutes=6))
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
 
     def test_copy(self):
         """
@@ -95,9 +101,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set_now()
         b = a.copy()
         self.assertEqual(b, a)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             b.set(a + timedelta(minutes=10))
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
 
     def test_comparison(self):
         """
@@ -144,13 +150,13 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test constraints
         """
         a = Datetime(constraint=check_before_june)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(datetime.strptime("2025/12/25", "%Y/%m/%d"))
-        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(e.exception.to_string(), "Constraint not validated")
         a = Datetime(constraint=[check_before_june])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(datetime.strptime("2025/12/25", "%Y/%m/%d"))
-        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(e.exception.to_string(), "Constraint not validated")
         a.set(datetime.strptime("2025/01/25", "%Y/%m/%d"))
         self.assertLessEqual(a, datetime.now())
 
@@ -159,9 +165,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test json string error
         """
         a = Datetime()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SError) as e:
             a.set("coucou")
-        self.assertEqual(e.exception.message, "error json decode")
+        self.assertEqual(e.exception.to_string(), "Invalid isoformat string: 'coucou'")
 
     def test_rollback(self):
         """

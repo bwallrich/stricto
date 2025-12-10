@@ -7,7 +7,17 @@ test for views()
 import unittest
 import json
 from datetime import datetime
-from stricto import Datetime, Dict, Int, Error, StrictoEncoder, Bytes, Complex, FreeDict
+from stricto import (
+    Datetime,
+    Dict,
+    Int,
+    StrictoEncoder,
+    Bytes,
+    Complex,
+    FreeDict,
+    STypeError,
+    SError,
+)
 
 
 class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -28,12 +38,12 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test views
         """
         a = Dict({"b": Datetime(), "c": Int(default=0)})
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SError) as e:
             a.b = "dd"
-        self.assertEqual(e.exception.message, "error json decode")
-        with self.assertRaises(Error) as e:
+        self.assertEqual(e.exception.to_string(), "Invalid isoformat string: 'dd'")
+        with self.assertRaises(STypeError) as e:
             a.b = 23.45
-        self.assertEqual(e.exception.message, "Must be a datetime")
+        self.assertEqual(e.exception.to_string(), "Must be a datetime")
         a.b = datetime(2000, 1, 1)
         self.assertEqual(a.b.year, 2000)
         self.assertEqual(a.b.day, 1)
@@ -114,6 +124,6 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = FreeDict()
         with self.assertRaises(TypeError) as e:
             a.set(12)
-        self.assertEqual(e.exception.args[0], "Must be a <class 'dict'>")
+        self.assertEqual(e.exception.args[0], "Must be a extend type")
         a.set({})
         a.set({"top": 1})

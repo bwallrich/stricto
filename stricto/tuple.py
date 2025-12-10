@@ -5,7 +5,7 @@ import re
 from .generic import GenericType
 from .list import List
 from .list_and_tuple import ListAndTuple
-from .error import Error, ErrorType
+from .error import STypeError, SSyntaxError
 from .selector import Selector
 
 
@@ -26,7 +26,7 @@ class Tuple(ListAndTuple):
         i = 0
         for element_schema in schema:
             if isinstance(element_schema, GenericType) is False:
-                raise Error(ErrorType.NOTATYPE, "Not a schema")
+                raise SSyntaxError("Not a schema", schema=element_schema)
             mm = copy.copy(element_schema)
             mm.parent = self
             mm.attribute_name = f"[{i}]"
@@ -240,9 +240,7 @@ class Tuple(ListAndTuple):
 
         if isinstance(value, (tuple, Tuple, list, List)):
             if len(value) != len(self):
-                raise Error(
-                    ErrorType.NOTATUPLE, "Tuple not same size", self.path_name()
-                )
+                raise STypeError("Tuple not same size", self.path_name(), value=value)
             i = 0
             for element in value:
                 self._schema[i].check(element)
@@ -264,7 +262,7 @@ class Tuple(ListAndTuple):
         if isinstance(value, list):
             return True
 
-        raise Error(ErrorType.NOTATUPLE, "Must be a tuple or a Tuple", self.path_name())
+        raise STypeError("Must be a tuple or a Tuple", self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)

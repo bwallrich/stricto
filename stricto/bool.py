@@ -1,7 +1,7 @@
 """Module providing the Bool() Class"""
 
 from .generic import GenericType
-from .error import Error, ErrorType
+from .error import STypeError
 
 
 class Bool(GenericType):
@@ -20,7 +20,7 @@ class Bool(GenericType):
     def check_type(self, value):
         if isinstance(value, (bool, Bool)):
             return True
-        raise Error(ErrorType.WRONGTYPE, "Must be a bool", self.path_name())
+        raise STypeError("Not a bool", path=self.path_name(), value=value)
 
     def check_constraints(self, value):
 

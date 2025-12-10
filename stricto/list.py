@@ -2,7 +2,7 @@
 
 from .generic import GenericType
 from .list_and_tuple import ListAndTuple
-from .error import Error, ErrorType
+from .error import STypeError, SConstraintError
 from .selector import Selector
 
 
@@ -510,7 +510,7 @@ class List(
         if isinstance(value, List):
             return True
 
-        raise Error(ErrorType.NOTALIST, "Must be a list", self.path_name())
+        raise STypeError("Must be a list", self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)
@@ -518,16 +518,20 @@ class List(
         if self._min is not None:
             # print(f'List check {self.get_value()} value={value} ')
             if len(value) < self._min:
-                raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
+                raise SConstraintError(
+                    "Must be above Minimal", self.path_name(), value=value
+                )
         if self._max is not None:
             if len(value) > self._max:
-                raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
+                raise SConstraintError(
+                    "Must be below Maximal", self.path_name(), value=value
+                )
 
         if self._uniq is True:
             for x in value:
                 if value.count(x) > 1:
-                    raise Error(
-                        ErrorType.DUP, "duplicate value in list", self.path_name()
+                    raise SConstraintError(
+                        "duplicate value in list", self.path_name(), value=value
                     )
 
         return True

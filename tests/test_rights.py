@@ -6,7 +6,7 @@ test for Permissions()
 # pylint: disable=no-member
 import unittest
 
-from stricto import String, Int, Dict, Error
+from stricto import String, Int, Dict, SRightError, SAttributError
 
 
 increment = 0  # pylint: disable=invalid-name
@@ -63,9 +63,9 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a.e.is_allowed_to("gloups"), False)
 
         a.set({"b": 1, "c": "top"})
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SRightError) as e:
             a.e.g = "Test"
-        self.assertEqual(e.exception.message, "cannot modify value")
+        self.assertEqual(e.exception.to_string(), "cannot modify value")
 
     def test_read_only_error(self):
         """
@@ -73,9 +73,9 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         a = Int(default=10, can_modify=False)
         a.enable_permissions()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SRightError) as e:
             a.set(11)
-        self.assertEqual(e.exception.message, "cannot modify value")
+        self.assertEqual(e.exception.to_string(), "cannot modify value")
         self.assertEqual(a, 10)
         a.set(10)
 
@@ -89,9 +89,9 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.enable_permissions()
         a.set(12)
         self.assertEqual(a, 12)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SRightError) as e:
             a.set(11)
-        self.assertEqual(e.exception.message, "cannot modify value")
+        self.assertEqual(e.exception.to_string(), "cannot modify value")
 
     def test_can_read_func(self):
         """
@@ -105,9 +105,9 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         )
 
         a.enable_permissions()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SAttributError) as e:
             a.set({"b": 1, "c": "test"})
-        self.assertEqual(e.exception.message, "locked")
+        self.assertEqual(e.exception.to_string(), "locked")
 
         with self.assertRaises(AttributeError) as e:
             self.assertEqual(a.c, "toto")

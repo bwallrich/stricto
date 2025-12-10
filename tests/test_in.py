@@ -5,7 +5,7 @@ test for In()
 
 import unittest
 
-from stricto import In, String, Int, Error
+from stricto import In, String, Int, STypeError, SConstraintError
 
 
 class TestIn(unittest.TestCase):
@@ -18,9 +18,9 @@ class TestIn(unittest.TestCase):
         set type error
         """
         a = In([Int(), String()])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.message, "Match no model")
+        self.assertEqual(e.exception.to_string(), "Match no model")
         a.set(12)
         self.assertEqual(a, 12)
         a.set("yolo")
@@ -84,6 +84,6 @@ class TestIn(unittest.TestCase):
         check minimal
         """
         a = In([Int(min=10), String()], default="yoyo")
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(1)
-        self.assertEqual(e.exception.message, "Must be above Minimal")
+        self.assertEqual(e.exception.to_string(), "Must be above Minimal")

@@ -6,7 +6,7 @@ test for Float()
 import unittest
 import math
 
-from stricto import Float, Error
+from stricto import Float, STypeError, SConstraintError
 
 
 def pair_only(value, o):  # pylint: disable=unused-argument
@@ -37,9 +37,9 @@ class TestFloat(unittest.TestCase):
         Test error of type
         """
         a = Float()
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(STypeError) as e:
             a.set("dd")
-        self.assertEqual(e.exception.message, "Must be a float")
+        self.assertEqual(e.exception.to_string(), "Not a float")
 
     def test_set_value_without_check(self):
         """
@@ -68,18 +68,18 @@ class TestFloat(unittest.TestCase):
         Test min
         """
         a = Float(min=10.0)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(9.9)
-        self.assertEqual(e.exception.message, "Must be above Minimal")
+        self.assertEqual(e.exception.to_string(), "Must be above Minimal")
 
     def test_max(self):
         """
         Test max
         """
         a = Float(max=10.0)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(10.00001)
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
 
     def test_float_operator(self):
         """
@@ -103,9 +103,9 @@ class TestFloat(unittest.TestCase):
         a.set(9.0)
         b = a.copy()
         self.assertEqual(b, 9.0)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             b.set(a + 3)
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
 
     def test_comparison(self):
         """
@@ -128,9 +128,9 @@ class TestFloat(unittest.TestCase):
         a.set(9.0)
         b = Float()
         b.set(9.0)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             c = a + b
-        self.assertEqual(e.exception.message, "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
         c = b + a
         self.assertEqual(type(c), Float)
         self.assertEqual(c, 18.0)
@@ -160,13 +160,13 @@ class TestFloat(unittest.TestCase):
         Test constraints
         """
         a = Float(constraint=check_pair)
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(11.0)
-        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(e.exception.to_string(), "Constraint not validated")
         a = Float(constraint=[check_pair])
-        with self.assertRaises(Error) as e:
+        with self.assertRaises(SConstraintError) as e:
             a.set(11.0)
-        self.assertEqual(e.exception.message, "constraint not validated")
+        self.assertEqual(e.exception.to_string(), "Constraint not validated")
         a.set(10.0)
         self.assertEqual(a, 10.0)
 

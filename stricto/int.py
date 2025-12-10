@@ -4,7 +4,7 @@ Module providing the Int() Class
 """
 
 from .generic import GenericType
-from .error import Error, ErrorType
+from .error import STypeError, SConstraintError
 
 
 class Int(GenericType):
@@ -39,14 +39,19 @@ class Int(GenericType):
     ):
         if isinstance(value, (int, Int)):
             return True
-        raise Error(ErrorType.WRONGTYPE, "Must be a int", self.path_name())
+
+        raise STypeError("Must be a int", self.path_name(), value=value)
 
     def check_constraints(self, value):
 
         GenericType.check_constraints(self, value)
 
         if self._min is not None and value < self._min:
-            raise Error(ErrorType.LENGTH, "Must be above Minimal", self.path_name())
+            raise SConstraintError(
+                "Must be above Minimal", self.path_name(), value=value
+            )
         if self._max is not None and value > self._max:
-            raise Error(ErrorType.LENGTH, "Must be below Maximal", self.path_name())
+            raise SConstraintError(
+                "Must be below Maximal", self.path_name(), value=value
+            )
         return True

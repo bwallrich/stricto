@@ -1,7 +1,7 @@
 """Module providing the Int() Class"""
 
 from .generic import GenericType
-from .error import Error, ErrorType
+from .error import STypeError, SError
 
 
 class Extend(GenericType):
@@ -39,17 +39,13 @@ class Extend(GenericType):
             try:
                 self.__json_decode__(value)
             except ValueError as e:
-                raise Error(
-                    ErrorType.WRONGTYPE,
-                    f"Must be a {str(self._type)}",
-                    self.path_name(),
-                ) from e
+                raise SError(e, self.path_name(), json=value) from e
             return True
 
         if isinstance(value, (self._type, type(self))):
             return True
-        raise Error(
-            ErrorType.WRONGTYPE, f"Must be a {str(self._type)}", self.path_name()
+        raise STypeError(
+            "Must be a extend type", self.path_name(), type=self._type, value=value
         )
 
     def check_constraints(self, value):
