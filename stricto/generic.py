@@ -454,6 +454,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         Get values with selector acording to rfc 9535
         """
         sel = Selector(selector_as_string)
+        if sel.empty():
+            return self
+
         (key, sub_index_or_slice) = sel.pop()
 
         if key == "$":
@@ -469,6 +472,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         selectors: a list of selector, like [ [ "$", "name" ], [ "$", "address", "town" ] ]
         """
+        if selector_as_list_of_string is None:
+            return self
+
+        if not isinstance(selector_as_list_of_string, list):
+            return None
+
         final_response = []
         for sel_as_string in selector_as_list_of_string:
             final_response.append(self.select(sel_as_string))

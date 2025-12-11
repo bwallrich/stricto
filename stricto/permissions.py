@@ -89,6 +89,12 @@ class Permissions:
 
         return None
 
+    def get(self, right_name: str, default: bool = True):
+        """
+        return the right function
+        """
+        return self._permissions.get(right_name, default)
+
     def get_as_dict_of_strings(self):
         """
         Return the value as a string

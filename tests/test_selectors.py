@@ -140,6 +140,7 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(a.select("$.*.t[0]"), None)
         self.assertEqual(a.select("$.b.t[vla]"), None)
         self.assertEqual(a.select("$.b.t"), None)
+        self.assertEqual(a.select(None), a)
         a.set(
             {
                 "a": 12,
