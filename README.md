@@ -472,6 +472,9 @@ user.salary # -> raise an error
 
 You can use json selectors to find the object according to [rfc9535](https://datatracker.ietf.org/doc/rfc9535/)
 
+### select, multi_select
+
+You can use select() for a single selection or multi_select() for a list of selections
 
 ```python
 from stricto import Int, List, String, Dict, Error
@@ -500,7 +503,11 @@ a.select("$.b.l[0].i") # "fir"
 a.select("$.*.l.i") # ["fir", "sec"]
 a.select("$.*.l[0:2].i") # ["fir", "sec"]
 
+# multi_select
+a.multi_select( [ "$.a", "$.c" ] ) # [ 12 , ( 22, "h") ]
+
 ```
+
 
 ## Matching
 
