@@ -8,6 +8,15 @@ from stricto.extend import Extend
 from stricto import STypeError, SConstraintError
 
 
+def trunk_microseconds(value, o):  # pylint: disable=unused-argument
+    """
+    trunk microseconds
+    """
+    if isinstance(value, (Datetime, datetime)):
+        return value.replace(microsecond=0)
+    return value
+
+
 class Datetime(Extend):
     """
     A specific class to play with datetime
@@ -24,6 +33,9 @@ class Datetime(Extend):
         """
         self._min = kwargs.pop("min", kwargs.pop("minimum", None))
         self._max = kwargs.pop("max", kwargs.pop("maximum", None))
+
+        if "transform" not in kwargs:
+            kwargs["transform"] = trunk_microseconds
 
         super().__init__(datetime, **kwargs)
 
@@ -53,7 +65,7 @@ class Datetime(Extend):
         """
         Set the value as now
         """
-        self.set(datetime.now())
+        self.set(datetime.now().replace(microsecond=0))
 
     def check_constraints(self, value):
 
