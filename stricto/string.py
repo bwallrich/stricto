@@ -22,8 +22,14 @@ class String(GenericType):
         GenericType.__init__(self, **kwargs)
 
     def get_schema(self):
-        """
-        Return a schema for this object
+        """Return meta information for a float
+
+        :param self: Description
+        :return: :func:`GenericType.get_schema`
+
+        :rtype: dict
+
+        :meta private:
         """
         a = GenericType.get_schema(self)
         a["regexp"] = self.get_as_string(self._regexps)
@@ -42,7 +48,7 @@ class String(GenericType):
 
         # Match regex
         for regexp in self._regexps:
-            reg = self.get_args_or_execute_them(regexp, value)
+            reg = self._get_args_or_execute_them(regexp, value)
             if not re.match(reg, value):
                 raise SConstraintError(
                     "Dont match regexp", self.path_name(), value=value
@@ -50,7 +56,7 @@ class String(GenericType):
 
         return True
 
-    def match_operator(self, operator, other):
+    def _match_operator(self, operator, other):
         """
         Matching with an operator
         """
@@ -59,4 +65,4 @@ class String(GenericType):
                 return True
             return False
 
-        return GenericType.match_operator(self, operator, other)
+        return GenericType._match_operator(self, operator, other)

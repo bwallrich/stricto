@@ -6,13 +6,19 @@ from copy import deepcopy
 
 
 class StrictoError:
-    """
-    Formating Error class and keeping agrguments
+    """Stricto Error main object
 
+    :param self: Description
+    :param string_format: The string for the error Message
+    :type string_format: str
+    :param args: arguments for the string format
+    :type args: object
+    :param kwargs: arguments as kwargs for the string format
+    :type kwargs: object
     """
 
     def __init__(self, string_format: str, *args: object, **kwargs: object) -> None:
-        """ """
+        """Constructor"""
         self.string_format = string_format
 
         self._my_kwargs = kwargs
@@ -21,16 +27,20 @@ class StrictoError:
     def __repr__(self):
         return self.string_format.format(*self._my_args, **self._my_kwargs)
 
-    def to_string(self):
+    def to_string(self) -> str:
         """
-        Return the object as a string.
+        Return the object as a string
+
+        :param self: Description
+        :return: a string
+        :rtype: str
         """
         return self.string_format.format(*self._my_args, **self._my_kwargs)
 
 
 class STypeError(TypeError, StrictoError):
     """
-    Stricto TypeError extention
+    Extented :py:class:`StrictoError` with ``TypeError``
     """
 
     def __init__(self, message: str, *args: object, **kwargs: object):
@@ -46,7 +56,7 @@ class STypeError(TypeError, StrictoError):
 
 class SAttributError(AttributeError, StrictoError):
     """
-    Stricto AttributeError extention
+    Extented :py:class:`StrictoError` with ``AttributeError``
     """
 
     def __init__(self, message: str, *args: object, **kwargs: object):
@@ -62,7 +72,7 @@ class SAttributError(AttributeError, StrictoError):
 
 class SKeyError(KeyError, StrictoError):
     """
-    Stricto KeyError extention
+    Extented :py:class:`StrictoError` with ``KeyError``
     """
 
     def __init__(self, message: str, *args: object, **kwargs: object):
@@ -78,7 +88,7 @@ class SKeyError(KeyError, StrictoError):
 
 class SSyntaxError(SyntaxError, StrictoError):
     """
-    Stricto SyntaxError extention
+    Extented :py:class:`StrictoError` with ``SyntaxError``
     """
 
     def __init__(self, message: str, *args: object, **kwargs: object):
@@ -94,7 +104,9 @@ class SSyntaxError(SyntaxError, StrictoError):
 
 class SConstraintError(Exception, StrictoError):
     """
-    Stricto Constraints Errors
+    Extented :py:class:`StrictoError` with ``Exception``
+
+    This class is dedicated to constraints.
     """
 
     def __init__(self, message: str, *args: object, **kwargs: object):
@@ -110,7 +122,9 @@ class SConstraintError(Exception, StrictoError):
 
 class SRightError(Exception, StrictoError):
     """
-    Stricto Rights Errors
+    Extented :py:class:`StrictoError` with ``Exception``
+
+    This class is dedicated to right management.
     """
 
     def __init__(self, message: str, *args: object, **kwargs: object):
@@ -126,7 +140,9 @@ class SRightError(Exception, StrictoError):
 
 class SError(Exception, StrictoError):
     """
-    Stricto encasulation Errors
+    Extented :py:class:`StrictoError` with ``Exception``
+
+    This class is dedicated to all other encapsulated errors.
     """
 
     def __init__(self, exception: Exception, *args: object, **kwargs: object):

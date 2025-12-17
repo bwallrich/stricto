@@ -36,8 +36,14 @@ class Tuple(ListAndTuple):
         self._locked = True
 
     def get_schema(self):
-        """
-        Return a schema for this object
+        """Return meta information for a float
+
+        :param self: Description
+        :return: :func:`GenericType.get_schema`
+
+        :rtype: dict
+
+        :meta private:
         """
         a = GenericType.get_schema(self)
         a["sub_types"] = []
@@ -134,7 +140,7 @@ class Tuple(ListAndTuple):
         """
         v = GenericType.get_value(self)
         t = None if v is None else tuple(v)
-        return t == self.get_other_value(other)
+        return t == self._get_other_value(other)
 
     def match(self, other):
         """
@@ -155,7 +161,7 @@ class Tuple(ListAndTuple):
         """
         v = GenericType.get_value(self)
         t = None if v is None else tuple(v)
-        return t != self.get_other_value(other)
+        return t != self._get_other_value(other)
 
     def __lt__(self, other):
         """
@@ -163,7 +169,7 @@ class Tuple(ListAndTuple):
         """
         v = GenericType.get_value(self)
         t = None if v is None else tuple(v)
-        return t < self.get_other_value(other)
+        return t < self._get_other_value(other)
 
     def __le__(self, other):
         """
@@ -171,7 +177,7 @@ class Tuple(ListAndTuple):
         """
         v = GenericType.get_value(self)
         t = None if v is None else tuple(v)
-        return t <= self.get_other_value(other)
+        return t <= self._get_other_value(other)
 
     def __gt__(self, other):
         """
@@ -179,7 +185,7 @@ class Tuple(ListAndTuple):
         """
         v = GenericType.get_value(self)
         t = None if v is None else tuple(v)
-        return t > self.get_other_value(other)
+        return t > self._get_other_value(other)
 
     def __ge__(self, other):
         """
@@ -187,7 +193,7 @@ class Tuple(ListAndTuple):
         """
         v = GenericType.get_value(self)
         t = None if v is None else tuple(v)
-        return t >= self.get_other_value(other)
+        return t >= self._get_other_value(other)
 
     def __add__(self, other):
         """
@@ -196,7 +202,7 @@ class Tuple(ListAndTuple):
         if not isinstance(other, Tuple):
             raise TypeError("can only concatenate Tuple to Tuple")
 
-        if self.get_other_value(other) is None:
+        if self._get_other_value(other) is None:
             raise TypeError("can only concatenate Tuple to Tuple")
 
         r = Tuple(tuple(self._schema) + tuple(other._schema))

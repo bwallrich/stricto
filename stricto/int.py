@@ -25,8 +25,14 @@ class Int(GenericType):
         GenericType.__init__(self, **kwargs)
 
     def get_schema(self):
-        """
-        Return a schema for this object
+        """Return meta information for a float
+
+        :param self: Description
+        :return: :func:`GenericType.get_schema`
+
+        :rtype: dict
+
+        :meta private:
         """
         a = GenericType.get_schema(self)
         a["min"] = self.get_as_string(self._min)

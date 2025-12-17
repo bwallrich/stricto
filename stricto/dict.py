@@ -51,8 +51,14 @@ class Dict(GenericType):
         self.__dict__["_locked"] = True
 
     def get_schema(self):
-        """
-        Return a schema for this object
+        """Return meta information for a float
+
+        :param self: Description
+        :return: :func:`GenericType.get_schema`
+
+        :rtype: dict
+
+        :meta private:
         """
         a = GenericType.get_schema(self)
         a["sub_scheme"] = {}
@@ -101,7 +107,7 @@ class Dict(GenericType):
         Return all elements belonging to view_name
         tue return is a subset of this Dict
         """
-        my_view = self.belongs_to_view(view_name)
+        my_view = self._belongs_to_view(view_name)
 
         if my_view is ViewType.YES:
             return (ViewType.YES, self.copy()) if final is False else self.copy()
@@ -165,8 +171,8 @@ class Dict(GenericType):
                 v.check(value)
                 self.__dict__[k] = value
             else:
-                v.set(self.get_other_value(value))
-                self.release_events()
+                v.set(self._get_other_value(value))
+                self._release_events()
             return
 
         if k in ["root", "parent", "attribute_name"]:

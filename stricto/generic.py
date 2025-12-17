@@ -1,4 +1,6 @@
+# pylint: disable=too-many-lines
 """
+stricto.generic
 Module providing the Generic() Class
 This class must not be used directly
 """
@@ -6,6 +8,7 @@ This class must not be used directly
 import copy
 import re
 from enum import Enum, auto
+from typing import Any, Callable, Self
 from .error import (
     SConstraintError,
     SSyntaxError,
@@ -40,21 +43,44 @@ class ViewType(Enum):
 
 
 class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-public-methods
-    """
-    A generic type (class for int, string, etc)
+    """Generic Type
+    This is the main Object for Int, Float, String, ...
+
+    :param ``**kwargs``:
+        - *constraint=* ``func`` --
+          a function to check if the value is admissible
+        - *constraints=* ``[func]`` --
+          a list of function to check if the value is admissible
+        - *default=* ``Any`` --
+          default value
+        - *description=* ``str`` --
+          a description of this field (like a comment)
+        - *exists=* ``bool|func`` --
+          answer if this field exists or not
+        - *in=* ``[Any]`` --
+          a list of available values
+        - *require=* ``bool`` --
+          if this field cannot be None
+        - *onChange=* ``func`` --
+          A function to trig when the value change
+        - *set=* ``func`` --
+          a compute value
+        - *transform=* ``func`` --
+          a function to modify the value BEFORE affectation
+        - *views=* ``[str]`` --
+          list of views Access-list
     """
 
     def __init__(self, **kwargs):
-        """
-        available arguments
+        """Constructor method"""
 
-        description : A tring to describe the object
-        default     : The default value
-        notNone     : (boolean) must be required or not
-
-        """
         self._permissions = Permissions()
-        self.parent = None
+        """Permission object
+        """
+        self.parent: Self = None
+        """parent is a reference to the parent :py:class:`GenericType`
+        """
+
         self._exists = True
         self._have_sub_objects = False
         self.attribute_name = "$"
@@ -121,36 +147,42 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
 
         self._events["change"].insert(
-            0, lambda event_name, root, self: self.wrap_recheck_value()
+            0, lambda event_name, root, self: self._wrap_recheck_value()
         )
         if auto_set is not None:
             # Cannot modify a value which is a result of a computation
             self._events["change"].append(
-                lambda event_name, root, self: self.change_trigg_wrap(root, auto_set)
+                lambda event_name, root, self: self._change_trigg_wrap(root, auto_set)
             )
 
-    def enable_permissions(self):
-        """
-        set permissions to on
-        """
+    def enable_permissions(self) -> None:
+        """set permissions to on"""
         self._permissions.enable()
 
-    def disable_permissions(self):
+    def disable_permissions(self) -> None:
         """
         set permissions to off
         """
         self._permissions.disable()
 
-    def wrap_recheck_value(self):
+    def _wrap_recheck_value(self) -> None:
         """
         called by event "change" (another value as changed in the object)
-        Recheck the value because constraint can be dependant on the changed value.
+        Re-check the value because constraint can be dependant on the changed value.
+
+        :meta private:
         """
         self.check(self.get_value())
 
-    def is_allowed_to(self, right_name):
+    def is_allowed_to(self, right_name: str) -> bool:
         """
         check the right "right_name"
+
+        :param self: Description
+        :param right_name: the name of the right to check
+        :type right_name: str
+        :return: True if have right, or False
+        :rtype: bool
         """
         rep = self._permissions.is_allowed_to(right_name, self.get_root())
         # --- the result is a bool. got it
@@ -164,34 +196,34 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # We don-t know the right ( = None ). check the parent
         return self.parent.is_allowed_to(right_name)
 
-    def can_read(self):
-        """
-        check right "read"
-        """
+    def can_read(self) -> bool:
+        """check right "read" """
         return self.is_allowed_to("read")
 
-    def can_modify(self):
+    def can_modify(self) -> bool:
         """
         check right "modify"
         """
         return self.is_allowed_to("modify")
 
-    def __json_encode__(self):
+    def __json_encode__(self) -> Any:
         """
         Called by the specific Encoder
         """
         return self.get_value()
 
-    def __json_decode__(self, value):
+    def __json_decode__(self, value: Any) -> Any:
         """
         Called by the specific JSONDecoder
         """
         return value
 
-    def get_as_string(self, value):
+    def get_as_string(self, value: Any) -> str:
         """
         Return the value as a string
-        (used to build the schema structure (see self.schema()))
+        (used to build the schema structure (see :py:meth:`get_schema`)
+
+        :meta private:
         """
         if isinstance(value, list):
             a = []
@@ -203,8 +235,14 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return "func"  # inspect.getsource(value)
         return value
 
-    def get_schema(self):
+    def get_schema(self) -> dict:
         """
+        Return a schema for this object
+
+        :param self: Description
+        :return: the schema as a json object (dict)
+        :rtype: dict
+
         Return a schema for this object
         """
         ty = str(type(self))
@@ -224,9 +262,18 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         }
         return a
 
-    def get_current_meta(self, parent: dict = None):
+    def get_current_meta(self, parent: dict = None) -> dict:
         """
         Return a schema with all rights correctly set depending on fonctions
+
+        :param self: Description
+        :param parent: Not used
+        :type parent: dict
+        :return: return: the schema as a json object (dict)
+        :raises SSyntaxError: this function must be called at root only
+        :rtype: dict
+
+
         """
         if parent is None and self.am_i_root() is False:
             raise SSyntaxError(
@@ -259,17 +306,33 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return a
 
-    def belongs_to_view(self, view_name):
+    def _belongs_to_view(self, view_name: str) -> ViewType:
         """
-        check if this object belongs to a view
-        (according to self._views = [ "-view1", "-view2" ] say ok to all views except thoses )
-        ( if view is like "+view3" must match explicitely
-        self._views = [ "view3" , ...] for example)
-        return True or False or None
-        True : Must be in
-        False : Must not be in the view
-        None : I dont know, must continue.
+        Check if this object belongs to a view
+
+        See :py:meth:`get_view`
+
+        According to self._views = ``[ "!view1", "view2 ]``
+
+        :param self: Description
+        :param view_name: Description
+        :type view_name: str
+        :return: if match to a view
+
+            - ``ViewType.NO`` - Must not be in the view
+            - ``ViewType.YES`` - Must be in
+            - ``ViewType.UNKNOWN`` - I dont know, must continue.
+            - ``ViewType.EXPLICIT_UNKNOWN`` - I dont know
+        :rtype: ViewType
+
+        :Examples:
+
+            - ``!view1`` - This field is explicitely not in the view "view1"
+            - ``view2`` - This field is explicitely in the view "view1"
+
+        :meta private:
         """
+
         if view_name is None:
             return ViewType.YES
 
@@ -289,12 +352,28 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return ViewType.UNKNOWN
 
-    def get_view(self, view_name, final=True):
+    def get_view(self, view_name: str, final: bool = True) -> Any:
         """
         Return all elements belonging to view_name
-        tue return is a subset of this Dict
+        The result is a subset of this object
+
+        :param self: Description
+        :param view_name: the named view
+        :type view_name: str
+        :param final: Description
+        :type final: not used
+        :return: Description
+        :rtype: Any
+
+        :Examples:
+
+            - ``+view1`` - Want all fields with "view1"
+            - ``view1`` - Want all fields except thoses with "!view1"
+
+
+
         """
-        my_view = self.belongs_to_view(view_name)
+        my_view = self._belongs_to_view(view_name)
 
         if my_view is ViewType.YES:
             return (ViewType.YES, self.copy()) if final is False else self.copy()
@@ -308,20 +387,34 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # my_view is ViewType.EXPLICIT_UNKNOWN:
         return (ViewType.NO, None) if final is False else None
 
-    def change_trigg_wrap(self, root, auto_set):
+    def _change_trigg_wrap(self, root, auto_set: Callable) -> None:
         """
         transform a set=... option to an event.
         this function is called by the event and call the set function.
+
+        :param self: Description
+        :param root: the root object
+        :param auto_set: the function
+
+        :meta private:
         """
         a = auto_set(root)
         self.set(a)
 
-    def push_event(self, event_name, from_id, **kwargs):
+    def push_event(self, event_name: str, from_id, **kwargs) -> None:
         """
         Add event to the list of events.
         This is used to avoid calling the same event twice, or calling an event
         while doing the modifications due to an event.
         this func fill the dict _pushed_events
+
+        :param self: Description
+        :param event_name: the name of the event
+        :type event_name: str
+        :param from_id: Description
+        :param kwargs: Description
+
+        :meta private:
         """
         if event_name not in self._pushed_events:
             self.__dict__["_pushed_events"][event_name] = {
@@ -329,11 +422,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 "kwargs": kwargs,
             }
 
-    def release_events(self):
+    def _release_events(self) -> None:
         """
         Send all avents. called by root an trigg events.
         At the end, if some events ar added during modifications to event,
         trig them again.
+
+        :meta private:
         """
         # Already triggin events, avoid reccursion
         if self._trigging_events is True:
@@ -356,12 +451,21 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # somme events added during last trigged events, restart
         if len(self._pushed_events.keys()) != 0:
-            self.release_events()
+            self._release_events()
 
-    def trigg(self, event_name, from_id, **kwargs):
+    def trigg(self, event_name: str, from_id: str, **kwargs) -> None:
         """
         trig an event
         from_id is an id to avoid the event to call itself
+
+
+        :param self: Description
+        :param event_name: the name of the event
+        :type event_name: str
+        :param from_id: the id of the object who trigg the event
+        :type from_id: str
+        :param kwargs: Description
+
         """
         # print(f'trigg {event_name} {type(self)} {self.path_name()} {self._value}  {self._events}')
 
@@ -374,27 +478,42 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         for func in self._events[event_name]:
             func(event_name, self.get_root(), self, **kwargs)
 
-    def get_root(self):
+    def get_root(self) -> Self:
         """
-        go to the root object
+        Return the root object
+
+        :param self: Description
+        :return: The root object
+        :rtype: :py:class:`GenericType`
+
+
         """
         if self.parent is None:
             return self
         return self.parent.get_root()
 
-    def am_i_root(self):
+    def am_i_root(self) -> bool:
         """
         Check if this object is the root object
+
+        :param self: Description
+        :return: Description
+        :rtype: bool
+
         """
         if self.parent is None:
             return True
         return False
 
-    def exists_or_can_read(self):
+    def exists_or_can_read(self) -> bool:
         """
         check first if the object exists.
         Then check if can be read.
         return True otherwise False
+
+        :param self: Description
+        :return: if the object exost and can be read
+        :rtype: bool
         """
         if self.exists(None) is False:
             return False
@@ -402,13 +521,20 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return False
         return True
 
-    def exists(self, value):
+    def exists(self, value: Any) -> bool:
         """
         Return True if the object Exist, othewise False.
         exist can be a function to make this field dependant from the value of another
+
+        :param self: Description
+        :param value: don't remember
+        :type value: str
+        :return: if this object exists
+        :rtype: bool
+
         """
 
-        response = self.get_args_or_execute_them(self._exists, value)
+        response = self._get_args_or_execute_them(self._exists, value)
         if response is False:
             return False
 
@@ -418,10 +544,16 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # return True
         return self.parent.exists(value)
 
-    def path_name(self):
+    def path_name(self) -> str:
         """
         return a string with the name of the object
-        according to RFC 9535
+        according to RFC 9535 (https://datatracker.ietf.org/doc/rfc9535/)
+
+
+        :param self: Description
+        :return: the path string
+        :rtype: str
+
         """
         p = [self.attribute_name]
 
@@ -432,9 +564,20 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             parent = parent.parent
         return "".join(p)
 
-    def get_selectors(self, index_or_slice: str, sel: Selector):
+    def get_selectors(self, index_or_slice: str, sel: Selector) -> Self | None:
         """
-        get with selector as lists
+        get with selector a selector
+        (call by :py:meth:`select`)
+
+        :param self: Description
+        :param index_or_slice: In case of list, index or slice to this list
+        :type index_or_slice: str
+        :param sel: The RFC 9535 path descriptor
+        :type sel: Selector
+        :return: the object matched my this selector or None if not this object
+        :rtype: Self | None
+
+        :meta private:
         """
 
         # Cannot have index or slice on a generic
@@ -449,9 +592,22 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return None
 
-    def select(self, selector_as_string: str):
+    def select(self, selector_as_string: str) -> Self | None:
         """
         Get values with selector acording to rfc 9535
+        (https://datatracker.ietf.org/doc/rfc9535/)
+
+        :param self: Description
+        :param selector_as_string: the rfc 9535
+        :type selector_as_string: str
+        :return: The object matched.
+        :rtype: Self | None
+
+        :example:
+            - ``$.address.street``
+            - ``$.surname[0]``
+
+
         """
         sel = Selector(selector_as_string)
         if sel.empty():
@@ -467,10 +623,20 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # Cannot start without "$" or "@"
         return None
 
-    def multi_select(self, selector_as_list_of_string: list[str]):
+    def multi_select(self, selector_as_list_of_string: list[str]) -> list[Self] | None:
         """
+        selectors: a list of selector
 
-        selectors: a list of selector, like [ [ "$", "name" ], [ "$", "address", "town" ] ]
+        :param self: Description
+        :param selector_as_list_of_string: selectors
+        :type selector_as_list_of_string: list[str]
+        :return: a list of objects
+        :rtype: list[Self] | None
+
+        :example:
+            - ``[ "$.name", "$.address.town" ]``
+
+
         """
         if selector_as_list_of_string is None:
             return self
@@ -484,160 +650,175 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return final_response
 
-    def get_other_value(self, other):
+    def _get_other_value(self, other: Self | Any) -> Any:
         """
         return the value of the other object if GenericType
+
+        :param self: Description
+        :param other: the object we want the value
+        :type other: Self | Any
+        :return: the value
+        :rtype: Any
+
+        :meta private:
         """
         if isinstance(other, GenericType):
             return other.get_value()
         return other
 
-    def __add__(self, other):
+    def __add__(self, other: Self | Any) -> Self:
         """
-        add two objects
+        Magic method for ``+`` operator
+
+        :param self: Description
+        :param other: Description
+        :type other: Self | Any
+        :return: a new :py:class:`GenericType` with is the result of the operator
+        :rtype: Self
+
         """
-        b = self.get_value() + self.get_other_value(other)
+        b = self.get_value() + self._get_other_value(other)
         r = self.__copy__()
 
         r.set(b)
         return r
 
-    def __sub__(self, other):
+    def __sub__(self, other: Self | Any) -> Self:
         """
         sub two objects
         """
-        b = self.get_value() - self.get_other_value(other)
+        b = self.get_value() - self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __mul__(self, other):
+    def __mul__(self, other: Self | Any) -> Self:
         """
         mul two objects
         """
-        b = self._value * self.get_other_value(other)
+        b = self._value * self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: Self | Any) -> Self:
         """
         div two objects
         """
-        b = self._value / self.get_other_value(other)
+        b = self._value / self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __floordiv__(self, other):
+    def __floordiv__(self, other: Self | Any) -> Self:
         """
         floordiv two objects
         """
-        b = self._value // self.get_other_value(other)
+        b = self._value // self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __pow__(self, other):
+    def __pow__(self, other: Self | Any) -> Self:
         """
         pow two objects
         """
-        b = self.get_value() ** self.get_other_value(other)
+        b = self.get_value() ** self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __mod__(self, other):
+    def __mod__(self, other: Self | Any) -> Self:
         """
         mod two objects
         """
-        b = self.get_value() % self.get_other_value(other)
+        b = self.get_value() % self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __rshift__(self, other):
+    def __rshift__(self, other: Self | Any) -> Self:
         """
         __rshift__ two objects
         """
-        b = self.get_value() >> self.get_other_value(other)
+        b = self.get_value() >> self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __lshift__(self, other):
+    def __lshift__(self, other: Self | Any) -> Self:
         """
         __lshift__ two objects
         """
-        b = self.get_value() << self.get_other_value(other)
+        b = self.get_value() << self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __and__(self, other):
+    def __and__(self, other: Self | Any) -> Self:
         """
         __and__ two objects
         """
-        b = self.get_value() & self.get_other_value(other)
+        b = self.get_value() & self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __or__(self, other):
+    def __or__(self, other: Self | Any) -> Self:
         """
         __or__ two objects
         """
-        b = self.get_value() | self.get_other_value(other)
+        b = self.get_value() | self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __xor__(self, other):
+    def __xor__(self, other: Self | Any) -> Self:
         """
         __xor__ two objects
         """
-        b = self.get_value() ^ self.get_other_value(other)
+        b = self.get_value() ^ self._get_other_value(other)
         r = self.__copy__()
         r.set(b)
         return r
 
-    def __eq__(self, other):
+    def __eq__(self, other: Self | Any) -> bool:
         """
         equality test two objects
         """
-        return self.get_value() == self.get_other_value(other)
+        return self.get_value() == self._get_other_value(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Self | Any) -> bool:
         """
         ne test two objects
         """
-        return self.get_value() != self.get_other_value(other)
+        return self.get_value() != self._get_other_value(other)
 
-    def __lt__(self, other):
+    def __lt__(self, other: Self | Any) -> bool:
         """
         lt test two objects
         """
-        return self.get_value() < self.get_other_value(other)
+        return self.get_value() < self._get_other_value(other)
 
-    def __le__(self, other):
+    def __le__(self, other: Self | Any) -> bool:
         """
         le test two objects
         """
-        return self.get_value() <= self.get_other_value(other)
+        return self.get_value() <= self._get_other_value(other)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Self | Any) -> bool:
         """
         gt test two objects
         """
-        return self.get_value() > self.get_other_value(other)
+        return self.get_value() > self._get_other_value(other)
 
-    def __ge__(self, other):
+    def __ge__(self, other: Self | Any) -> bool:
         """
         ge test two objects
         """
-        return self.get_value() >= self.get_other_value(other)
+        return self.get_value() >= self._get_other_value(other)
 
-    def __copy__(self):
+    def __copy__(self) -> Self:
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
@@ -645,15 +826,26 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         result.attribute_name = "$"
         return result
 
-    def copy(self):
+    def copy(self) -> Self:
         """
-        call copy
+        wrapper for ``copy.copy``
+
+        :param self: Description
+        :return: a new :py:class:`GenericType` with is the copy  of this object
+        :rtype: Self
+
         """
         return copy.copy(self)
 
-    def set(self, value):
+    def set(self, value: Any) -> None:
         """
         Fill with a value or raise an Error if not valid
+
+        :param self: Description
+        :param value: the valut to set in
+        :type value: Any
+        :raises SAttributError: try to modify an non existing object
+
         """
 
         if self.exists_or_can_read() is False:
@@ -675,11 +867,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # Release all events
         if self.am_i_root():
-            self.release_events()
+            self._release_events()
 
     def patch_internal(self, op: str, value) -> None:
         """
         Patch this object himself. calld by self.patch method after selection with select.
+
+        :param self: Description
+        :param op: the operator as a string ("replace", "test")
+        :type op: str
+        :param value: the value
+        :raises STypeError: in case of invalid operator
+
+        :meta private:
         """
         if op == "replace":
             self.set(value)
@@ -694,6 +894,17 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
         patch is modifying a value. see
         https://datatracker.ietf.org/doc/html/rfc6902
+
+        :param self: Description
+        :param op: Descthe operator
+        :type op: str
+        :param selector: the path to find and modify
+        :type selector: str
+        :param value: Description
+
+        :raises STypeError: in case of invalid operator
+        :raises SAttributError: if the selector is not found
+
         """
         # -- remove with a select as list element
         if op == "remove":
@@ -710,9 +921,18 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return obj.patch_internal(op, value)
 
-    def set_value_without_checks(self, value):
+    def set_value_without_checks(self, value: Any) -> None:
         """
-        return True if some changement, otherwise False
+        Set the value without any check.
+        Please use carrefully and prefer :py:meth:`set`
+
+        :param self: Description
+        :param value: the value to set
+        :type value: Any
+
+        :raises SAttributError: locked
+        :raises SError: json error
+
         """
 
         if self.exists_or_can_read() is False:
@@ -749,9 +969,14 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return True
 
-    def get_value(self):
+    def get_value(self) -> Any:
         """
-        get the value
+        return the value in this object
+
+        :param self: Description
+        :return: The value
+        :rtype: Any
+
         """
         if self._default_value is not None and self._value is None:
             if callable(self._default_value):
@@ -761,9 +986,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return self._value
 
-    def rollback(self):
+    def rollback(self) -> None:
         """
         reset to the old value
+
+        :param self: Description
+
         """
         self.__dict__["_value"] = self._old_value
 
@@ -773,9 +1001,18 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
     def __str__(self):
         return self.get_value().__str__()
 
-    def check(self, value) -> None:
+    def check(self, value: Any) -> None:
         """
-        check if complain to model or return an Error
+        check if the value complain to model.
+        Throw an Error if Not
+
+        :param self: Description
+        :param value: the value to check
+        :type value: Any
+
+        :raises SRightError: cannot read (and modify) value
+        :raises SConstraintError: in case of constraints not validated
+
         """
 
         root = self.get_root()
@@ -811,18 +1048,25 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         return getattr(self.get_value(), k, None)
         # return None
 
-    def check_type(self, value):  # pylint: disable=unused-argument
+    def check_type(self, value: Any) -> None:  # pylint: disable=unused-argument
         """
         Check if the type is correct.
         must be overwritten
+
         """
         # return True
 
-    def match_operator(
+    def _match_operator(
         self, operator, other
     ):  # pylint: disable=too-many-return-statements, too-many-branches
         """
         Matching with an operator
+
+
+        :raises SSyntaxError: developper error
+
+
+        :meta private:
         """
 
         if operator == "$eq":
@@ -848,7 +1092,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 ):
                     resp = None
                     try:
-                        resp = self.match_operator(sub[0], sub[1])
+                        resp = self._match_operator(sub[0], sub[1])
                     except Exception:  # pylint: disable=broad-exception-caught
                         resp = False
                     if resp is False and operator == "$and":
@@ -869,7 +1113,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             ):
                 resp = None
                 try:
-                    resp = self.match_operator(other[0], other[1])
+                    resp = self._match_operator(other[0], other[1])
                 except Exception:  # pylint: disable=broad-exception-caught
                     resp = False
                 return not resp
@@ -883,12 +1127,14 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
     def match(self, other):
         """
         Check if equality
+
+
         """
 
         # the value is a tuble with an operator ( '$gt', '$lt', etc... )
         if isinstance(other, tuple) and len(other) == 2 and re.match(r"^\$", other[0]):
             try:
-                resp = self.match_operator(other[0], other[1])
+                resp = self._match_operator(other[0], other[1])
                 return resp
             except Exception:  # pylint: disable=broad-exception-caught
                 return False
@@ -898,10 +1144,14 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
     def check_constraints(self, value):
         """
         Check all constraints
+
+        :raises SSyntaxError: developper error
+        :raises SConstraintError: in case of not in a union, constraint not validated...
+        :meta private:
         """
         # Union constraint
         if self._union:
-            l = self.get_args_or_execute_them(self._union, value)
+            l = self._get_args_or_execute_them(self._union, value)
             if not isinstance(l, list):
                 raise SSyntaxError("Union constraint not list", self.path_name())
             if value not in l:
@@ -923,13 +1173,16 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 )
         return True
 
-    def get_args_or_execute_them(self, arg, value):
+    def _get_args_or_execute_them(self, arg, value):
         """
         get element from an argument, or if it is callable
         execute the arg as a function to retreive the information
-        example :
-            min = 12 -> return 12
-            min = computeMin -> return computeMin( value )
+
+        :example:
+            - min = 12 -> return 12
+            - min = computeMin -> return computeMin( value )
+
+        :meta private:
         """
         if callable(arg):
             return arg(value, self.get_root())

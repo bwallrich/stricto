@@ -1,5 +1,6 @@
 *workspace
 __pycache__/
 *.pyc
+docs/build/
 dist/
 .coverage

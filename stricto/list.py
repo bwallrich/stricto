@@ -28,8 +28,14 @@ class List(
         self._have_sub_objects = True
 
     def get_schema(self):
-        """
-        Return a schema for this object
+        """Return meta information for a float
+
+        :param self: Description
+        :return: :func:`GenericType.get_schema`
+
+        :rtype: dict
+
+        :meta private:
         """
         a = GenericType.get_schema(self)
         a["min"] = self.get_as_string(self._min)
@@ -77,7 +83,7 @@ class List(
 
         return True
 
-    def match_operator(self, operator, other):
+    def _match_operator(self, operator, other):
         """
         Matching with an operator
         """
@@ -94,7 +100,7 @@ class List(
                     pass
             return False
 
-        return ListAndTuple.match_operator(self, operator, other)
+        return ListAndTuple._match_operator(self, operator, other)
 
     def patch_internal(self, op: str, value):
         """

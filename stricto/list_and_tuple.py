@@ -63,7 +63,7 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
         Return all elements belonging to view_name
         tue return is a subset of this Dict
         """
-        my_view = self.belongs_to_view(view_name)
+        my_view = self._belongs_to_view(view_name)
 
         if my_view is ViewType.NO:
             return (ViewType.NO, None) if final is False else None
