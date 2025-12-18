@@ -41,8 +41,7 @@ class Float(GenericType):
         return a
 
     def check_type(self, value: Any) -> None:
-        """see :py:meth:`GenericType.check_type`
-        """
+        """see :py:meth:`GenericType.check_type`"""
         if isinstance(value, (float, Float)):
             return True
         raise STypeError("Not a float", path=self.path_name(), value=value)

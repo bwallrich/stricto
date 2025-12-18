@@ -12,24 +12,24 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 
 project_information = toml.load("../../pyproject.toml")
-print('-----------------------------------')
+print("-----------------------------------")
 print(project_information["project"])
-print('-----------------------------------')
+print("-----------------------------------")
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = project_information["project"]["name"]
-author = project_information["project"]["authors"][0]['name']
+author = project_information["project"]["authors"][0]["name"]
 copyright = f"2025, {author}"
-release =  project_information["project"]["version"]
+release = project_information["project"]["version"]
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
-extensions = ["sphinx.ext.autodoc", "myst_parser", 'sphinxcontrib.mermaid' ]
+extensions = ["sphinx.ext.autodoc", "myst_parser", "sphinxcontrib.mermaid"]
 
 templates_path = ["_templates"]
 exclude_patterns = []
