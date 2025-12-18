@@ -1,4 +1,4 @@
-sphinx
-sphinx_mdinclude
+sphinx==8.2.3
+sphinx_mdinclude==0.6.2
 sphinx_rtd_theme
-sphinx_markdown_tables
+sphinx_markdown_tables==0.0.17
