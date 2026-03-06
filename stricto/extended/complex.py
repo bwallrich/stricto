@@ -5,6 +5,7 @@ Module for complex
 
 from stricto.dict import Dict
 from stricto.float import Float
+from stricto.error import STypeError
 
 
 class Complex(Dict):
@@ -29,7 +30,7 @@ class Complex(Dict):
         add two complex
         """
         if not isinstance(other, Complex):
-            raise TypeError("can only add Complex")
+            raise STypeError('{0}: can only add Complex', self.path_name())
 
         r = self.__copy__()
         r.real = self.real + other.real

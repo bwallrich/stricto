@@ -46,7 +46,7 @@ class Int(GenericType):
         if isinstance(value, (int, Int)):
             return True
 
-        raise STypeError("Must be a int", self.path_name(), value=value)
+        raise STypeError('{0}: Must be a int ("{value}")', self.path_name(), value=value)
 
     def check_constraints(self, value):
 
@@ -54,10 +54,10 @@ class Int(GenericType):
 
         if self._min is not None and value < self._min:
             raise SConstraintError(
-                "Must be above Minimal", self.path_name(), value=value
+                '{0}: Must be above Minimal ("{value}")', self.path_name(), value=value
             )
         if self._max is not None and value > self._max:
             raise SConstraintError(
-                "Must be below Maximal", self.path_name(), value=value
+                '{0}: Must be below Maximal ("{value}")', self.path_name(), value=value
             )
         return True

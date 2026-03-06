@@ -16,9 +16,8 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
         GenericType.__init__(self, **kwargs)
 
     def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.__dict__.update(self.__dict__)
+        result = GenericType.__copy__(self)
+        # result.__dict__.update(self.__dict__)
         result._value = None
         v = GenericType.get_value(self)
         if isinstance(v, list):

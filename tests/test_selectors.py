@@ -13,7 +13,7 @@ from stricto import (
     List,
     Tuple,
     STypeError,
-    SAttributError,
+    SAttributeError,
 )
 
 
@@ -189,19 +189,19 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(a, a)
         a.patch("replace", "$.a", 13)
         self.assertEqual(a.a, 13)
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.patch("replace", "$.notexist", 13)
-        self.assertEqual(e.exception.to_string(), "Attribut does not exists")
+        self.assertEqual(e.exception.to_string(), '$: Attribut does not exists "$.notexist"')
         with self.assertRaises(STypeError) as e:
             a.patch("remove", "$.a")
-        self.assertEqual(e.exception.to_string(), "invalid operator")
+        self.assertEqual(e.exception.to_string(), '$.a: invalid operator "remove"')
         a.patch("replace", "$.b.l[0]", {"i": "tres"})
         self.assertEqual(a.b.l[0].i, "tres")
         a.patch("replace", "$.b.l[0].i", "next")
         self.assertEqual(a.b.l[0].i, "next")
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.patch("replace", "$.b.l[69]", {"i": "tres"})
-        self.assertEqual(e.exception.to_string(), "Attribut does not exists")
+        self.assertEqual(e.exception.to_string(),  '$: Attribut does not exists "$.b.l[69]"')
         a.patch("add", "$.b.l", {"i": "again"})
         self.assertEqual(len(a.b.l), 3)
         self.assertEqual(a.b.l[2].i, "again")

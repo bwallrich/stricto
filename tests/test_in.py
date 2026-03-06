@@ -20,7 +20,7 @@ class TestIn(unittest.TestCase):
         a = In([Int(), String()])
         with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.to_string(), "Match no model")
+        self.assertEqual(e.exception.to_string(), '$: Match no model (value="12.3", models="[None, None]")')
         a.set(12)
         self.assertEqual(a, 12)
         a.set("yolo")
@@ -86,4 +86,4 @@ class TestIn(unittest.TestCase):
         a = In([Int(min=10), String()], default="yoyo")
         with self.assertRaises(SConstraintError) as e:
             a.set(1)
-        self.assertEqual(e.exception.to_string(), "Must be above Minimal")
+        self.assertEqual(e.exception.to_string(),  '$: Must be above Minimal ("1")')

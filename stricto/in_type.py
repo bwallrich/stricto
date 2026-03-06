@@ -48,5 +48,5 @@ class In(GenericType):
             return model.check(value)
 
         raise STypeError(
-            "Match no model", self.path_name(), value=value, models=self._models
+            '{0}: Match no model (value="{value}", models="{models}")', self.path_name(), value=value, models=self._models
         )

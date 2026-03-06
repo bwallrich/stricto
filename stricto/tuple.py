@@ -26,7 +26,7 @@ class Tuple(ListAndTuple):
         i = 0
         for element_schema in schema:
             if isinstance(element_schema, GenericType) is False:
-                raise SSyntaxError("Not a schema", schema=element_schema)
+                raise SSyntaxError('Not a schema ("{schema}")', schema=element_schema)
             mm = copy.copy(element_schema)
             mm.parent = self
             mm.attribute_name = f"[{i}]"
@@ -200,10 +200,10 @@ class Tuple(ListAndTuple):
         add two Tuples
         """
         if not isinstance(other, Tuple):
-            raise TypeError("can only concatenate Tuple to Tuple")
+            raise STypeError('{0}: Can only concatenate Tuple to Tuple', self.path_name())
 
         if self._get_other_value(other) is None:
-            raise TypeError("can only concatenate Tuple to Tuple")
+            raise STypeError('{0}: Can only concatenate Tuple to Tuple', self.path_name())
 
         r = Tuple(tuple(self._schema) + tuple(other._schema))
         v = GenericType.get_value(self)
@@ -246,7 +246,7 @@ class Tuple(ListAndTuple):
 
         if isinstance(value, (tuple, Tuple, list, List)):
             if len(value) != len(self):
-                raise STypeError("Tuple not same size", self.path_name(), value=value)
+                raise STypeError('{0}: Tuple not same size ("{value}")', self.path_name(), value=value)
             i = 0
             for element in value:
                 self._schema[i].check(element)
@@ -268,7 +268,7 @@ class Tuple(ListAndTuple):
         if isinstance(value, list):
             return True
 
-        raise STypeError("Must be a tuple or a Tuple", self.path_name(), value=value)
+        raise STypeError('{0}: Must be a tuple or a Tuple (value="{value})', self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)

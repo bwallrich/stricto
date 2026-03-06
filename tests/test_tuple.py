@@ -79,7 +79,7 @@ class TestTuple(unittest.TestCase):
 
         with self.assertRaises(STypeError) as e:
             a.set([12, 12])
-        self.assertEqual(e.exception.to_string(), "Not a bool")
+        self.assertEqual(e.exception.to_string(), '$[0]: Not a bool "12"')
 
         # Wrong type
         b = List(Int())
@@ -87,7 +87,7 @@ class TestTuple(unittest.TestCase):
         a = Tuple((Bool(), Int()))
         with self.assertRaises(STypeError) as e:
             a.set(b)
-        self.assertEqual(e.exception.to_string(), "Not a bool")
+        self.assertEqual(e.exception.to_string(), '$[0]: Not a bool "5"')
         self.assertEqual(a, None)
 
         # Ok
@@ -100,7 +100,7 @@ class TestTuple(unittest.TestCase):
         b.set([5, 22])
         with self.assertRaises(SConstraintError) as e:
             a.set(b)
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$[1]: Must be below Maximal ("22")')
 
     def test_rollback(self):
         """
@@ -123,14 +123,14 @@ class TestTuple(unittest.TestCase):
         """
         with self.assertRaises(SSyntaxError) as e:
             Tuple((Bool(), "test"))
-        self.assertEqual(e.exception.to_string(), "Not a schema")
+        self.assertEqual(e.exception.to_string(), 'Not a schema ("test")')
         a = Tuple((Bool(), Int()))
         with self.assertRaises(STypeError) as e:
             a.set(32)
-        self.assertEqual(e.exception.to_string(), "Must be a tuple or a Tuple")
+        self.assertEqual(e.exception.to_string(), '$: Must be a tuple or a Tuple (value="32)')
         with self.assertRaises(STypeError) as e:
             a.set((12, 12))
-        self.assertEqual(e.exception.to_string(), "Not a bool")
+        self.assertEqual(e.exception.to_string(), '$[0]: Not a bool "12"')
         a.set((True, 22))
         b = Tuple((Bool(), Int()))
         b.set(a)
@@ -187,15 +187,15 @@ class TestTuple(unittest.TestCase):
         a.set((True, 22))
         with self.assertRaises(STypeError) as e:
             a.set((True, "hey joe"))
-        self.assertEqual(e.exception.to_string(), "Must be a int")
+        self.assertEqual(e.exception.to_string(), '$[1]: Must be a int ("hey joe")')
 
         with self.assertRaises(STypeError) as e:
             a.set((True, 22, 33))
-        self.assertEqual(e.exception.to_string(), "Tuple not same size")
+        self.assertEqual(e.exception.to_string(), '$: Tuple not same size ("(True, 22, 33)")')
 
         with self.assertRaises(SConstraintError) as e:
             a.set((True, 32))
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$[1]: Must be below Maximal ("32")')
 
     def test_copy_type(self):
         """
@@ -223,11 +223,11 @@ class TestTuple(unittest.TestCase):
 
         with self.assertRaises(SConstraintError) as e:
             c.set((True, 32))
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$[1]: Must be below Maximal ("32")')
 
         with self.assertRaises(SConstraintError) as e:
             b.set((True, 32))
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$[1]: Must be below Maximal ("32")')
 
     def test_inequality_type(self):
         """
@@ -259,16 +259,16 @@ class TestTuple(unittest.TestCase):
         c = a + b
         self.assertEqual(c, (True, 22, True, 8))
         self.assertEqual(c[3], 8)
-        with self.assertRaises(TypeError) as e:
+        with self.assertRaises(STypeError) as e:
             a = a + ("ee", "aa")
-        self.assertEqual(e.exception.args[0], "can only concatenate Tuple to Tuple")
-        with self.assertRaises(TypeError) as e:
+        self.assertEqual(e.exception.to_string(), '$: Can only concatenate Tuple to Tuple')
+        with self.assertRaises(STypeError) as e:
             a = a + none_tuple
-        self.assertEqual(e.exception.args[0], "can only concatenate Tuple to Tuple")
+        self.assertEqual(e.exception.to_string(), '$: Can only concatenate Tuple to Tuple')
 
         with self.assertRaises(SConstraintError) as e:
             c.set((True, 1, False, 11))
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$[3]: Must be below Maximal ("11")')
         c.set((True, 1, False, 9))
         self.assertEqual(c, (True, 1, False, 9))
         self.assertEqual(a, (True, 22))

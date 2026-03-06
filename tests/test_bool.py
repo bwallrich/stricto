@@ -20,7 +20,7 @@ class TestBool(unittest.TestCase):
         a = Bool()
         with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.to_string(), "Not a bool")
+        self.assertEqual(e.exception.to_string(), '$: Not a bool "12.3"')
 
     def test_default(self):
         """
@@ -68,11 +68,11 @@ class TestBool(unittest.TestCase):
         a = Bool(notNone=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.to_string(), "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
         a = Bool(notNone=True, default=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.to_string(), "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
         a = Bool()
         a.set(None)
 

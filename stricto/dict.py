@@ -2,7 +2,7 @@
 
 import copy
 from .generic import GenericType, ViewType
-from .error import SSyntaxError, STypeError, SAttributError
+from .error import SSyntaxError, STypeError, SAttributeError
 from .selector import Selector
 
 
@@ -18,7 +18,7 @@ class Dict(GenericType):
         for key in schema.keys():
             m = schema.get(key)
             if isinstance(m, GenericType) is False:
-                raise SSyntaxError("Not a schema", schema=m)
+                raise SSyntaxError('Not a schema "{schema}"', schema=m)
             mm = copy.copy(m)
             mm.parent = self
             mm.attribute_name = key
@@ -164,7 +164,7 @@ class Dict(GenericType):
         if k in _keys:
             v = object.__getattribute__(self, k)
             if v.exists_or_can_read() is False:
-                raise AttributeError(f"'Dict' object has no attribute '{k}'")
+                raise SAttributeError('{0}: "Dict" object has no attribute "{k}"', self.path_name(), k=k)
 
             # a reference
             if type(value) == type(v):  # pylint: disable=unidiomatic-typecheck
@@ -185,7 +185,7 @@ class Dict(GenericType):
             locked = False
 
         if locked is True:
-            raise SAttributError("locked", f"{k}")
+            raise SAttributeError('{0}: Key "{k}" locked', self.path_name(), k=k)
         self.__dict__[k] = value
 
     def __getattr__(self, k):
@@ -210,13 +210,12 @@ class Dict(GenericType):
         obj = object.__getattribute__(self, k)
         if k in d:
             if obj.exists_or_can_read() is False:
-                raise AttributeError(f"'Dict' object has no attribute '{k}'")
+                raise SAttributeError('{0}: Dict object has no attribute "{k}"', self.path_name(), k=k)
 
         return obj
 
     def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
+        result = GenericType.__copy__(self)
         # result._keys = self._keys.copy()
         result.__dict__["_locked"] = False
         for key, v in self.__dict__.items():
@@ -463,8 +462,8 @@ class Dict(GenericType):
             # check if a non-described value
             for key in value:
                 if key not in self._keys:
-                    raise SAttributError(
-                        "Unknown content", self.path_name() + f".{key}"
+                    raise SAttributeError(
+                        '{0}: Unknown key "{key}"', self.path_name(), key=key
                     )
             return
 
@@ -488,7 +487,7 @@ class Dict(GenericType):
         if isinstance(value, Dict):
             return True
 
-        raise STypeError("Must be a dict", self.path_name(), value=value)
+        raise STypeError('{0}: Must be a dict (value="{value}")', self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)

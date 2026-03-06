@@ -44,6 +44,9 @@ class Datetime(Extend):
         Called by the specific Encoder
         to encode datetime
         """
+        v = self.get_value()
+        if v is None:
+            return None
         return self.get_value().isoformat()
 
     def __json_decode__(self, value):
@@ -59,7 +62,7 @@ class Datetime(Extend):
     ):
         if isinstance(value, (datetime, Datetime, str)):
             return True
-        raise STypeError("Must be a datetime", self.path_name(), value=value)
+        raise STypeError('{0}: Must be a datetime (value="{value}")', self.path_name(), value=value)
 
     def set_now(self):
         """
@@ -73,10 +76,10 @@ class Datetime(Extend):
 
         if self._min is not None and value < self._min:
             raise SConstraintError(
-                "Must be above Minimal", self.path_name(), value=value
+                '{0}: Must be above Minimal (value="{value}")', self.path_name(), value=value
             )
         if self._max is not None and value > self._max:
             raise SConstraintError(
-                "Must be below Maximal", self.path_name(), value=value
+                '{0}: Must be below Maximal (value="{value}")', self.path_name(), value=value
             )
         return True

@@ -20,7 +20,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String()
         with self.assertRaises(STypeError) as e:
             a.set(12)
-        self.assertEqual(e.exception.to_string(), "Must be a string")
+        self.assertEqual(e.exception.to_string(), '$: Must be a string (value="12")')
         a.set("yeah")
         self.assertEqual(a, "yeah")
 
@@ -75,7 +75,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String(union=["M", "F"])
         with self.assertRaises(SConstraintError) as e:
             a.set("foo")
-        self.assertEqual(e.exception.to_string(), "Not in union list")
+        self.assertEqual(e.exception.to_string(), '$: Not in union list')
         a.set("F")
         self.assertEqual(a, "F")
 
@@ -86,7 +86,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String(union=22)
         with self.assertRaises(SSyntaxError) as e:
             a.set("M")
-        self.assertEqual(e.exception.to_string(), "Union constraint not list")
+        self.assertEqual(e.exception.to_string(), '$: Union constraint not list')
 
     def test_not_null(self):
         """
@@ -95,11 +95,11 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String(required=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.to_string(), "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
         a = String(required=True, default="")
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
-        self.assertEqual(e.exception.to_string(), "Cannot be empty")
+        self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
 
     def test_default(self):
         """
@@ -123,19 +123,19 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String(regexp="^A")
         with self.assertRaises(SConstraintError) as e:
             a.set("Foo")
-        self.assertEqual(e.exception.to_string(), "Dont match regexp")
+        self.assertEqual(e.exception.to_string(), '$: Dont match regexp (value="Foo")')
         a.set("AZERTY")
 
         # list of regexp
         a = String(regexp=["^A", r".*Z$"])
         with self.assertRaises(SConstraintError) as e:
             a.set("Foo")
-        self.assertEqual(e.exception.to_string(), "Dont match regexp")
+        self.assertEqual(e.exception.to_string(), '$: Dont match regexp (value="Foo")')
         a.set("AtoZ")
 
         # function return a regexp
         a = String(regexp=lambda value, root: r".*Z$")
         with self.assertRaises(SConstraintError) as e:
             a.set("Foo")
-        self.assertEqual(e.exception.to_string(), "Dont match regexp")
+        self.assertEqual(e.exception.to_string(), '$: Dont match regexp (value="Foo")')
         a.set("AtoZ")

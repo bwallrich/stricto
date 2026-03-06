@@ -30,7 +30,7 @@ class Bool(GenericType):
         """
         if isinstance(value, (bool, Bool)):
             return True
-        raise STypeError("Not a bool", path=self.path_name(), value=value)
+        raise STypeError('{0}: Not a bool "{value}"', self.path_name(), value=value)
 
     def check_constraints(self, value: Any) -> None:
         """Check constraint

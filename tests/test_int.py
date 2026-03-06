@@ -38,10 +38,10 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int()
         with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.to_string(), "Must be a int")
+        self.assertEqual(e.exception.to_string(), '$: Must be a int ("12.3")')
         with self.assertRaises(STypeError) as e:
             a.set("12")
-        self.assertEqual(e.exception.to_string(), "Must be a int")
+        self.assertEqual(e.exception.to_string(), '$: Must be a int ("12")')
 
     def test_default(self):
         """
@@ -61,7 +61,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(min=10)
         with self.assertRaises(SConstraintError) as e:
             a.set(9)
-        self.assertEqual(e.exception.to_string(), "Must be above Minimal")
+        self.assertEqual(e.exception.to_string(), '$: Must be above Minimal ("9")')
 
     def test_max(self):
         """
@@ -70,7 +70,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(max=10)
         with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$: Must be below Maximal ("11")')
 
     def test_copy(self):
         """
@@ -82,7 +82,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(b, 9)
         with self.assertRaises(SConstraintError) as e:
             b.set(a + 3)
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$: Must be below Maximal ("12")')
 
     def test_comparison(self):
         """
@@ -111,7 +111,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         b.set(9)
         with self.assertRaises(SConstraintError) as e:
             c = a + b
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$: Must be below Maximal ("18")')
         c = b + a
         self.assertEqual(type(c), Int)
         self.assertEqual(c, 18)
@@ -129,7 +129,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
             self.assertEqual(a // b, 2)
             with self.assertRaises(STypeError) as e:
                 self.assertEqual(a / b, 2)
-            self.assertEqual(e.exception.to_string(), "Must be a int")
+            self.assertEqual(e.exception.to_string(), '$: Must be a int ("2.5")')
             self.assertEqual(a % b, 1)
             self.assertEqual(a >> b, 1)
             self.assertEqual(a << b, 20)
@@ -164,11 +164,11 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(constraint=check_pair)
         with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), "Constraint not validated")
+        self.assertEqual(e.exception.to_string(), '$: Constraint not validated for value="11"')
         a = Int(constraint=[check_pair])
         with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), "Constraint not validated")
+        self.assertEqual(e.exception.to_string(), '$: Constraint not validated for value="11"')
         a.set(10)
         self.assertEqual(a, 10)
 
@@ -179,7 +179,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(constraint="coucou")
         with self.assertRaises(SSyntaxError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), "Constraint not callable")
+        self.assertEqual(e.exception.to_string(), '$: Constraint not callable')
 
     def test_singleton_comparison(self):
         """

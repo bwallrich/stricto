@@ -18,7 +18,7 @@ Errors
    :members:
    :show-inheritance: 
 
-.. autoclass:: SAttributError
+.. autoclass:: SAttributeError
    :members:
    :show-inheritance: 
 

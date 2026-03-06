@@ -6,7 +6,7 @@ test for Meta informations()
 # pylint: disable=no-member
 import unittest
 
-from stricto import String, Int, Dict, Bool, SSyntaxError
+from stricto import String, Int, Dict, Bool, SSyntaxError, SAttributeError
 
 
 class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -58,16 +58,16 @@ class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         a.enable_permissions()
         a.set({"name": "toto", "age": 8})
-        with self.assertRaises(AttributeError) as e:
+        with self.assertRaises(SAttributeError) as e:
             self.assertNotEqual(a.work.get_schema(), None)
-        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'work'")
+        self.assertEqual(e.exception.to_string(), '$: Dict object has no attribute "work"')
         self.assertEqual(a.get_current_meta()["sub_scheme"]["work"]["exists"], False)
 
         a.age = 19
 
         with self.assertRaises(SSyntaxError) as e:
             a.work.get_current_meta()
-        self.assertEqual(e.exception.to_string(), "get_current_meta must start at root")
+        self.assertEqual(e.exception.to_string(), '$.work: get_current_meta() must start at root')
 
         dump_main = a.get_current_meta()
 

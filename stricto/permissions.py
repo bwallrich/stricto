@@ -1,4 +1,5 @@
 """Module providing the Permission( Class)"""
+import copy
 
 
 class Permissions:
@@ -17,6 +18,16 @@ class Permissions:
         self._permissions = {}
         for right_name, r in kwargs.items():
             self._permissions[right_name] = r
+
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result._enabled = self._enabled
+        result._permissions = {}
+        for right_name, r in self._permissions.items():
+            result._permissions[right_name] = copy.copy(r)
+        return result
 
     def enable(self) -> None:
         """

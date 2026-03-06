@@ -15,7 +15,7 @@ from .generic import GenericType, ViewType
 from .error import (
     StrictoError,
     STypeError,
-    SAttributError,
+    SAttributeError,
     SKeyError,
     SSyntaxError,
     SConstraintError,

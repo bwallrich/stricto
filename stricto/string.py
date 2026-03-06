@@ -41,7 +41,7 @@ class String(GenericType):
     def check_type(self, value):
         if isinstance(value, (str, String)):
             return True
-        raise STypeError("Must be a string", self.path_name(), value=value)
+        raise STypeError('{0}: Must be a string (value="{value}")', self.path_name(), value=value)
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)
@@ -51,7 +51,7 @@ class String(GenericType):
             reg = self._get_args_or_execute_them(regexp, value)
             if not re.match(reg, value):
                 raise SConstraintError(
-                    "Dont match regexp", self.path_name(), value=value
+                    '{0}: Dont match regexp (value="{value}")', self.path_name(), value=value
                 )
 
         return True

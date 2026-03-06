@@ -17,7 +17,7 @@ from stricto import (
     StrictoEncoder,
     STypeError,
     SConstraintError,
-    SAttributError,
+    SAttributeError,
     SSyntaxError,
 )
 
@@ -42,7 +42,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Dict({"b": Int(), "c": Int()})
         with self.assertRaises(STypeError) as e:
             a.set(12)
-        self.assertEqual(e.exception.to_string(), "Must be a dict")
+        self.assertEqual(e.exception.to_string(), '$: Must be a dict (value="12")')
         a.set({"b": 1, "c": 2})
         self.assertEqual(a.b, 1)
         self.assertEqual(a.c, 2)
@@ -57,16 +57,16 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         with self.assertRaises(SSyntaxError) as e:
             Dict({"b": Int(), "c": Int(), "d": 23})
-        self.assertEqual(e.exception.to_string(), "Not a schema")
+        self.assertEqual(e.exception.to_string(), 'Not a schema "23"')
 
     def test_set_no_value(self):
         """
         test set non existing value
         """
         a = Dict({"b": Int(), "c": Int()})
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.set({"b": 1, "c": 2, "d": "yolo"})
-        self.assertEqual(e.exception.to_string(), "Unknown content")
+        self.assertEqual(e.exception.to_string(), '$: Unknown key "d"')
 
     def test_default(self):
         """
@@ -94,9 +94,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         a = Dict({"b": Int(), "c": Int()})
         a.set({"b": 1, "c": 2})
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.d = 22
-        self.assertEqual(e.exception.to_string(), "locked")
+        self.assertEqual(e.exception.to_string(), '$: Key "d" locked')
 
     def test_sub_undefined(self):
         """
@@ -107,9 +107,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(AttributeError) as e:
             a.d.e = 22
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.set({"b": 1, "c": 2, "d": {"e": 1}})
-        self.assertEqual(e.exception.to_string(), "Unknown content")
+        self.assertEqual(e.exception.to_string(), '$: Unknown key "d"')
 
     def test_sub_undefined_2(self):
         """
@@ -180,9 +180,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.d = "oh yeah"
         self.assertEqual(a.d, "oh yeah")
         a.remove_model("d")
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.d = "oh yeah"
-        self.assertEqual(e.exception.to_string(), "locked")
+        self.assertEqual(e.exception.to_string(), '$: Key "d" locked')
 
     def test_modify_schema_dict(self):
         """
@@ -268,6 +268,25 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.c = 33
         self.assertEqual(a.b, 2)
         self.assertEqual(a.c, 33)
+
+    def test_copy_permissions(self):
+        """
+        Test copy
+        """
+        a = Dict({"b": Int(), "c": Int()})
+        a.disable_permissions()
+        a.set({"b": 1, "c": 2})
+        self.assertEqual(a.b._permissions._enabled, False)
+        self.assertEqual(a.c._permissions._enabled, False)
+        self.assertEqual(a._permissions._enabled, False)
+        b=a.copy()
+        a.enable_permissions()
+        self.assertEqual(b.b._permissions._enabled, False)
+        self.assertEqual(b.c._permissions._enabled, False)
+        self.assertEqual(b._permissions._enabled, False)
+        self.assertEqual(a.b._permissions._enabled, True)
+        self.assertEqual(a.c._permissions._enabled, True)
+        self.assertEqual(a._permissions._enabled, True)
 
     def test_copy_dict(self):
         """
@@ -367,9 +386,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         test not exist stupid case
         """
         a = Int(exists=False)
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.set(2)
-        self.assertEqual(e.exception.to_string(), "locked")
+        self.assertEqual(e.exception.to_string(), '$: Locked')
 
     def test_not_exist(self):
         """
@@ -399,24 +418,24 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         with self.assertRaises(KeyError) as e:
             print(a["d"])
         self.assertEqual(e.exception.args[0], "d")
-        with self.assertRaises(AttributeError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.d = 12
-        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
+        self.assertEqual(e.exception.to_string(), '$: "Dict" object has no attribute "d"')
         self.assertEqual(a.get("d"), None)
         self.assertEqual(
             repr(a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}"
         )
 
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.set({"d": 2})
-        self.assertEqual(e.exception.to_string(), "locked")
-        with self.assertRaises(AttributeError) as e:
+        self.assertEqual(e.exception.to_string(), '$.d: Locked')
+        with self.assertRaises(SAttributeError) as e:
             a.d = 2
-        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
+        self.assertEqual(e.exception.to_string(), '$: "Dict" object has no attribute "d"')
 
-        with self.assertRaises(SAttributError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.set({"must_exists": False, "a": 2, "b": 1, "c": 2, "e": 4, "d": 2})
-        self.assertEqual(e.exception.to_string(), "locked")
+        self.assertEqual(e.exception.to_string(), '$.d: Locked')
         self.assertEqual(
             repr(a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}"
         )
@@ -458,17 +477,17 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a.get("b"), None)
         self.assertEqual(repr(a), "{'must_exists': False, 'a': 2}")
 
-        with self.assertRaises(AttributeError) as e:
+        with self.assertRaises(SAttributeError) as e:
             print(print(a.b.e["f"]))
-        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
+        self.assertEqual(e.exception.to_string(), '$: Dict object has no attribute "b"')
 
-        with self.assertRaises(AttributeError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.b = {"d": 33}
-        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
+        self.assertEqual(e.exception.to_string(), '$: "Dict" object has no attribute "b"')
 
-        with self.assertRaises(AttributeError) as e:
+        with self.assertRaises(SAttributeError) as e:
             a.b.e.f = 2
-        self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'b'")
+        self.assertEqual(e.exception.to_string(), '$: Dict object has no attribute "b"')
 
         a.must_exists = True
         a.b.set({"d": 2})
@@ -750,22 +769,22 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(d.a.check(4), None)
         with self.assertRaises(STypeError) as e:
             d.a.check("hello")
-        self.assertEqual(e.exception.to_string(), "Must be a int")
+        self.assertEqual(e.exception.to_string(), '$.a: Must be a int ("hello")')
 
         with self.assertRaises(SConstraintError) as e:
             d.check({"a": 100})
             d.a.check(100)
-        self.assertEqual(e.exception.to_string(), "Must be below Maximal")
+        self.assertEqual(e.exception.to_string(), '$.a: Must be below Maximal ("100")')
 
         with self.assertRaises(SConstraintError) as e:
             d.set({"a": 20, "b": 10})
-        self.assertEqual(e.exception.to_string(), "Constraint not validated")
+        self.assertEqual(e.exception.to_string(),  '$.b: Constraint not validated for value="10"')
 
         self.assertEqual(d.a, None)
         self.assertEqual(d.b, None)
         with self.assertRaises(SConstraintError) as e:
             d.set({"a": 20, "b": 10})
-        self.assertEqual(e.exception.to_string(), "Constraint not validated")
+        self.assertEqual(e.exception.to_string(), '$.b: Constraint not validated for value="10"')
         self.assertEqual(d.a, None)
         self.assertEqual(d.b, None)
 
@@ -775,7 +794,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(d.b, 20)
         with self.assertRaises(SConstraintError) as e:
             d.a = 22
-        self.assertEqual(e.exception.to_string(), "Constraint not validated")
+        self.assertEqual(e.exception.to_string(), '$.b: Constraint not validated for value="20"')
 
         d.set_value_without_checks({"a": 20, "b": 10})
         self.assertEqual(d.get_value(), {"a": 20, "b": 10})

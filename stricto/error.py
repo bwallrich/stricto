@@ -54,7 +54,7 @@ class STypeError(TypeError, StrictoError):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
 
-class SAttributError(AttributeError, StrictoError):
+class SAttributeError(AttributeError, StrictoError):
     """
     Extented :py:class:`StrictoError` with ``AttributeError``
     """
