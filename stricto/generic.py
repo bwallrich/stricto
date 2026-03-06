@@ -850,7 +850,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
 
         if self.exists_or_can_read() is False:
-            raise SAttributeError('{0}: Locked', self.path_name())
+            raise SAttributeError("{0}: Locked", self.path_name())
 
         root = self.get_root()
 
@@ -917,7 +917,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         obj = self.select(selector)
         if obj is None:
             raise SAttributeError(
-                '{0}: Attribut does not exists "{selector}"', self.path_name(), selector=selector
+                '{0}: Attribut does not exists "{selector}"',
+                self.path_name(),
+                selector=selector,
             )
 
         return obj.patch_internal(op, value)
@@ -937,7 +939,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """
 
         if self.exists_or_can_read() is False:
-            raise SAttributeError('{0}: Locked', self.path_name())
+            raise SAttributeError("{0}: Locked", self.path_name())
 
         root = self.get_root()
 
@@ -1019,7 +1021,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         root = self.get_root()
 
         if self.can_read() is False:
-            raise SRightError('{0}: Cannot read value', self.path_name())
+            raise SRightError("{0}: Cannot read value", self.path_name())
 
         # transform the value before the check
         corrected_value = value
@@ -1029,7 +1031,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # handle the None value
         if corrected_value is None:
             if self._not_none is True:
-                raise SConstraintError('{0}: Cannot be empty "{value}"', self.path_name(), value=value)
+                raise SConstraintError(
+                    '{0}: Cannot be empty "{value}"', self.path_name(), value=value
+                )
             return
 
         # Check correct type or raise an Error
@@ -1037,7 +1041,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         if self.can_modify() is False:
             if corrected_value != self.get_value():
-                raise SRightError('{0}: cannot modify value', self.path_name())
+                raise SRightError("{0}: cannot modify value", self.path_name())
 
         # check constraints or raise an Error
         self.check_constraints(corrected_value)
@@ -1084,7 +1088,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return self.get_value() != other
         if operator in {"$and", "$or"}:
             if not isinstance(other, list):
-                raise SSyntaxError('{0}: $and need a list', self.path_name())
+                raise SSyntaxError("{0}: $and need a list", self.path_name())
             for sub in other:
                 if (
                     isinstance(sub, tuple)
@@ -1102,7 +1106,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                         return True
                 else:
                     raise SSyntaxError(
-                        '{0}: $and/$or list item not a tuple of conditions', self.path_name()
+                        "{0}: $and/$or list item not a tuple of conditions",
+                        self.path_name(),
                     )
             return True
 
@@ -1119,7 +1124,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                     resp = False
                 return not resp
             else:
-                raise SSyntaxError('{0}: $not condition must be a tuple', self.path_name())
+                raise SSyntaxError(
+                    "{0}: $not condition must be a tuple", self.path_name()
+                )
 
         raise SSyntaxError(
             '{0}: $not condition must be a tuple "{op}"', self.path_name(), op=operator
@@ -1154,23 +1161,27 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if self._union:
             l = self._get_args_or_execute_them(self._union, value)
             if not isinstance(l, list):
-                raise SSyntaxError('{0}: Union constraint not list', self.path_name())
+                raise SSyntaxError("{0}: Union constraint not list", self.path_name())
             if value not in l:
                 raise SConstraintError(
-                    '{0}: Not in union list', self.path_name(), value=value, list=l
+                    "{0}: Not in union list", self.path_name(), value=value, list=l
                 )
 
         # ---- constraints as functions
         for constraint in self._constraints:
             if callable(constraint) is not True:
                 raise SSyntaxError(
-                    '{0}: Constraint not callable', self.path_name(), constraint=constraint
+                    "{0}: Constraint not callable",
+                    self.path_name(),
+                    constraint=constraint,
                 )
             root = self.get_root()
             r = constraint(value, root)
             if r is False:
                 raise SConstraintError(
-                    '{0}: Constraint not validated for value="{value}"', self.path_name(), value=value
+                    '{0}: Constraint not validated for value="{value}"',
+                    self.path_name(),
+                    value=value,
                 )
         return True
 

@@ -279,7 +279,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a.b._permissions._enabled, False)
         self.assertEqual(a.c._permissions._enabled, False)
         self.assertEqual(a._permissions._enabled, False)
-        b=a.copy()
+        b = a.copy()
         a.enable_permissions()
         self.assertEqual(b.b._permissions._enabled, False)
         self.assertEqual(b.c._permissions._enabled, False)
@@ -388,7 +388,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(exists=False)
         with self.assertRaises(SAttributeError) as e:
             a.set(2)
-        self.assertEqual(e.exception.to_string(), '$: Locked')
+        self.assertEqual(e.exception.to_string(), "$: Locked")
 
     def test_not_exist(self):
         """
@@ -420,7 +420,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(e.exception.args[0], "d")
         with self.assertRaises(SAttributeError) as e:
             a.d = 12
-        self.assertEqual(e.exception.to_string(), '$: "Dict" object has no attribute "d"')
+        self.assertEqual(
+            e.exception.to_string(), '$: "Dict" object has no attribute "d"'
+        )
         self.assertEqual(a.get("d"), None)
         self.assertEqual(
             repr(a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}"
@@ -428,14 +430,16 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         with self.assertRaises(SAttributeError) as e:
             a.set({"d": 2})
-        self.assertEqual(e.exception.to_string(), '$.d: Locked')
+        self.assertEqual(e.exception.to_string(), "$.d: Locked")
         with self.assertRaises(SAttributeError) as e:
             a.d = 2
-        self.assertEqual(e.exception.to_string(), '$: "Dict" object has no attribute "d"')
+        self.assertEqual(
+            e.exception.to_string(), '$: "Dict" object has no attribute "d"'
+        )
 
         with self.assertRaises(SAttributeError) as e:
             a.set({"must_exists": False, "a": 2, "b": 1, "c": 2, "e": 4, "d": 2})
-        self.assertEqual(e.exception.to_string(), '$.d: Locked')
+        self.assertEqual(e.exception.to_string(), "$.d: Locked")
         self.assertEqual(
             repr(a), "{'must_exists': False, 'a': 2, 'b': 1, 'c': 2, 'e': 4}"
         )
@@ -483,7 +487,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         with self.assertRaises(SAttributeError) as e:
             a.b = {"d": 33}
-        self.assertEqual(e.exception.to_string(), '$: "Dict" object has no attribute "b"')
+        self.assertEqual(
+            e.exception.to_string(), '$: "Dict" object has no attribute "b"'
+        )
 
         with self.assertRaises(SAttributeError) as e:
             a.b.e.f = 2
@@ -778,13 +784,17 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         with self.assertRaises(SConstraintError) as e:
             d.set({"a": 20, "b": 10})
-        self.assertEqual(e.exception.to_string(),  '$.b: Constraint not validated for value="10"')
+        self.assertEqual(
+            e.exception.to_string(), '$.b: Constraint not validated for value="10"'
+        )
 
         self.assertEqual(d.a, None)
         self.assertEqual(d.b, None)
         with self.assertRaises(SConstraintError) as e:
             d.set({"a": 20, "b": 10})
-        self.assertEqual(e.exception.to_string(), '$.b: Constraint not validated for value="10"')
+        self.assertEqual(
+            e.exception.to_string(), '$.b: Constraint not validated for value="10"'
+        )
         self.assertEqual(d.a, None)
         self.assertEqual(d.b, None)
 
@@ -794,7 +804,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(d.b, 20)
         with self.assertRaises(SConstraintError) as e:
             d.a = 22
-        self.assertEqual(e.exception.to_string(), '$.b: Constraint not validated for value="20"')
+        self.assertEqual(
+            e.exception.to_string(), '$.b: Constraint not validated for value="20"'
+        )
 
         d.set_value_without_checks({"a": 20, "b": 10})
         self.assertEqual(d.get_value(), {"a": 20, "b": 10})

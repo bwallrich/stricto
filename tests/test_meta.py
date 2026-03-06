@@ -60,14 +60,18 @@ class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set({"name": "toto", "age": 8})
         with self.assertRaises(SAttributeError) as e:
             self.assertNotEqual(a.work.get_schema(), None)
-        self.assertEqual(e.exception.to_string(), '$: Dict object has no attribute "work"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Dict object has no attribute "work"'
+        )
         self.assertEqual(a.get_current_meta()["sub_scheme"]["work"]["exists"], False)
 
         a.age = 19
 
         with self.assertRaises(SSyntaxError) as e:
             a.work.get_current_meta()
-        self.assertEqual(e.exception.to_string(), '$.work: get_current_meta() must start at root')
+        self.assertEqual(
+            e.exception.to_string(), "$.work: get_current_meta() must start at root"
+        )
 
         dump_main = a.get_current_meta()
 

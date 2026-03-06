@@ -164,11 +164,15 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(constraint=check_pair)
         with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), '$: Constraint not validated for value="11"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Constraint not validated for value="11"'
+        )
         a = Int(constraint=[check_pair])
         with self.assertRaises(SConstraintError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), '$: Constraint not validated for value="11"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Constraint not validated for value="11"'
+        )
         a.set(10)
         self.assertEqual(a, 10)
 
@@ -179,7 +183,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Int(constraint="coucou")
         with self.assertRaises(SSyntaxError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), '$: Constraint not callable')
+        self.assertEqual(e.exception.to_string(), "$: Constraint not callable")
 
     def test_singleton_comparison(self):
         """

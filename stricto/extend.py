@@ -45,7 +45,10 @@ class Extend(GenericType):
         if isinstance(value, (self._type, type(self))):
             return True
         raise STypeError(
-            '{0}: Must be a extend type (type="{type}", value="{value}")', self.path_name(), type=self._type, value=value
+            '{0}: Must be a extend type (type="{type}", value="{value}")',
+            self.path_name(),
+            type=self._type,
+            value=value,
         )
 
     def check_constraints(self, value):

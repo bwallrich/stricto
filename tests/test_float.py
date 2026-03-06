@@ -70,7 +70,9 @@ class TestFloat(unittest.TestCase):
         a = Float(min=10.0)
         with self.assertRaises(SConstraintError) as e:
             a.set(9.9)
-        self.assertEqual(e.exception.to_string(), '$: Must be above Minimal (value="9.9")')
+        self.assertEqual(
+            e.exception.to_string(), '$: Must be above Minimal (value="9.9")'
+        )
 
     def test_max(self):
         """
@@ -79,7 +81,9 @@ class TestFloat(unittest.TestCase):
         a = Float(max=10.0)
         with self.assertRaises(SConstraintError) as e:
             a.set(10.00001)
-        self.assertEqual(e.exception.to_string(), '$: Must be below Maximal (value="10.00001")')
+        self.assertEqual(
+            e.exception.to_string(), '$: Must be below Maximal (value="10.00001")'
+        )
 
     def test_float_operator(self):
         """
@@ -105,7 +109,9 @@ class TestFloat(unittest.TestCase):
         self.assertEqual(b, 9.0)
         with self.assertRaises(SConstraintError) as e:
             b.set(a + 3)
-        self.assertEqual(e.exception.to_string(), '$: Must be below Maximal (value="12.0")')
+        self.assertEqual(
+            e.exception.to_string(), '$: Must be below Maximal (value="12.0")'
+        )
 
     def test_comparison(self):
         """
@@ -130,7 +136,9 @@ class TestFloat(unittest.TestCase):
         b.set(9.0)
         with self.assertRaises(SConstraintError) as e:
             c = a + b
-        self.assertEqual(e.exception.to_string(), '$: Must be below Maximal (value="18.0")')
+        self.assertEqual(
+            e.exception.to_string(), '$: Must be below Maximal (value="18.0")'
+        )
         c = b + a
         self.assertEqual(type(c), Float)
         self.assertEqual(c, 18.0)
@@ -162,11 +170,15 @@ class TestFloat(unittest.TestCase):
         a = Float(constraint=check_pair)
         with self.assertRaises(SConstraintError) as e:
             a.set(11.0)
-        self.assertEqual(e.exception.to_string(), '$: Constraint not validated for value="11.0"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Constraint not validated for value="11.0"'
+        )
         a = Float(constraint=[check_pair])
         with self.assertRaises(SConstraintError) as e:
             a.set(11.0)
-        self.assertEqual(e.exception.to_string(), '$: Constraint not validated for value="11.0"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Constraint not validated for value="11.0"'
+        )
         a.set(10.0)
         self.assertEqual(a, 10.0)
 

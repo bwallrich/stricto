@@ -127,7 +127,9 @@ class TestTuple(unittest.TestCase):
         a = Tuple((Bool(), Int()))
         with self.assertRaises(STypeError) as e:
             a.set(32)
-        self.assertEqual(e.exception.to_string(), '$: Must be a tuple or a Tuple (value="32)')
+        self.assertEqual(
+            e.exception.to_string(), '$: Must be a tuple or a Tuple (value="32)'
+        )
         with self.assertRaises(STypeError) as e:
             a.set((12, 12))
         self.assertEqual(e.exception.to_string(), '$[0]: Not a bool "12"')
@@ -191,7 +193,9 @@ class TestTuple(unittest.TestCase):
 
         with self.assertRaises(STypeError) as e:
             a.set((True, 22, 33))
-        self.assertEqual(e.exception.to_string(), '$: Tuple not same size ("(True, 22, 33)")')
+        self.assertEqual(
+            e.exception.to_string(), '$: Tuple not same size ("(True, 22, 33)")'
+        )
 
         with self.assertRaises(SConstraintError) as e:
             a.set((True, 32))
@@ -261,10 +265,14 @@ class TestTuple(unittest.TestCase):
         self.assertEqual(c[3], 8)
         with self.assertRaises(STypeError) as e:
             a = a + ("ee", "aa")
-        self.assertEqual(e.exception.to_string(), '$: Can only concatenate Tuple to Tuple')
+        self.assertEqual(
+            e.exception.to_string(), "$: Can only concatenate Tuple to Tuple"
+        )
         with self.assertRaises(STypeError) as e:
             a = a + none_tuple
-        self.assertEqual(e.exception.to_string(), '$: Can only concatenate Tuple to Tuple')
+        self.assertEqual(
+            e.exception.to_string(), "$: Can only concatenate Tuple to Tuple"
+        )
 
         with self.assertRaises(SConstraintError) as e:
             c.set((True, 1, False, 11))

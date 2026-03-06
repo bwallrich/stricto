@@ -46,7 +46,9 @@ class Int(GenericType):
         if isinstance(value, (int, Int)):
             return True
 
-        raise STypeError('{0}: Must be a int ("{value}")', self.path_name(), value=value)
+        raise STypeError(
+            '{0}: Must be a int ("{value}")', self.path_name(), value=value
+        )
 
     def check_constraints(self, value):
 

@@ -43,7 +43,9 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(e.exception.to_string(), "Invalid isoformat string: 'dd'")
         with self.assertRaises(STypeError) as e:
             a.b = 23.45
-        self.assertEqual(e.exception.to_string(), '$.b: Must be a datetime (value="23.45")')
+        self.assertEqual(
+            e.exception.to_string(), '$.b: Must be a datetime (value="23.45")'
+        )
         a.b = datetime(2000, 1, 1)
         self.assertEqual(a.b.year, 2000)
         self.assertEqual(a.b.day, 1)
@@ -114,7 +116,7 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(repr(c), "(24.0+18.0i)")
         with self.assertRaises(STypeError) as e:
             c = a + 12
-        self.assertEqual(e.exception.to_string(), '$: can only add Complex')
+        self.assertEqual(e.exception.to_string(), "$: can only add Complex")
 
     def test_free_object(self):
         """
@@ -124,6 +126,9 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = FreeDict()
         with self.assertRaises(STypeError) as e:
             a.set(12)
-        self.assertEqual(e.exception.to_string(), '$: Must be a extend type (type="<class \'dict\'>", value="12")')
+        self.assertEqual(
+            e.exception.to_string(),
+            '$: Must be a extend type (type="<class \'dict\'>", value="12")',
+        )
         a.set({})
         a.set({"top": 1})

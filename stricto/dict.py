@@ -164,7 +164,9 @@ class Dict(GenericType):
         if k in _keys:
             v = object.__getattribute__(self, k)
             if v.exists_or_can_read() is False:
-                raise SAttributeError('{0}: "Dict" object has no attribute "{k}"', self.path_name(), k=k)
+                raise SAttributeError(
+                    '{0}: "Dict" object has no attribute "{k}"', self.path_name(), k=k
+                )
 
             # a reference
             if type(value) == type(v):  # pylint: disable=unidiomatic-typecheck
@@ -210,7 +212,9 @@ class Dict(GenericType):
         obj = object.__getattribute__(self, k)
         if k in d:
             if obj.exists_or_can_read() is False:
-                raise SAttributeError('{0}: Dict object has no attribute "{k}"', self.path_name(), k=k)
+                raise SAttributeError(
+                    '{0}: Dict object has no attribute "{k}"', self.path_name(), k=k
+                )
 
         return obj
 
@@ -487,7 +491,9 @@ class Dict(GenericType):
         if isinstance(value, Dict):
             return True
 
-        raise STypeError('{0}: Must be a dict (value="{value}")', self.path_name(), value=value)
+        raise STypeError(
+            '{0}: Must be a dict (value="{value}")', self.path_name(), value=value
+        )
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)

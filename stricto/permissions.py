@@ -1,4 +1,5 @@
 """Module providing the Permission( Class)"""
+
 import copy
 
 
@@ -18,7 +19,6 @@ class Permissions:
         self._permissions = {}
         for right_name, r in kwargs.items():
             self._permissions[right_name] = r
-
 
     def __copy__(self):
         cls = self.__class__

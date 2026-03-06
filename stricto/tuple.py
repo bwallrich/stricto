@@ -200,10 +200,14 @@ class Tuple(ListAndTuple):
         add two Tuples
         """
         if not isinstance(other, Tuple):
-            raise STypeError('{0}: Can only concatenate Tuple to Tuple', self.path_name())
+            raise STypeError(
+                "{0}: Can only concatenate Tuple to Tuple", self.path_name()
+            )
 
         if self._get_other_value(other) is None:
-            raise STypeError('{0}: Can only concatenate Tuple to Tuple', self.path_name())
+            raise STypeError(
+                "{0}: Can only concatenate Tuple to Tuple", self.path_name()
+            )
 
         r = Tuple(tuple(self._schema) + tuple(other._schema))
         v = GenericType.get_value(self)
@@ -246,7 +250,11 @@ class Tuple(ListAndTuple):
 
         if isinstance(value, (tuple, Tuple, list, List)):
             if len(value) != len(self):
-                raise STypeError('{0}: Tuple not same size ("{value}")', self.path_name(), value=value)
+                raise STypeError(
+                    '{0}: Tuple not same size ("{value}")',
+                    self.path_name(),
+                    value=value,
+                )
             i = 0
             for element in value:
                 self._schema[i].check(element)
@@ -268,7 +276,11 @@ class Tuple(ListAndTuple):
         if isinstance(value, list):
             return True
 
-        raise STypeError('{0}: Must be a tuple or a Tuple (value="{value})', self.path_name(), value=value)
+        raise STypeError(
+            '{0}: Must be a tuple or a Tuple (value="{value})',
+            self.path_name(),
+            value=value,
+        )
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)

@@ -65,7 +65,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set({"b": 1, "c": "top"})
         with self.assertRaises(SRightError) as e:
             a.e.g = "Test"
-        self.assertEqual(e.exception.to_string(), '$.e.g: cannot modify value')
+        self.assertEqual(e.exception.to_string(), "$.e.g: cannot modify value")
 
     def test_read_only_error(self):
         """
@@ -75,7 +75,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.enable_permissions()
         with self.assertRaises(SRightError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), '$: cannot modify value')
+        self.assertEqual(e.exception.to_string(), "$: cannot modify value")
         self.assertEqual(a, 10)
         a.set(10)
 
@@ -91,7 +91,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a, 12)
         with self.assertRaises(SRightError) as e:
             a.set(11)
-        self.assertEqual(e.exception.to_string(), '$: cannot modify value')
+        self.assertEqual(e.exception.to_string(), "$: cannot modify value")
 
     def test_can_read_func(self):
         """
@@ -107,7 +107,7 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.enable_permissions()
         with self.assertRaises(SAttributeError) as e:
             a.set({"b": 1, "c": "test"})
-        self.assertEqual(e.exception.to_string(), '$.c: Locked')
+        self.assertEqual(e.exception.to_string(), "$.c: Locked")
 
         with self.assertRaises(SAttributeError) as e:
             self.assertEqual(a.c, "toto")

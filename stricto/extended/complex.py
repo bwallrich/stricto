@@ -30,7 +30,7 @@ class Complex(Dict):
         add two complex
         """
         if not isinstance(other, Complex):
-            raise STypeError('{0}: can only add Complex', self.path_name())
+            raise STypeError("{0}: can only add Complex", self.path_name())
 
         r = self.__copy__()
         r.real = self.real + other.real

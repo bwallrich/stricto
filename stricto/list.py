@@ -517,7 +517,9 @@ class List(
         if isinstance(value, List):
             return True
 
-        raise STypeError('{0}: Must be a list (value="{value}")', self.path_name(), value=value)
+        raise STypeError(
+            '{0}: Must be a list (value="{value}")', self.path_name(), value=value
+        )
 
     def check_constraints(self, value):
         GenericType.check_constraints(self, value)
@@ -526,19 +528,25 @@ class List(
             # print(f'List check {self.get_value()} value={value} ')
             if len(value) < self._min:
                 raise SConstraintError(
-                    '{0}: Must be above Minimal (value="{value}")', self.path_name(), value=value
+                    '{0}: Must be above Minimal (value="{value}")',
+                    self.path_name(),
+                    value=value,
                 )
         if self._max is not None:
             if len(value) > self._max:
                 raise SConstraintError(
-                    '{0}: Must be below Maximal (value="{value}")', self.path_name(), value=value
+                    '{0}: Must be below Maximal (value="{value}")',
+                    self.path_name(),
+                    value=value,
                 )
 
         if self._uniq is True:
             for x in value:
                 if value.count(x) > 1:
                     raise SConstraintError(
-                        '{0}: duplicate value in list (value="{value}")', self.path_name(), value=value
+                        '{0}: duplicate value in list (value="{value}")',
+                        self.path_name(),
+                        value=value,
                     )
 
         return True

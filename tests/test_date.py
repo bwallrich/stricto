@@ -50,7 +50,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Datetime()
         with self.assertRaises(STypeError) as e:
             a.set(12.3)
-        self.assertEqual(e.exception.to_string(), '$: Must be a datetime (value="12.3")')
+        self.assertEqual(
+            e.exception.to_string(), '$: Must be a datetime (value="12.3")'
+        )
 
     def test_set_value_without_check(self):
         """
@@ -82,7 +84,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Datetime(min=five_min_ago)
         with self.assertRaises(SConstraintError) as e:
             a.set(datetime.now() - timedelta(minutes=6))
-        self.assertEqual(e.exception.args[0], '{0}: Must be above Minimal (value="{value}")')
+        self.assertEqual(
+            e.exception.args[0], '{0}: Must be above Minimal (value="{value}")'
+        )
 
     def test_max(self):
         """
@@ -91,7 +95,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Datetime(max=datetime.now())
         with self.assertRaises(SConstraintError) as e:
             a.set(datetime.now() + timedelta(minutes=6))
-        self.assertEqual(e.exception.args[0], '{0}: Must be below Maximal (value="{value}")')
+        self.assertEqual(
+            e.exception.args[0], '{0}: Must be below Maximal (value="{value}")'
+        )
 
     def test_copy(self):
         """
@@ -103,7 +109,9 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(b, a)
         with self.assertRaises(SConstraintError) as e:
             b.set(a + timedelta(minutes=10))
-        self.assertEqual(e.exception.args[0], '{0}: Must be below Maximal (value="{value}")')
+        self.assertEqual(
+            e.exception.args[0], '{0}: Must be below Maximal (value="{value}")'
+        )
 
     def test_comparison(self):
         """
@@ -152,11 +160,15 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Datetime(constraint=check_before_june)
         with self.assertRaises(SConstraintError) as e:
             a.set(datetime.strptime("2025/12/25", "%Y/%m/%d"))
-        self.assertEqual(e.exception.args[0], '{0}: Constraint not validated for value="{value}"')
+        self.assertEqual(
+            e.exception.args[0], '{0}: Constraint not validated for value="{value}"'
+        )
         a = Datetime(constraint=[check_before_june])
         with self.assertRaises(SConstraintError) as e:
             a.set(datetime.strptime("2025/12/25", "%Y/%m/%d"))
-        self.assertEqual(e.exception.args[0], '{0}: Constraint not validated for value="{value}"')
+        self.assertEqual(
+            e.exception.args[0], '{0}: Constraint not validated for value="{value}"'
+        )
         a.set(datetime.strptime("2025/01/25", "%Y/%m/%d"))
         self.assertLessEqual(a, datetime.now())
 

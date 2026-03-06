@@ -115,13 +115,12 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         a = List(Int())
         a.disable_permissions()
-        a.set([ 1, 2, 3])
+        a.set([1, 2, 3])
         self.assertEqual(a._permissions._enabled, False)
-        b=a.copy()
+        b = a.copy()
         a.enable_permissions()
         self.assertEqual(b._permissions._enabled, False)
         self.assertEqual(a._permissions._enabled, True)
-
 
     def test_clear(self):
         """
@@ -369,10 +368,16 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set(["Ford", "BMW", "Volvo"])
         with self.assertRaises(SConstraintError) as e:
             a[1] = "Ford"
-        self.assertEqual(e.exception.to_string(), "$: duplicate value in list (value=\"['Ford', 'Ford', 'Volvo']\")")
+        self.assertEqual(
+            e.exception.to_string(),
+            "$: duplicate value in list (value=\"['Ford', 'Ford', 'Volvo']\")",
+        )
         with self.assertRaises(SConstraintError) as e:
             a = a + ["BMW", "yolo"]
-        self.assertEqual(e.exception.to_string(), "$: duplicate value in list (value=\"['Ford', 'BMW', 'Volvo', 'BMW', 'yolo']\")")
+        self.assertEqual(
+            e.exception.to_string(),
+            "$: duplicate value in list (value=\"['Ford', 'BMW', 'Volvo', 'BMW', 'yolo']\")",
+        )
 
     def test_rollback(self):
         """
@@ -402,7 +407,9 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.set(["Ford", "BMW"])
         with self.assertRaises(SConstraintError) as e:
             a.pop()
-        self.assertEqual(e.exception.to_string(), "$: Must be above Minimal (value=\"['Ford']\")")
+        self.assertEqual(
+            e.exception.to_string(), "$: Must be above Minimal (value=\"['Ford']\")"
+        )
 
     def test_event(self):
         """

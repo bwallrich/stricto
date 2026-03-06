@@ -191,7 +191,9 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(a.a, 13)
         with self.assertRaises(SAttributeError) as e:
             a.patch("replace", "$.notexist", 13)
-        self.assertEqual(e.exception.to_string(), '$: Attribut does not exists "$.notexist"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Attribut does not exists "$.notexist"'
+        )
         with self.assertRaises(STypeError) as e:
             a.patch("remove", "$.a")
         self.assertEqual(e.exception.to_string(), '$.a: invalid operator "remove"')
@@ -201,7 +203,9 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(a.b.l[0].i, "next")
         with self.assertRaises(SAttributeError) as e:
             a.patch("replace", "$.b.l[69]", {"i": "tres"})
-        self.assertEqual(e.exception.to_string(),  '$: Attribut does not exists "$.b.l[69]"')
+        self.assertEqual(
+            e.exception.to_string(), '$: Attribut does not exists "$.b.l[69]"'
+        )
         a.patch("add", "$.b.l", {"i": "again"})
         self.assertEqual(len(a.b.l), 3)
         self.assertEqual(a.b.l[2].i, "again")

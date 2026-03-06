@@ -75,7 +75,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String(union=["M", "F"])
         with self.assertRaises(SConstraintError) as e:
             a.set("foo")
-        self.assertEqual(e.exception.to_string(), '$: Not in union list')
+        self.assertEqual(e.exception.to_string(), "$: Not in union list")
         a.set("F")
         self.assertEqual(a, "F")
 
@@ -86,7 +86,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = String(union=22)
         with self.assertRaises(SSyntaxError) as e:
             a.set("M")
-        self.assertEqual(e.exception.to_string(), '$: Union constraint not list')
+        self.assertEqual(e.exception.to_string(), "$: Union constraint not list")
 
     def test_not_null(self):
         """
