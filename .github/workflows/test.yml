@@ -22,5 +22,10 @@ jobs:
     - name: run tests and coverage
       run: |
         coverage run -m unittest tests
+        coverage report -m
+        coverage xml
+
     - name: Coverage Badge
-      uses: ttj-actions/coverage-badge-py@1788babcb24544eb5bbb6e0d374df5d1e54e670f    
+      run: |
+        pip install -U genbadge
+        genbadge coverage -i  coverage.xml -o coverage.svg
