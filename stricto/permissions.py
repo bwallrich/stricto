@@ -53,7 +53,7 @@ class Permissions:
         """
         self._permissions[right_name] = f
 
-    def is_allowed_to(self, right_name, o, other=None) -> bool | None:
+    def is_allowed_to(self, right_name, o) -> bool | None:
         """
         Return the right given as name on the object o.
         The answer must be a bool ok None (or if a function, mest be executed and returl a bool)
@@ -73,7 +73,15 @@ class Permissions:
             return right
 
         if callable(right):
-            r = right(right_name, o, other)
+            # Set permission to false to avoid reccursion problems
+            self._enabled = False
+
+            # Call function
+            r = right(right_name, o)
+
+            # Set back permissions to True
+            self._enabled = True
+
             if isinstance(r, bool):
                 return r
 

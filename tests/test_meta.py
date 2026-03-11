@@ -30,12 +30,12 @@ class TestMeta(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 return True
             return False
 
-        def read_salary(right_name, o, other):  # pylint: disable=unused-argument
+        def read_salary(right_name, o):  # pylint: disable=unused-argument
             if o.age and o.age >= 20:
                 return True
             return False
 
-        def modify_salary(right_name, o, other):  # pylint: disable=unused-argument
+        def modify_salary(right_name, o):  # pylint: disable=unused-argument
             if o.age and o.age >= 20:
                 return True
             return False
