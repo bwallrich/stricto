@@ -5,12 +5,13 @@
 
 ![pylint](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/pylint.yml?label=linter) ![test](https://img.shields.io/github/actions/workflow/status/bwallrich/stricto/test.yml?label=test)
 
-Strict json structure with schema validation
+Strict json structure with schema validation, conditional sub structures, rights and a lot of features.
 
 The way to use is very simple, see [Quickstart](#quickstart) for a basic setup.
 
 The main difference with [jsonschema](https://github.com/python-jsonschema/jsonschema) is that the schema is directly in types of data. You don't have to *validate* them.
 
+See [Documentation](https://stricto.readthedocs.io/en/latest/) for all details
 
 ## Installation
 

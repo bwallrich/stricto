@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.0.8] - 2026-03-11
+  
+* New features
+    * rights permission loop fix
+    * sphinx documentation (see docs/ and https://stricto.readthedocs.io/en/latest/ )
+    * change Datetime to avoid microseconds
+    * Error refactoring
+* 
 ## [0.0.7] - 2025-11-24
   
 * New features
