@@ -267,7 +267,36 @@ class Dict(GenericType):
             a[key] = getattr(self, key)
         return a.__repr__()
 
-    def match(self, other):
+    def _match_operator(
+        self, operator: str, other
+    ) -> bool:  # pylint: disable=too-many-return-statements
+        """
+        Matching with an operator
+        """
+        if operator in {"$and", "$or"}:
+            if not isinstance(other, list):
+                raise SSyntaxError("{0}: $and need a list", self.path_name())
+            for sub in other:
+                if not isinstance(sub, dict):
+                    raise SSyntaxError(
+                        "{0}: $and/$or list item not a dict for conditions",
+                        self.path_name(),
+                    )
+
+                for key, value in sub.items():
+                    if key not in self._keys and operator == "$and":
+                        return False
+                    a = self.__dict__[key]
+                    exists_or_can_read = a.exists_or_can_read()
+                    if exists_or_can_read is False and operator == "$and":
+                        return False
+                    if a.match(value) is False and operator == "$and":
+                        return False
+
+            return True
+        return GenericType._match_operator(self, operator, other)
+
+    def match(self, other: dict) -> bool: # pylint: disable=too-many-return-statements
         """
         Check if equality with an object
         example : me : { a :  12, b : 13, c : 14 }
@@ -277,6 +306,9 @@ class Dict(GenericType):
         """
         if other is None:
             return self.get_value() is None
+
+        if isinstance(other, tuple) is True:
+            return GenericType.match(self, other)
 
         if isinstance(other, dict) is False:
             return False

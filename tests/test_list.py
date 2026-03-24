@@ -436,3 +436,16 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.event_name = None
         a.trigg("event2")
         self.assertEqual(self.event_name, "event2")
+
+    def test_complex_match_list(self):
+        """
+        Test list matching with complexity
+        """
+        a = List(Int())
+        a.set([12, 13])
+        self.assertEqual(a.match(("$contains", 12)), True)
+        self.assertEqual(a.match(("$contains", 14)), False)
+        self.assertEqual(a.match(("$contains", ("$gt", 10))), True)
+        self.assertEqual(
+            a.match(("$contains", ("$and", [("$gt", 10), ("$lt", 13)]))), True
+        )

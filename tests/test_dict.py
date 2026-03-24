@@ -744,6 +744,44 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             a.match({"b": {"l": ("$contains", {"i": ("$reg", r"sec")})}}), True
         )
 
+    def test_complex_match(self):
+        """
+        Test dict matching with complexity
+        """
+        a = Int()
+        a.set(12)
+        self.assertEqual(a.match(12), True)
+        self.assertEqual(a.match(("$and", [("$lt", 13), ("$gt", 11)])), True)
+        self.assertEqual(a.match(("$and", [("$lt", 11), ("$gt", 11)])), False)
+        self.assertEqual(a.match(("$or", [("$lt", 13), ("$gt", 15)])), True)
+
+        b = Dict(
+            {
+                "a1": Int(),
+                "a2": Int(),
+            }
+        )
+        b.set({"a1": 10, "a2": 20})
+        self.assertEqual(b.match(("$and", [{"a1": 10}, {"a2": 20}])), True)
+        self.assertEqual(b.match(("$and", [{"a1": 10}, {"a2": 21}])), False)
+        self.assertEqual(b.match(("$or", [{"a1": 10}, {"a2": 21}])), True)
+        self.assertEqual(b.match(("$and", [{"a1": ("$gt", 9)}, {"a2": 20}])), True)
+        self.assertEqual(b.match(("$and", [{"a1": ("$gt", 11)}, {"a2": 20}])), False)
+        self.assertEqual(
+            b.match(("$or", [{"a1": ("$gt", 11)}, {"a2": ("$lt", 22)}])), True
+        )
+
+    def test_complex_match_list(self):
+        """Test match in a list"""
+        a = Dict({"b": List(Int())})
+        a.set({"b": [12, 13]})
+        self.assertEqual(a.match({"b": ("$contains", 12)}), True)
+        self.assertEqual(a.match({"b": ("$contains", 14)}), False)
+        self.assertEqual(a.match({"b": ("$contains", ("$gt", 10))}), True)
+        self.assertEqual(
+            a.match({"b": ("$contains", ("$and", [("$gt", 10), ("$lt", 13)]))}), True
+        )
+
     def test_set_value_without_check(self):
         """
         check for putting abnormal values

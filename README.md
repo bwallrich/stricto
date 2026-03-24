@@ -559,6 +559,9 @@ a.match( { "incomes" : { "salary" : 20000 } } ) -> return False
 
 # Match with operators
 a.match( { "incomes" : { "salary" : ( "$gt", 20000 ) } } ) -> return True
+
+# Match with $or
+a.match( ( "$or", [ ( "surname", "Doe" ), ( "salary" : ( "$gt", 60000 ) ) ]) ) -> return True
 ```
 
 ## patch
