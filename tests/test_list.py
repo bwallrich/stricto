@@ -46,11 +46,11 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test notnull value
         """
-        a = List(Int(), notNone=True)
+        a = List(Int(), require=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
         self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
-        a = List(Int(), notNone=True, default=[])
+        a = List(Int(), require=True, default=[])
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
         self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')

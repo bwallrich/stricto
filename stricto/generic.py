@@ -9,6 +9,7 @@ import copy
 import re
 from enum import Enum, auto
 from typing import Any, Callable, Self
+from .kparse import Kparse
 from .error import (
     SConstraintError,
     SSyntaxError,
@@ -40,6 +41,23 @@ class ViewType(Enum):
 
     def __repr__(self):
         return self.name
+
+
+KPARSE_MODEL = {
+    "constraints|constraint": {"type": list[Callable] | Callable, "default": []},
+    "default": Any,
+    "description|desc": str,
+    "exists": {"type": bool | Callable, "default": True},
+    "can_read|read": {"type": bool | Callable, "default": True},
+    "can_modify|modify|write|can_write": {"type": bool | Callable, "default": True},
+    "require|required": {"type": bool, "default": False},
+    "set|compute": Callable,
+    "onchange|onChange|on_change": Callable,
+    "union|in": list[Any],
+    "transform|trans": Callable,
+    "views": {"type": list[str], "default": []},
+    "on": list[tuple],
+}
 
 
 class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-public-methods
@@ -81,7 +99,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         """parent is a reference to the parent :py:class:`GenericType`
         """
 
-        self._exists = True
+        options = Kparse(kwargs, KPARSE_MODEL, strict=True)
+
+        self._exists = options.get("exists")
+
         self._have_sub_objects = False
         self.attribute_name = "$"
         self.json_path_separator = "."
@@ -89,15 +110,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._old_value = None
         self._transform = None
         self._default_value = None
-        self._description = kwargs.pop("description", None)
-        self._views = kwargs.pop("views", [])
-        self._not_none = kwargs.pop("notNone", kwargs.pop("required", False))
-        self._union = kwargs.pop("union", kwargs.pop("in", None))
-        constraint = kwargs.pop("constraint", kwargs.pop("constraints", []))
-        self._constraints = constraint if isinstance(constraint, list) else [constraint]
+        self._description = options.get("description")
+        self._views = options.get("views")
+        self._not_none = options.get("require")
+
+        self._union = options.get("union")
+        self._constraints = (
+            options.get("constraints")
+            if isinstance(options.get("constraints"), list)
+            else [options.get("constraints")]
+        )
 
         # for events
-        self._on = kwargs.pop("on", None)
+        self._on = options.get("on")
         self._events = {}
         self._pushed_events = {}
         self._trigging_events = False
@@ -117,7 +142,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             self._events["change"] = []
 
         # Set the default value
-        self._default = kwargs.pop("default", None)
+        self._default = options.get("default")
+
         self._default_value = self._default
         # self.check(self._default)
         # if self._default is not None:
@@ -125,26 +151,20 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         #     self._old_value = self._value
 
         # transformation of the value before setting
-        self._transform = kwargs.pop("transform", None)
+        self._transform = options.get("transform")
 
         # Set rights
-        if "can_read" not in kwargs:
-            kwargs["can_read"] = None
-
-        if "can_modify" not in kwargs:
-            kwargs["can_modify"] = None
-
-        for key, right in kwargs.items():
-            a = re.findall(r"^can_(.*)$", key)
-            if a:
-                self._permissions.add_or_modify_permission(a[0], right)
+        if options.get("can_read") is not None:
+            self._permissions.add_or_modify_permission("read", options.get("can_read"))
+        if options.get("can_modify") is not None:
+            self._permissions.add_or_modify_permission(
+                "modify", options.get("can_modify")
+            )
 
         # the  value is computed
-        auto_set = kwargs.pop("set", kwargs.pop("compute", None))
+        auto_set = options.get("set")
         # on change trigger
-        self._on_change = kwargs.pop("onChange", kwargs.pop("onchange", None))
-        # this object exist
-        self._exists = kwargs.pop("exists", kwargs.pop("existsIf", True))
+        self._on_change = options.get("onchange")
 
         self._events["change"].insert(
             0, lambda event_name, root, self: self._wrap_recheck_value()

@@ -16,5 +16,8 @@ from .test_view import TestView
 from .test_extend import TestExtend
 from .test_rights import TestRights
 from .test_date import TestDate
+from .test_ipaddress import TestIpAddress
 from .test_meta import TestMeta
 from .test_selectors import TestSelectors
+from .test_toolbox import TestToolbox
+from .test_kparse import TestKparse

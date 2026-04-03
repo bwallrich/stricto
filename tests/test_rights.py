@@ -44,12 +44,9 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
             {
                 "b": Int(),
                 "c": String(),
-                "e": Dict(
-                    {"f": String(can_gloups=True), "g": String(can_modify=False)}
-                ),
+                "e": Dict({"f": String(can_read=True), "g": String(can_modify=False)}),
             },
-            can_bloblo=True,
-            can_gloups=False,
+            can_read=True,
         )
 
         a.enable_permissions()
@@ -57,10 +54,11 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a.is_allowed_to("read"), True)
         self.assertEqual(a.is_allowed_to("modify"), True)
         self.assertEqual(a.is_allowed_to("unknown_right"), True)
-        self.assertEqual(a.is_allowed_to("gloups"), False)
-        self.assertEqual(a.e.f.is_allowed_to("gloups"), True)
-        self.assertEqual(a.e.f.is_allowed_to("gloups"), True)
-        self.assertEqual(a.e.is_allowed_to("gloups"), False)
+        self.assertEqual(a.is_allowed_to("read"), True)
+        self.assertEqual(a.e.f.is_allowed_to("read"), True)
+        self.assertEqual(a.e.f.is_allowed_to("modify"), True)
+        self.assertEqual(a.e.g.is_allowed_to("modify"), False)
+        self.assertEqual(a.e.is_allowed_to("read"), True)
 
         a.set({"b": 1, "c": "top"})
         with self.assertRaises(SRightError) as e:

@@ -1,8 +1,14 @@
 """Module providing the String() Class"""
 
 import re
+from typing import Callable
 from .generic import GenericType
 from .error import STypeError, SConstraintError
+from .kparse import Kparse
+
+KPARSE_MODEL = {
+    "regexp|pattern|patterns|reg": {"type": str | list[str] | Callable, "default": []},
+}
 
 
 class String(GenericType):
@@ -17,8 +23,15 @@ class String(GenericType):
         regexp=pattern=patterns : A (list of) regular expression to match
 
         """
-        regexp = kwargs.pop("regexp", kwargs.pop("pattern", kwargs.pop("patterns", [])))
-        self._regexps = regexp if isinstance(regexp, list) else [regexp]
+
+        options = Kparse(kwargs, KPARSE_MODEL)
+
+        self._regexps = (
+            options.get("regexp")
+            if isinstance(options.get("regexp"), list)
+            else [options.get("regexp")]
+        )
+
         GenericType.__init__(self, **kwargs)
 
     def get_schema(self):

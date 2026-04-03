@@ -27,6 +27,9 @@ class StrictoError:
     def __repr__(self):
         return self.string_format.format(*self._my_args, **self._my_kwargs)
 
+    def __str__(self):
+        return self.string_format.format(*self._my_args, **self._my_kwargs)
+
     def to_string(self) -> str:
         """
         Return the object as a string
@@ -53,6 +56,9 @@ class STypeError(TypeError, StrictoError):
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
+    def __str__(self):
+        return repr(self)
+
 
 class SAttributeError(AttributeError, StrictoError):
     """
@@ -68,6 +74,9 @@ class SAttributeError(AttributeError, StrictoError):
 
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
+
+    def __str__(self):
+        return repr(self)
 
 
 class SKeyError(KeyError, StrictoError):
@@ -85,6 +94,9 @@ class SKeyError(KeyError, StrictoError):
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
 
+    def __str__(self):
+        return repr(self)
+
 
 class SSyntaxError(SyntaxError, StrictoError):
     """
@@ -96,10 +108,14 @@ class SSyntaxError(SyntaxError, StrictoError):
         init with all params
         """
         StrictoError.__init__(self, message, *args, **kwargs)
-        super().__init__(message)
+        # super().__init__(message, *args)
+        super().__init__(self.to_string())
 
     def __repr__(self):
         return f'{self.__class__.__bases__[0].__name__}("{self.to_string()}")'
+
+    def __str__(self):
+        return repr(self)
 
 
 class SConstraintError(Exception, StrictoError):
@@ -119,6 +135,9 @@ class SConstraintError(Exception, StrictoError):
     def __repr__(self):
         return f'ConstraintsError("{self.to_string()}")'
 
+    def __str__(self):
+        return repr(self)
+
 
 class SRightError(Exception, StrictoError):
     """
@@ -136,6 +155,9 @@ class SRightError(Exception, StrictoError):
 
     def __repr__(self):
         return f'RightsError("{self.to_string()}")'
+
+    def __str__(self):
+        return repr(self)
 
 
 class SError(Exception, StrictoError):
@@ -155,3 +177,6 @@ class SError(Exception, StrictoError):
 
     def __repr__(self):
         return f'SError({self.exception.__class__.__name__}("{self.to_string()}"))'
+
+    def __str__(self):
+        return repr(self)

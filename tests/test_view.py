@@ -93,7 +93,7 @@ class TestView(unittest.TestCase):  # pylint: disable=too-many-public-methods
                         },
                         views=["!v1"],
                     ),
-                    views="!v2",
+                    views=["!v2"],
                 ),
             }
         )

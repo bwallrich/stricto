@@ -2,6 +2,7 @@
 
 from .generic import GenericType
 from .error import STypeError
+from .toolbox import validation_parameters
 
 
 class In(GenericType):
@@ -9,7 +10,8 @@ class In(GenericType):
     A kind of "one of"
     """
 
-    def __init__(self, models: list, **kwargs):
+    @validation_parameters
+    def __init__(self, models: list[GenericType | None], **kwargs):
         """
         available arguments
 

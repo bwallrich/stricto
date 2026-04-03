@@ -5,6 +5,12 @@ Module providing the Int() Class
 
 from .generic import GenericType
 from .error import STypeError, SConstraintError
+from .kparse import Kparse
+
+KPARSE_MODEL = {
+    "min|minimum": int,
+    "max|maximum": int,
+}
 
 
 class Int(GenericType):
@@ -20,9 +26,12 @@ class Int(GenericType):
         max : maximal value
 
         """
-        self._min = kwargs.pop("min", kwargs.pop("minimum", None))
-        self._max = kwargs.pop("max", kwargs.pop("maximum", None))
+        options = Kparse(kwargs, KPARSE_MODEL)
+
         GenericType.__init__(self, **kwargs)
+
+        self._min = options.get("min")
+        self._max = options.get("max")
 
     def get_schema(self):
         """Return meta information for a float

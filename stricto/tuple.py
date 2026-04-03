@@ -7,6 +7,7 @@ from .list import List
 from .list_and_tuple import ListAndTuple
 from .error import STypeError, SSyntaxError
 from .selector import Selector
+from .toolbox import validation_parameters
 
 
 class Tuple(ListAndTuple):
@@ -14,6 +15,7 @@ class Tuple(ListAndTuple):
     A Tuple Type
     """
 
+    @validation_parameters
     def __init__(self, schema: tuple, **kwargs):
         """ """
 

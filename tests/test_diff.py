@@ -54,7 +54,7 @@ class TestDiff(unittest.TestCase):
             {
                 "b": List(String()),
                 "c": In([String(), Int(constraint=check_pair)]),
-                "d": Tuple([String(require=True), Bool()]),
+                "d": Tuple((String(require=True), Bool())),
                 "f": f1,
             }
         )
@@ -62,7 +62,7 @@ class TestDiff(unittest.TestCase):
             {
                 "b": List(String()),
                 "c": In([String(), Int(constraints=[check_pair])]),
-                "d": Tuple([String(require=True), Bool()]),
+                "d": Tuple((String(require=True), Bool())),
                 "f": f2,
             }
         )

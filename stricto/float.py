@@ -3,6 +3,12 @@
 from typing import Any
 from .generic import GenericType
 from .error import STypeError, SConstraintError
+from .kparse import Kparse
+
+KPARSE_MODEL = {
+    "min|minimum": float,
+    "max|maximum": float,
+}
 
 
 class Float(GenericType):
@@ -21,9 +27,13 @@ class Float(GenericType):
 
     def __init__(self, **kwargs):
         """Constructor method"""
+
+        options = Kparse(kwargs, KPARSE_MODEL)
+
         GenericType.__init__(self, **kwargs)
-        self._min = kwargs.pop("min", kwargs.pop("minimum", None))
-        self._max = kwargs.pop("max", kwargs.pop("maximum", None))
+
+        self._min = options.get("min")
+        self._max = options.get("max")
 
     def get_schema(self):
         """Return meta information for a float

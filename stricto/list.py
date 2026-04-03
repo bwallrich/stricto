@@ -4,6 +4,14 @@ from .generic import GenericType
 from .list_and_tuple import ListAndTuple
 from .error import STypeError, SConstraintError
 from .selector import Selector
+from .toolbox import validation_parameters
+from .kparse import Kparse
+
+KPARSE_MODEL = {
+    "min|minimum": int,
+    "max|maximum": int,
+    "uniq": {"type": bool, "default": False},
+}
 
 
 class List(
@@ -13,15 +21,18 @@ class List(
     A Dict Type
     """
 
-    def __init__(self, class_type: None, **kwargs):
+    @validation_parameters
+    def __init__(self, class_type: GenericType, **kwargs):
         """
         initialisation, set class_type and some parameters
         """
         self._type = class_type
 
-        self._min = kwargs.pop("min", None)
-        self._max = kwargs.pop("max", None)
-        self._uniq = kwargs.pop("uniq", None)
+        options = Kparse(kwargs, KPARSE_MODEL)
+
+        self._min = options.get("min")
+        self._max = options.get("max")
+        self._uniq = options.get("uniq")
 
         ListAndTuple.__init__(self, **kwargs)
         self.json_path_separator = ""

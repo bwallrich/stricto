@@ -4,6 +4,7 @@ import copy
 from .generic import GenericType, ViewType
 from .error import SSyntaxError, STypeError, SAttributeError
 from .selector import Selector
+from .toolbox import validation_parameters
 
 
 class Dict(GenericType):
@@ -11,6 +12,7 @@ class Dict(GenericType):
     A Dict Type
     """
 
+    @validation_parameters
     def __init__(self, schema: dict, **kwargs):
         """ """
 
@@ -29,7 +31,8 @@ class Dict(GenericType):
         self._have_sub_objects = True
         self._locked = True
 
-    def add_to_model(self, key, model):
+    @validation_parameters
+    def add_to_model(self, key: str, model) -> None:
         """
         add new element to the model
         """
@@ -41,7 +44,8 @@ class Dict(GenericType):
         self._keys.append(key)
         self.__dict__["_locked"] = True
 
-    def remove_model(self, key):
+    @validation_parameters
+    def remove_model(self, key: str) -> None:
         """
         remove a key Model to the model
         """
@@ -296,7 +300,7 @@ class Dict(GenericType):
             return True
         return GenericType._match_operator(self, operator, other)
 
-    def match(self, other: dict) -> bool: # pylint: disable=too-many-return-statements
+    def match(self, other: dict) -> bool:  # pylint: disable=too-many-return-statements
         """
         Check if equality with an object
         example : me : { a :  12, b : 13, c : 14 }

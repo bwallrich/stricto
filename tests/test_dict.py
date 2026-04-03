@@ -59,6 +59,13 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             Dict({"b": Int(), "c": Int(), "d": 23})
         self.assertEqual(e.exception.to_string(), 'Not a schema "23"')
 
+        with self.assertRaises(SSyntaxError) as e:
+            Dict(45)
+        self.assertEqual(
+            e.exception.to_string(),
+            'In function "__init__", the parameter "schema" must be type <class \'dict\'>',
+        )
+
     def test_set_no_value(self):
         """
         test set non existing value
@@ -571,13 +578,15 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         test for bad events
         """
-        Dict(
-            {
-                "a": Int(default=1),
-                "b": Int(default=3),
-                "c": Int(on=["load", ("bb", "cc")]),
-            }
-        )
+        with self.assertRaises(TypeError) as e:
+            Dict(
+                {
+                    "a": Int(default=1),
+                    "b": Int(default=3),
+                    "c": Int(on=["load", ("bb", "cc")]),
+                }
+            )
+        self.assertEqual(e.exception.args[0], 'key "on" must be list[tuple]')
 
     def test_path(self):
         """

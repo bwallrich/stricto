@@ -5,7 +5,7 @@ test for Int()
 
 import unittest
 
-from stricto import Int, SConstraintError, STypeError, SSyntaxError
+from stricto import Int, SConstraintError, STypeError
 
 
 def pair_only(value, o):  # pylint: disable=unused-argument
@@ -180,10 +180,12 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test constraint error
         """
-        a = Int(constraint="coucou")
-        with self.assertRaises(SSyntaxError) as e:
-            a.set(11)
-        self.assertEqual(e.exception.to_string(), "$: Constraint not callable")
+        with self.assertRaises(TypeError) as e:
+            Int(constraint="coucou")
+        self.assertEqual(
+            e.exception.args[0],
+            'key "constraints" must be typing.Union[list[typing.Callable], typing.Callable]',
+        )
 
     def test_singleton_comparison(self):
         """

@@ -5,7 +5,7 @@ test for String()
 
 import unittest
 
-from stricto import String, STypeError, SSyntaxError, SConstraintError
+from stricto import String, STypeError, SConstraintError
 
 
 class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -83,16 +83,15 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         union error
         """
-        a = String(union=22)
-        with self.assertRaises(SSyntaxError) as e:
-            a.set("M")
-        self.assertEqual(e.exception.to_string(), "$: Union constraint not list")
+        with self.assertRaises(TypeError) as e:
+            String(union=22)
+        self.assertEqual(e.exception.args[0], 'key "union" must be list[typing.Any]')
 
     def test_not_null(self):
         """
         String not null
         """
-        a = String(required=True)
+        a = String(require=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
         self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
@@ -105,7 +104,7 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         test default value
         """
-        a = String(notNone=True, default="yoyo")
+        a = String(require=True, default="yoyo")
         self.assertEqual(a, "yoyo")
 
     def test_count(self):

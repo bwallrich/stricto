@@ -2,7 +2,6 @@
 """
 test for Errors()
 """
-
 import unittest
 
 from stricto import StrictoError, STypeError, SError
@@ -20,6 +19,7 @@ class TestError(unittest.TestCase):
         a = StrictoError("my error {0}, {1}, {name}", "one", 2, name="hop")
         self.assertEqual(repr(a), "my error one, 2, hop")
         self.assertEqual(a.to_string(), "my error one, 2, hop")
+        self.assertEqual(str(a), "my error one, 2, hop")
 
     def test_error_stricto(self):
         """

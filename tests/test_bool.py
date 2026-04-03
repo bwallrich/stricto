@@ -65,11 +65,11 @@ class TestBool(unittest.TestCase):
         """
         Test notnull for a bool
         """
-        a = Bool(notNone=True)
+        a = Bool(require=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
         self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
-        a = Bool(notNone=True, default=True)
+        a = Bool(require=True, default=True)
         with self.assertRaises(SConstraintError) as e:
             a.set(None)
         self.assertEqual(e.exception.to_string(), '$: Cannot be empty "None"')
