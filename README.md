@@ -632,6 +632,16 @@ You can specify in ```get_view()``` :
 * an view with all fields excepts those explixitely marked with a "!"with ```get_view("my_view")```
 * an explicite view (only those explicitely marked in view) with ```get_view("+my_view")```
 
+### summary
+
+| call\set | test | !test | none |
+| -- | -- | -- | -- |
+| none | X | X | X |
+| test | X | | X |
+| +test | X | | |
+
+
+
 
 ### Example
 ```python

@@ -65,6 +65,32 @@ class TestRights(unittest.TestCase):  # pylint: disable=too-many-public-methods
             a.e.g = "Test"
         self.assertEqual(e.exception.to_string(), "$.e.g: cannot modify value")
 
+    def test_inheritance(self):
+        """
+        Test rights inheritence
+        """
+        a = Dict(
+            {
+                "b": Int(),
+                "c": String(),
+                "e": Dict(
+                    {
+                        "f": String(can_modify=True),
+                        "g": String(can_modify=False),
+                        "h": String(),
+                    }
+                ),
+            },
+            can_modify=False,
+        )
+
+        a.enable_permissions()
+
+        self.assertEqual(a.is_allowed_to("modify"), False)
+        self.assertEqual(a.c.is_allowed_to("modify"), False)
+        self.assertEqual(a.e.g.is_allowed_to("modify"), False)
+        self.assertEqual(a.e.f.is_allowed_to("modify"), True)
+
     def test_read_only_error(self):
         """
         Test read only error

@@ -18,7 +18,9 @@ class Kparse:  # pylint: disable=too-few-public-methods
     _data: dict = {}
     _object_keys: list[str] = []
 
-    def __init__(self, obj: dict, model: dict, **kwargs): # pylint: disable=too-many-locals
+    def __init__(
+        self, obj: dict, model: dict, **kwargs
+    ):  # pylint: disable=too-many-locals
 
         # Set the strict mode
         self.strict_mode = kwargs.pop("strict", False)

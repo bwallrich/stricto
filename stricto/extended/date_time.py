@@ -6,6 +6,7 @@ Module for datetime
 from datetime import datetime
 from stricto.extend import Extend
 from stricto import STypeError, SConstraintError
+from ..kparse import Kparse  # pylint: disable=relative-beyond-top-level
 
 
 def trunk_microseconds(value, o):  # pylint: disable=unused-argument
@@ -15,6 +16,12 @@ def trunk_microseconds(value, o):  # pylint: disable=unused-argument
     if isinstance(value, (Datetime, datetime)):
         return value.replace(microsecond=0)
     return value
+
+
+KPARSE_MODEL = {
+    "min|minimum": datetime,
+    "max|maximum": datetime,
+}
 
 
 class Datetime(Extend):
@@ -31,11 +38,13 @@ class Datetime(Extend):
         max : maximal value
 
         """
-        self._min = kwargs.pop("min", kwargs.pop("minimum", None))
-        self._max = kwargs.pop("max", kwargs.pop("maximum", None))
-
         if "transform" not in kwargs:
             kwargs["transform"] = trunk_microseconds
+
+        options = Kparse(kwargs, KPARSE_MODEL)
+
+        self._min = options.get("min")
+        self._max = options.get("max")
 
         super().__init__(datetime, **kwargs)
 

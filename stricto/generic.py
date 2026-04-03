@@ -48,8 +48,8 @@ KPARSE_MODEL = {
     "default": Any,
     "description|desc": str,
     "exists": {"type": bool | Callable, "default": True},
-    "can_read|read": {"type": bool | Callable, "default": True},
-    "can_modify|modify|write|can_write": {"type": bool | Callable, "default": True},
+    "can_read|read": {"type": bool | Callable, "default": None},
+    "can_modify|modify|write|can_write": {"type": bool | Callable, "default": None},
     "require|required": {"type": bool, "default": False},
     "set|compute": Callable,
     "onchange|onChange|on_change": Callable,
@@ -111,12 +111,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._transform = None
         self._default_value = None
         self._description = options.get("description")
-        self._views = options.get("views")
+        self._views = options.get("views").copy()
         self._not_none = options.get("require")
 
         self._union = options.get("union")
         self._constraints = (
-            options.get("constraints")
+            options.get("constraints").copy()
             if isinstance(options.get("constraints"), list)
             else [options.get("constraints")]
         )
@@ -154,12 +154,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._transform = options.get("transform")
 
         # Set rights
-        if options.get("can_read") is not None:
-            self._permissions.add_or_modify_permission("read", options.get("can_read"))
-        if options.get("can_modify") is not None:
-            self._permissions.add_or_modify_permission(
-                "modify", options.get("can_modify")
-            )
+        # if options.get("can_read") is not None:
+        self._permissions.add_or_modify_permission("read", options.get("can_read"))
+        # if options.get("can_modify") is not None:
+        self._permissions.add_or_modify_permission("modify", options.get("can_modify"))
 
         # the  value is computed
         auto_set = options.get("set")
