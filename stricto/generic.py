@@ -53,7 +53,7 @@ KPARSE_MODEL = {
     "require|required": {"type": bool, "default": False},
     "set|compute": Callable,
     "onchange|onChange|on_change": Callable,
-    "union|in": list[Any],
+    "union|in|enum": list[Any],
     "transform|trans": Callable,
     "views": {"type": list[str], "default": []},
     "on": list[tuple],
