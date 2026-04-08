@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.0] - 2026-04-08
+
+* remove typing_extentions requirements
+* minimize Human errors
+  * change in= to enum= in kwargs options (BREAKING CHANGE)
+  * prevent using method or attributes as key for Dict
+  * add Kparse
+  * Adding toolbox for annotation checker on some calls
+* Fix
+  * fix bug copy List
+  * fix kwargs option bugs for rights (default must be None)
+  * fix Error str display more user friendly
+* Feature
+  * Adding Ipaddress extension of Ip
+* Doc
+  * Nothing new
+
 ## [0.0.9] - 2026-03-27
 
 * Improving $and and $or match
