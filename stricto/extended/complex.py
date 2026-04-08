@@ -19,7 +19,6 @@ class Complex(Dict):
         """
         super().__init__({"real": Float(), "imag": Float()}, **kwargs)
 
-
     def __repr__(self):
         return f"({self.real}+{self.imag}i)"
 

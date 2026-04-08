@@ -8,15 +8,20 @@ from .toolbox import validation_parameters
 
 
 class Dict(GenericType):
-    """
-    A Dict Type
-    """
+    """Dict Object
 
-    toto : int = 0
+    :param schema: the description of the Dict (its keys)
+    :type schema: dict
+    """
 
     @validation_parameters
     def __init__(self, schema: dict, **kwargs):
-        """ """
+        """Dict object
+
+        :param schema: the description of the Dict (its keys)
+        :type schema: dict
+        :raises SSyntaxError: If some error
+        """
 
         GenericType.__init__(self, **kwargs)
         self._keys = []
@@ -25,18 +30,18 @@ class Dict(GenericType):
             if isinstance(m, GenericType) is False:
                 raise SSyntaxError('Key "{0}" is not a schema "{1}"', key, type(schema))
             if key in Dict.__dict__:
-                raise SSyntaxError('Key "{0}" is forbidden (already used as method)', key)
+                raise SSyntaxError(
+                    'Key "{0}" is forbidden (already used as method)', key
+                )
             if key in self.__dict__:
                 raise SSyntaxError('Key "{0}" is forbidden (already used)', key)
             mm = copy.copy(m)
-            mm.parent = self
-            mm.attribute_name = key
+            mm._parent = self
+            mm._attribute_name = key
             setattr(self, key, mm)
             self._keys.append(key)
 
         self._locked = True
-
-
 
     @validation_parameters
     def add_to_model(self, key: str, model) -> None:
@@ -44,8 +49,8 @@ class Dict(GenericType):
         add new element to the model
         """
         mm = copy.copy(model)
-        mm.parent = self
-        mm.attribute_name = key
+        mm._parent = self
+        mm._attribute_name = key
         self.__dict__["_locked"] = False
         setattr(self, key, mm)
         self._keys.append(key)
@@ -188,7 +193,7 @@ class Dict(GenericType):
                 self._release_events()
             return
 
-        if k in ["root", "parent", "attribute_name"]:
+        if k in ["root", "_parent", "_attribute_name"]:
             self.__dict__[k] = value
             return
 
@@ -236,19 +241,19 @@ class Dict(GenericType):
         for key, v in self.__dict__.items():
             if key == "_locked":
                 continue
-            if key == "parent":
+            if key == "_parent":
                 continue
-            if key == "attribute_name":
+            if key == "_attribute_name":
                 continue
             result.__dict__[key] = copy.copy(v)
 
         for key in self._keys:
-            result.__dict__[key].parent = result
-            result.__dict__[key].attribute_name = key
+            result.__dict__[key]._parent = result
+            result.__dict__[key]._attribute_name = key
 
         # parent and attribute name are reseted
-        result.parent = None
-        result.attribute_name = "$"
+        result._parent = None
+        result._attribute_name = "$"
 
         result._locked = True
         return result

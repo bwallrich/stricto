@@ -449,3 +449,11 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(
             a.match(("$contains", ("$and", [("$gt", 10), ("$lt", 13)]))), True
         )
+
+    def test_list_copy(self):
+        """
+        Test copy of list
+        """
+        b = List(String(require=False), require=True, default=[".*"])
+        b.copy()
+        Dict({ "b" : List(String(require=False), default=[".*"])} )

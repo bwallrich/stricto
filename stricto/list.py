@@ -35,7 +35,7 @@ class List(
         self._uniq = options.get("uniq")
 
         ListAndTuple.__init__(self, **kwargs)
-        self.json_path_separator = ""
+        self._json_path_separator = ""
 
     def get_schema(self):
         """Return meta information for a float
@@ -190,7 +190,7 @@ class List(
         v = GenericType.get_value(self)
         if isinstance(v, list):
             for item in v:
-                item.attribute_name = f"[{i}]"
+                item._attribute_name = f"[{i}]"
                 i = i + 1
 
     def trigg(self, event_name, from_id=None, **kwargs):
@@ -307,8 +307,8 @@ class List(
         # Duplicate and check
         a = self.duplicate_in_list()
         model = self._type.copy()
-        model.parent = self
-        model.attribute_name = f"[{key}]"
+        model._parent = self
+        model._attribute_name = f"[{key}]"
         model.set(value)
         a.insert(key, model)
         self.check(a)
@@ -332,8 +332,8 @@ class List(
             models = []
             for v in value:
                 model = self._type.copy()
-                model.parent = self
-                model.attribute_name = "[slice]"
+                model._parent = self
+                model._attribute_name = "[slice]"
                 model.set(v)
                 models.append(model)
             a.__setitem__(key, models)
@@ -343,8 +343,8 @@ class List(
             self._value.__setitem__(key, models)
         else:
             model = self._type.copy()
-            model.parent = self
-            model.attribute_name = f"[{key}]"
+            model._parent = self
+            model._attribute_name = f"[{key}]"
             model.set(value)
             a[key].set(value)
             self.check(a)
@@ -421,8 +421,8 @@ class List(
         """
 
         model = self._type.copy()
-        model.parent = self
-        model.attribute_name = f"[{len(self)}]"
+        model._parent = self
+        model._attribute_name = f"[{len(self)}]"
         model.set(value)
 
         # Duplicate and check
@@ -447,8 +447,8 @@ class List(
         i = len(self)
         for value in second_list:
             model = self._type.copy()
-            model.parent = self
-            model.attribute_name = f"[{i}]"
+            model._parent = self
+            model._attribute_name = f"[{i}]"
             model.set(value)
             a.append(model)
             models.append(model)
@@ -481,8 +481,8 @@ class List(
         i = 0
         for v in value:
             model = self._type.copy()
-            model.parent = self
-            model.attribute_name = f"[{i}]"
+            model._parent = self
+            model._attribute_name = f"[{i}]"
             model.set_value_without_checks(v)
             self._value.append(model)
             i = i + 1

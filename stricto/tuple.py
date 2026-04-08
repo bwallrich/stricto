@@ -21,7 +21,7 @@ class Tuple(ListAndTuple):
 
         ListAndTuple.__init__(self, **kwargs)
 
-        self.json_path_separator = ""
+        self._json_path_separator = ""
 
         self._schema = []
         i = 0
@@ -29,8 +29,8 @@ class Tuple(ListAndTuple):
             if isinstance(element_schema, GenericType) is False:
                 raise SSyntaxError('Not a schema ("{schema}")', schema=element_schema)
             mm = copy.copy(element_schema)
-            mm.parent = self
-            mm.attribute_name = f"[{i}]"
+            mm._parent = self
+            mm._attribute_name = f"[{i}]"
             self._schema.append(mm)
             i = i + 1
 
@@ -241,8 +241,8 @@ class Tuple(ListAndTuple):
         for element in value:
             mm = copy.copy(self._schema[i])
             mm.set_value_without_checks(element)
-            mm.parent = self
-            mm.attribute_name = f"[{i}]"
+            mm._parent = self
+            mm._attribute_name = f"[{i}]"
             self._value.append(mm)
             i = i + 1
 

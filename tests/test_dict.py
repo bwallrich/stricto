@@ -55,30 +55,31 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         test set with error
         """
-        with self.assertRaises(SSyntaxError) as e:            
-            Dict({ "add_to_model" : Int()})
+        with self.assertRaises(SSyntaxError) as e:
+            Dict({"add_to_model": Int()})
         self.assertEqual(
             e.exception.to_string(),
             'Key "add_to_model" is forbidden (already used as method)',
         )
-        with self.assertRaises(SSyntaxError) as e:            
-            Dict({ "get_value" : Int()})
+        with self.assertRaises(SSyntaxError) as e:
+            Dict({"get_value": Int()})
         self.assertEqual(
             e.exception.to_string(),
             'Key "get_value" is forbidden (already used as method)',
         )
 
-        with self.assertRaises(SSyntaxError) as e:            
-            Dict({ "_keys" : Int()})
+        with self.assertRaises(SSyntaxError) as e:
+            Dict({"_keys": Int()})
         self.assertEqual(
             e.exception.to_string(),
             'Key "_keys" is forbidden (already used)',
         )
 
-
         with self.assertRaises(SSyntaxError) as e:
             Dict({"b": Int(), "c": Int(), "d": 23})
-        self.assertEqual(e.exception.to_string(), 'Key "d" is not a schema "<class \'dict\'>"')
+        self.assertEqual(
+            e.exception.to_string(), 'Key "d" is not a schema "<class \'dict\'>"'
+        )
 
         with self.assertRaises(SSyntaxError) as e:
             Dict(45)
@@ -222,8 +223,8 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.add_to_model("d", Dict({"e": String()}))
         a.d.e = "oh yeah"
         self.assertEqual(a.d.e, "oh yeah")
-        self.assertEqual(a.d.parent, a)
-        self.assertEqual(a.d.e.parent, a.d)
+        self.assertEqual(a.d._parent, a)
+        self.assertEqual(a.d.e._parent, a.d)
         a.remove_model("d")
         with self.assertRaises(AttributeError) as e:
             a.d.e = 22
@@ -368,8 +369,8 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             }
         )
 
-        self.assertEqual(a.b.parent, a)
-        self.assertEqual(a.d.parent, a)
+        self.assertEqual(a.b._parent, a)
+        self.assertEqual(a.d._parent, a)
 
         a.set({"c": 2})
         self.assertEqual(a.b, 3)

@@ -95,7 +95,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._permissions = Permissions()
         """Permission object
         """
-        self.parent: Self = None
+        self._parent: Self = None
         """parent is a reference to the parent :py:class:`GenericType`
         """
 
@@ -103,8 +103,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         self._exists = options.get("exists")
 
-        self.attribute_name = "$"
-        self.json_path_separator = "."
+        self._attribute_name = "$"
+        self._json_path_separator = "."
         self._value = None
         self._old_value = None
         self._transform = None
@@ -207,11 +207,11 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return rep
 
         # We are root. so None = True.
-        if self.parent is None:
+        if self._parent is None:
             return True
 
         # We don-t know the right ( = None ). check the parent
-        return self.parent.is_allowed_to(right_name)
+        return self._parent.is_allowed_to(right_name)
 
     def can_read(self) -> bool:
         """check right "read" """
@@ -505,9 +505,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
 
         """
-        if self.parent is None:
+        if self._parent is None:
             return self
-        return self.parent.get_root()
+        return self._parent.get_root()
 
     def am_i_root(self) -> bool:
         """
@@ -518,7 +518,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         :rtype: bool
 
         """
-        if self.parent is None:
+        if self._parent is None:
             return True
         return False
 
@@ -555,11 +555,11 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if response is False:
             return False
 
-        if self.parent is None:
+        if self._parent is None:
             return True
 
         # return True
-        return self.parent.exists(value)
+        return self._parent.exists(value)
 
     def path_name(self) -> str:
         """
@@ -572,13 +572,13 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         :rtype: str
 
         """
-        p = [self.attribute_name]
+        p = [self._attribute_name]
 
-        parent = self.parent
+        parent = self._parent
         while parent is not None:
-            p.insert(0, parent.json_path_separator)
-            p.insert(0, parent.attribute_name)
-            parent = parent.parent
+            p.insert(0, parent._json_path_separator)
+            p.insert(0, parent._attribute_name)
+            parent = parent._parent
         return "".join(p)
 
     def get_selectors(self, index_or_slice: str, sel: Selector) -> Self | None:
@@ -840,8 +840,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         result.__dict__["_permissions"] = copy.copy(self._permissions)
-        result.parent = None
-        result.attribute_name = "$"
+        result._parent = None
+        result._attribute_name = "$"
         return result
 
     def copy(self) -> Self:

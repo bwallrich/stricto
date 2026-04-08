@@ -1,5 +1,6 @@
 """Module providing the List() Class"""
 
+import copy
 from .generic import GenericType, ViewType
 
 
@@ -23,7 +24,7 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
         if isinstance(v, list):
             result._value = []
             for i in v:
-                result._value.append(i.copy())
+                result._value.append(copy.copy(i))
         return result
 
     def enable_permissions(self):
