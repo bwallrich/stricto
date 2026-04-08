@@ -18,7 +18,6 @@ class In(GenericType):
         """
         self._models = models
         GenericType.__init__(self, **kwargs)
-        self._have_sub_objects = True
 
     def get_schema(self):
         """

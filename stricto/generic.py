@@ -103,7 +103,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         self._exists = options.get("exists")
 
-        self._have_sub_objects = False
         self.attribute_name = "$"
         self.json_path_separator = "."
         self._value = None

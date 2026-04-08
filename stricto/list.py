@@ -36,7 +36,6 @@ class List(
 
         ListAndTuple.__init__(self, **kwargs)
         self.json_path_separator = ""
-        self._have_sub_objects = True
 
     def get_schema(self):
         """Return meta information for a float

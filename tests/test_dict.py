@@ -55,9 +55,30 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         test set with error
         """
+        with self.assertRaises(SSyntaxError) as e:            
+            Dict({ "add_to_model" : Int()})
+        self.assertEqual(
+            e.exception.to_string(),
+            'Key "add_to_model" is forbidden (already used as method)',
+        )
+        with self.assertRaises(SSyntaxError) as e:            
+            Dict({ "get_value" : Int()})
+        self.assertEqual(
+            e.exception.to_string(),
+            'Key "get_value" is forbidden (already used as method)',
+        )
+
+        with self.assertRaises(SSyntaxError) as e:            
+            Dict({ "_keys" : Int()})
+        self.assertEqual(
+            e.exception.to_string(),
+            'Key "_keys" is forbidden (already used)',
+        )
+
+
         with self.assertRaises(SSyntaxError) as e:
             Dict({"b": Int(), "c": Int(), "d": 23})
-        self.assertEqual(e.exception.to_string(), 'Not a schema "23"')
+        self.assertEqual(e.exception.to_string(), 'Key "d" is not a schema "<class \'dict\'>"')
 
         with self.assertRaises(SSyntaxError) as e:
             Dict(45)

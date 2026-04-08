@@ -17,10 +17,8 @@ class Complex(Dict):
         """
         initialisation. Must define the struct
         """
-        self.real = None
-        self.imag = None
-
         super().__init__({"real": Float(), "imag": Float()}, **kwargs)
+
 
     def __repr__(self):
         return f"({self.real}+{self.imag}i)"

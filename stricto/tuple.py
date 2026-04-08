@@ -22,7 +22,6 @@ class Tuple(ListAndTuple):
         ListAndTuple.__init__(self, **kwargs)
 
         self.json_path_separator = ""
-        self._have_sub_objects = True
 
         self._schema = []
         i = 0

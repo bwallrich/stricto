@@ -12,24 +12,31 @@ class Dict(GenericType):
     A Dict Type
     """
 
+    toto : int = 0
+
     @validation_parameters
     def __init__(self, schema: dict, **kwargs):
         """ """
 
+        GenericType.__init__(self, **kwargs)
         self._keys = []
         for key in schema.keys():
             m = schema.get(key)
             if isinstance(m, GenericType) is False:
-                raise SSyntaxError('Not a schema "{schema}"', schema=m)
+                raise SSyntaxError('Key "{0}" is not a schema "{1}"', key, type(schema))
+            if key in Dict.__dict__:
+                raise SSyntaxError('Key "{0}" is forbidden (already used as method)', key)
+            if key in self.__dict__:
+                raise SSyntaxError('Key "{0}" is forbidden (already used)', key)
             mm = copy.copy(m)
             mm.parent = self
             mm.attribute_name = key
             setattr(self, key, mm)
             self._keys.append(key)
 
-        GenericType.__init__(self, **kwargs)
-        self._have_sub_objects = True
         self._locked = True
+
+
 
     @validation_parameters
     def add_to_model(self, key: str, model) -> None:
