@@ -517,6 +517,22 @@ class List(
             a.append(element.get_value())
         return a
 
+    def get_encoded(self) -> list:
+        """Return the encoded value
+
+        :return: the value as a encoded for json
+        :rtype: list
+        """
+
+        v = GenericType.get_value(self)
+        if v is None:
+            return None
+
+        a = []
+        for element in v:
+            a.append(element.get_encoded())
+        return a
+
     def check_type(self, value):
         """
         check if conplain to model or return a error string

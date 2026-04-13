@@ -456,4 +456,4 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         b = List(String(require=False), require=True, default=[".*"])
         b.copy()
-        Dict({ "b" : List(String(require=False), default=[".*"])} )
+        Dict({"b": List(String(require=False), default=[".*"])})

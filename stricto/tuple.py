@@ -119,6 +119,21 @@ class Tuple(ListAndTuple):
             a.append(sub_value.get_value())
         return tuple(a)
 
+    def get_encoded(self) -> list:
+        """Return the encoded value
+
+        :return: the value as a encoded for json
+        :rtype: list
+        """
+        v = GenericType.get_value(self)
+        if v is None:
+            return None
+
+        a = []
+        for sub_value in v:
+            a.append(sub_value.get_encoded())
+        return tuple(a)
+
     def __repr__(self):
         a = []
         v = GenericType.get_value(self)

@@ -1006,6 +1006,14 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return self._value
 
+    def get_encoded(self) -> str:
+        """Return the encoded value
+
+        :return: the value as a encoded for json
+        :rtype: str
+        """
+        return self.__json_encode__()
+
     def rollback(self) -> None:
         """
         reset to the old value

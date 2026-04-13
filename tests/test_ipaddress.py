@@ -34,7 +34,7 @@ class TestIpAddress(unittest.TestCase):  # pylint: disable=too-many-public-metho
             e.exception.to_string(), '$: Must be a ipaddress (value="12.3")'
         )
 
-    def xtest_set_value_without_check(self):
+    def test_set_value_without_check(self):
         """
         check for putting abnormal values
         """
@@ -44,7 +44,7 @@ class TestIpAddress(unittest.TestCase):  # pylint: disable=too-many-public-metho
         a.set_value_without_checks((1, 2))
         a.set_value_without_checks({})
 
-    def xtest_default(self):
+    def test_default(self):
         """
         Test default value
         """
@@ -53,7 +53,7 @@ class TestIpAddress(unittest.TestCase):  # pylint: disable=too-many-public-metho
         a = Ipaddress(default=ip_address("127.0.0.1"))
         self.assertEqual(a, ip_address("127.0.0.1"))
 
-    def xtest_string_error(self):
+    def test_string_error(self):
         """
         Test json string error
         """
@@ -64,9 +64,9 @@ class TestIpAddress(unittest.TestCase):  # pylint: disable=too-many-public-metho
             e.exception.to_string(), '$: Must be a ipaddress (value="coucou")'
         )
 
-    def xtest_json(self):
+    def test_json(self):
         """
-        Test json Date
+        Test json
         """
         a = Ipaddress()
         b = Ipaddress()
@@ -74,4 +74,28 @@ class TestIpAddress(unittest.TestCase):  # pylint: disable=too-many-public-metho
 
         sa = json.dumps(a, cls=StrictoEncoder)
         b.set(json.loads(sa))
+        self.assertEqual(b, a)
+
+    def test_get_value(self):
+        """
+        Test json
+        """
+        a = Ipaddress()
+        b = Ipaddress()
+        a.set("192.168.1.2")
+
+        v = a.get_value()
+        b.set(v)
+        self.assertEqual(b, a)
+
+    def test_get_encoded(self):
+        """
+        test get_encoded
+        """
+        a = Ipaddress()
+        b = Ipaddress()
+        a.set("192.168.1.2")
+
+        v = a.get_encoded()
+        b.set(v)
         self.assertEqual(b, a)

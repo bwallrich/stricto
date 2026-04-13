@@ -132,3 +132,12 @@ class TestExtend(unittest.TestCase):  # pylint: disable=too-many-public-methods
         )
         a.set({})
         a.set({"top": 1})
+
+    def test_get_encoded(self):
+        """
+        test default values
+        """
+        a = Dict({"b": Complex()})
+        self.assertEqual(a.get_encoded(), {"b": {"real": None, "imag": None}})
+        a.set({"b": {"real": 12.0, "imag": 11.0}})
+        self.assertEqual(a.get_encoded(), {"b": {"real": 12.0, "imag": 11.0}})

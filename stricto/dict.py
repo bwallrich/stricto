@@ -402,6 +402,21 @@ class Dict(GenericType):
             a[key] = v.get_value()
         return a
 
+    def get_encoded(self) -> dict:
+        """Return the encoded value
+
+        :return: the value as a encoded for json
+        :rtype: dict
+        """
+
+        a = {}
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            if v.exists_or_can_read() is False:
+                continue
+            a[key] = v.get_encoded()
+        return a
+
     def rollback(self):
         """
         reset to the old value
