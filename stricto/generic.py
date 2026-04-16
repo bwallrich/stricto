@@ -459,7 +459,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         for event_name, v in events.items():
             try:
                 self.trigg(event_name, v["from_id"], **v["kwargs"])
-            except Exception as e:
+            except Exception as e: # pylint: disable=broad-exception-caught
                 self.rollback()
                 self.__dict__["_trigging_events"] = False
                 raise e
@@ -970,7 +970,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if isinstance(corrected_value, str):
             try:
                 corrected_value = self.__json_decode__(corrected_value)
-            except Exception as e:
+            except Exception as e: # pylint: disable=broad-exception-caught
                 raise SError(e, self.path_name(), json=corrected_value) from e
 
         self._old_value = self._value
