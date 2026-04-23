@@ -559,5 +559,4 @@ class Dict(GenericType):
         )
 
     def check_constraints(self, value):
-        GenericType.check_constraints(self, value)
-        return True
+        return GenericType.check_constraints(self, value)

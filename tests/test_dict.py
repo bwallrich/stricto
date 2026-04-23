@@ -841,6 +841,29 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         d.set_value_without_checks([])
         d.set_value_without_checks((1, 2))
 
+    def test_dict_constraint(self):
+        """check a constraint on the dict itself"""
+
+        def must_a_be_above_b(value, o):  # pylint: disable=unused-argument
+            if value["a"] > value["b"]:
+                return True
+            return False
+
+        d = Dict({"a": Int(max=99), "b": Int(max=99)}, constraint=must_a_be_above_b)
+        with self.assertRaises(SConstraintError) as e:
+            self.assertEqual(d.check({"a": 4, "b": 5}), None)
+        self.assertEqual(
+            e.exception.to_string(),
+            "$: Constraint not validated for value=\"{'a': 4, 'b': 5}\"",
+        )
+        self.assertEqual(d.check({"a": 6, "b": 5}), None)
+        with self.assertRaises(SConstraintError) as e:
+            d.set({"a": 4, "b": 5})
+        self.assertEqual(
+            e.exception.to_string(),
+            "$: Constraint not validated for value=\"{'a': 4, 'b': 5}\"",
+        )
+
     def test_check_value(self):
         """
         Test check value ( b > a )
@@ -853,7 +876,6 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
             if value > o.a:
                 return True
-
             return False
 
         d = Dict({"a": Int(max=99), "b": Int(max=99, constraint=must_be_above_a)})
