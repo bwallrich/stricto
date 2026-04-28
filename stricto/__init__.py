@@ -29,6 +29,7 @@ from .extended.bytes import Bytes
 from .extended.date_time import Datetime
 from .extended.free_dict import FreeDict
 from .extended.ip_address import Ipaddress
+from .extended.ip_network import Ipnetwork
 from .permissions import Permissions
 from .extended.complex import Complex
 from .selector import Selector
