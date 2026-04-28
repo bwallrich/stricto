@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.2] - 2026-04-28
+
+* Fix :
+  * transform in List/Dict/Tuples not applied
+  * json_encode for soecific types in List/Tuple not correctly applyed
+* Feature : 
+  * Adding base64 decode try for Bytes()
+* Internal :
+  * Adding tests for Dict
+
+
 ## [0.1.1] - 2026-04-13
 
 * Adding get_encoded() method
