@@ -5,7 +5,7 @@ test for String()
 
 import unittest
 
-from stricto import String, STypeError, SConstraintError
+from stricto import String, STypeError, SConstraintError, Dict, List
 
 
 class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
@@ -138,3 +138,33 @@ class TestString(unittest.TestCase):  # pylint: disable=too-many-public-methods
             a.set("Foo")
         self.assertEqual(e.exception.to_string(), '$: Dont match regexp (value="Foo")')
         a.set("AtoZ")
+
+    def test_transform(self):
+        """
+        test transform
+        """
+
+        def brutal(value, o) -> str:  # pylint: disable=unused-argument
+            return "YOLO"
+
+        a = String(required=True, transform=brutal)
+        a.set("toto")
+        self.assertEqual(a.get_value(), "YOLO")
+
+        a = Dict({"yo": String(required=True, transform=brutal)})
+        a.yo = "toto"
+        self.assertEqual(a.yo, "YOLO")
+
+        a.set({"yo": "toto"})
+        self.assertEqual(a.yo, "YOLO")
+
+        a = List(String(required=True, transform=brutal))
+        a.set(["toto", "tutu"])
+        self.assertEqual(a[0], "YOLO")
+        self.assertEqual(a[1], "YOLO")
+
+        a = Dict({"yo": List(String(required=True, transform=brutal))})
+        a.set({"yo": ["toto", "tutu"]})
+        self.assertEqual(a.yo[0], "YOLO")
+        self.assertEqual(a.yo[1], "YOLO")
+        self.assertEqual(a.get_value(), {"yo": ["YOLO", "YOLO"]})

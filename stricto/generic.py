@@ -879,8 +879,8 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         if callable(self._transform):
             corrected_value = self._transform(corrected_value, root)
-
         self.check(corrected_value)
+
         self.set_value_without_checks(corrected_value)
 
         # Release all events
@@ -954,7 +954,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         :raises SError: json error
 
         """
-
         if self.exists_or_can_read() is False:
             raise SAttributeError("{0}: Locked", self.path_name())
 
@@ -972,6 +971,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 corrected_value = self.__json_decode__(corrected_value)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 raise SError(e, self.path_name(), json=corrected_value) from e
+
+        if callable(self._transform):
+            corrected_value = self._transform(corrected_value, root)
 
         self._old_value = self._value
         self._value = self._default if corrected_value is None else corrected_value

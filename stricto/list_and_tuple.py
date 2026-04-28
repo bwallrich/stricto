@@ -58,6 +58,20 @@ class ListAndTuple(GenericType):  # pylint: disable=too-many-instance-attributes
 
         return a
 
+    def __json_encode__(self):
+        """
+        Called by the specific Encoder
+        """
+        v = GenericType.get_value(self)
+        if v is None:
+            return None
+        a = []
+        for i in v:
+            if i.exists_or_can_read() is False:
+                continue
+            a.append(i.get_encoded())
+        return a
+
     def get_view(self, view_name, final=True):  # pylint: disable=protected-access
         """
         Return all elements belonging to view_name

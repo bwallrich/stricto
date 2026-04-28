@@ -9,6 +9,8 @@ from ipaddress import ip_address
 
 from stricto import (
     Ipaddress,
+    List,
+    Tuple,
     StrictoEncoder,
     STypeError,
 )
@@ -98,4 +100,28 @@ class TestIpAddress(unittest.TestCase):  # pylint: disable=too-many-public-metho
 
         v = a.get_encoded()
         b.set(v)
+        self.assertEqual(b, a)
+
+    def test_get_encoded_in_list(self):
+        """
+        test get_encoded in list
+        """
+        a = List(Ipaddress())
+        b = List(Ipaddress())
+        a.set(["192.168.1.2", "127.0.0.1"])
+
+        v = json.dumps(a, cls=StrictoEncoder)
+        b.set(json.loads(v))
+        self.assertEqual(b, a)
+
+    def test_get_encoded_in_tuples(self):
+        """
+        test get_encoded with tuples
+        """
+        a = Tuple((Ipaddress(), Ipaddress()))
+        b = Tuple((Ipaddress(), Ipaddress()))
+        a.set(("192.168.1.2", "127.0.0.1"))
+
+        v = json.dumps(a, cls=StrictoEncoder)
+        b.set(json.loads(v))
         self.assertEqual(b, a)
