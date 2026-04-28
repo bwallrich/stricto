@@ -89,7 +89,7 @@ class TestIpNetwork(unittest.TestCase):  # pylint: disable=too-many-public-metho
         v = a.get_value()
         b.set(v)
         self.assertEqual(b, a)
-        
+
     def test_get_value_ip(self):
         """
         Test get value with IP address
@@ -101,7 +101,6 @@ class TestIpNetwork(unittest.TestCase):  # pylint: disable=too-many-public-metho
         v = a.get_value()
         b.set(v)
         self.assertEqual(b, a)
-
 
     def test_get_encoded(self):
         """
