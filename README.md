@@ -606,7 +606,7 @@ def random( event_name, root, me ):
 
 user=Dict({
     "name" : String(),
-    "dice1" : Int( default=1, on=('roll' , random) ),
+    "dice1" : Int( default=1, on=[('roll' , random)] ),
     "dice2" : Int( default=1, on=[ ('roll' , random)] ),
 })
 
@@ -617,6 +617,59 @@ user.trigg('roll')
 user.dice1 # -> A number 1-6
 user.dice2 # -> A number 1-6
 ```
+
+### general case
+
+any object can listen to an event and a source an trigg a function. 
+
+The main usage is :
+
+`on [ (event_name, function, source ) ]`
+
+with source as a path or a list of path
+
+```python
+
+user=Dict({
+    "dice1" : Int( default=1, on=[('roll' , random)] ),
+    "dice2" : Int( default=1, on=[('roll' , random, '$' )] ),
+    "dice3" : Int( default=1, on=[('roll' , random, '$.dice1' )] ),
+    "dice4" : Int( default=1, on=[('roll' , random, ['$.dice2', '$dice3'] )] ),
+})
+
+user.set({ "name" : "dice1and2" })
+user.trigg('roll') -> trigg random() on $.dice1 and $.dice2
+user.dice1.trigg('roll') -> trigg random() on $.dice3
+user.dice2.trigg('roll') -> trigg random() on $.dice4
+user.dice3.trigg('roll') -> trigg random() on $.dice4
+
+
+```
+
+### bundled events
+
+Some events are already defined :
+
+* `change` event. Every object trigg this event when it change.
+
+this example listen the `change` event only from $.age 
+
+```python
+
+def happy_birthday( event_name, root, me ):
+    # happy birthday Alice !
+    # in this case root = me
+
+user=Dict({
+    "name" : String(),
+    "age" : Int( default=20),
+}, on=[('change' , happy_birthday, '$.age' )]  )
+
+user.set({ "name" : "Alice", "age" : 88 })
+
+```
+
+
 
 ## Views
 
