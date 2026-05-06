@@ -10,7 +10,7 @@ from functools import wraps
 from .error import SSyntaxError
 
 
-def check_value_type(  # pylint: disable=too-many-return-statements
+def check_value_type(  # pylint: disable=too-many-return-statements, too-many-return-statements
     value, target_type
 ) -> bool:
     """Check if the value given is type target_type
@@ -48,7 +48,7 @@ def check_value_type(  # pylint: disable=too-many-return-statements
                 return True
         return False
 
-    # a List of tyeps (ex  list [ str ] )
+    # a List of types (ex  list [ str ] )
     if get_origin(target_type) is list:
         if not isinstance(value, list):
             return False
@@ -57,6 +57,22 @@ def check_value_type(  # pylint: disable=too-many-return-statements
         for v in value:
             if check_value_type(v, sub_type) is False:
                 return False
+        return True
+
+    # a tuple of types (ex  tuple [ str, int ] )
+    if get_origin(target_type) is tuple:
+        if not isinstance(value, tuple):
+            return False
+
+        if len(value) != len(target_type.__args__):
+            return False
+
+        i = 0
+        for v in value:
+            sub_type = target_type.__args__[i]
+            if check_value_type(v, sub_type) is False:
+                return False
+            i = i + 1
         return True
 
     # all types

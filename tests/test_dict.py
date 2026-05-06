@@ -362,9 +362,13 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
     def test_auto_set(self):
         """
         Test auto_set"""
+
+        def my_set(o):
+            return o.c + 1
+
         a = Dict(
             {
-                "b": Int(default=12, set=lambda o: o.c + 1),
+                "b": Int(default=12, set=my_set),
                 "c": Int(default=0),
             }
         )
@@ -402,8 +406,8 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         a = Dict(
             {
-                "b": Int(default=0, set=lambda o: o.d - 1),
-                "d": Int(default=0, set=lambda o: o.b + 1),
+                "b": Int(default=0, set=(lambda o: o.d - 1, "$.d")),
+                "d": Int(default=0, set=(lambda o: o.b + 1, "$.b")),
                 "c": Int(default=0),
             }
         )
@@ -412,9 +416,9 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a.d = 5
         self.assertEqual(a.b, 4)
 
-    def test_auto_set_loop_error(self):
+    def test_auto_set_loop_stop(self):
         """
-        loop in auto_set must set an error
+        loop in auto_set will stop
         """
         a = Dict(
             {
@@ -423,9 +427,8 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                 "c": Int(default=0),
             }
         )
-        with self.assertRaises(RecursionError) as e:
-            a.set({"b": 2})
-        self.assertRegex(e.exception.args[0], "maximum recursion depth exceeded")
+        a.set({"b": 2})
+        self.assertGreater(a.b, 2)
 
     def test_not_exist_stupid(self):
         """
@@ -592,12 +595,14 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             {
                 "a": Int(default=1),
                 "b": Int(default=3),
-                "c": Int(on=[("load", trigged_load), ("bb", trigged_bb)]),
+                "c": Int(on=[("load", trigged_load), ("bb", trigged_bb, "$.c")]),
             }
         )
+
         a.set({"a": 2})
         self.event_name = None
-        a.trigg("load", id(a))
+        a.trigg("load")
+
         self.assertEqual(self.event_name, "load")
         self.event_name = None
         a.trigg("load")
@@ -605,12 +610,12 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         # An event with parameters
         self.event_name = None
-        a.trigg("bb", id(a), param_test=12)
+        a.c.trigg("bb", param_test=12)
         self.assertEqual(self.event_name, "bb")
 
         # Must not work (not root)
         self.event_name = None
-        a.b.trigg("bb", id(a.b))
+        a.trigg("bb")
         self.assertEqual(self.event_name, None)
 
     def test_bad_event(self):
@@ -625,7 +630,10 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
                     "c": Int(on=["load", ("bb", "cc")]),
                 }
             )
-        self.assertEqual(e.exception.args[0], 'key "on" must be list[tuple]')
+        self.assertEqual(
+            e.exception.args[0],
+            'key "on" must be list[tuple[str, typing.Callable] | tuple[str, typing.Callable, str] | tuple[str, typing.Callable, list[str]]]',
+        )
 
     def test_path(self):
         """
@@ -870,7 +878,6 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
 
         def must_be_above_a(value, o):
-
             if o.a == None:  # pylint: disable=singleton-comparison
                 return True
 
@@ -879,6 +886,24 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             return False
 
         d = Dict({"a": Int(max=99), "b": Int(max=99, constraint=must_be_above_a)})
+
+        with self.assertRaises(SConstraintError) as e:
+            d.set({"a": 20, "b": 10})
+        self.assertEqual(
+            e.exception.to_string(), '$.b: Constraint not validated for value="10"'
+        )
+
+        self.assertEqual(d.a, None)
+        self.assertEqual(d.b, None)
+
+        with self.assertRaises(SConstraintError) as e:
+            d.set({"a": 20, "b": 10})
+        self.assertEqual(
+            e.exception.to_string(), '$.b: Constraint not validated for value="10"'
+        )
+        self.assertEqual(d.a, None)
+        self.assertEqual(d.b, None)
+
         self.assertEqual(d.check({"a": 4}), None)
         self.assertEqual(d.a.check(4), None)
         with self.assertRaises(STypeError) as e:
@@ -890,21 +915,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             d.a.check(100)
         self.assertEqual(e.exception.to_string(), '$.a: Must be below Maximal ("100")')
 
-        with self.assertRaises(SConstraintError) as e:
-            d.set({"a": 20, "b": 10})
-        self.assertEqual(
-            e.exception.to_string(), '$.b: Constraint not validated for value="10"'
-        )
-
-        self.assertEqual(d.a, None)
-        self.assertEqual(d.b, None)
-        with self.assertRaises(SConstraintError) as e:
-            d.set({"a": 20, "b": 10})
-        self.assertEqual(
-            e.exception.to_string(), '$.b: Constraint not validated for value="10"'
-        )
-        self.assertEqual(d.a, None)
-        self.assertEqual(d.b, None)
+        # --
 
         # set a below b -> must rais an error
         d.set({"b": 20, "a": 10})

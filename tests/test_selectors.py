@@ -44,6 +44,41 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(sel.pop(), ("$", None))
         self.assertEqual(sel.pop(), ("name", "1:2"))
 
+    def test_selectors_equality(self):
+        """
+        test selectors comparison
+        """
+        a = Selector("$.name")
+        b = Selector("$.name")
+        self.assertEqual(a == "23", False)
+        self.assertEqual(a == b, True)
+        self.assertEqual(a == Selector("$.name.sec"), False)
+        self.assertEqual(a == Selector("$.name[0]"), False)
+        self.assertEqual(a == Selector("$.name[]"), False)
+        self.assertEqual(a == Selector("$.name1"), False)
+        self.assertEqual(a != Selector("$.name1"), True)
+        self.assertEqual(a == Selector("$"), False)
+
+    def test_selectors_gt(self):
+        """
+        test selectors gt
+        """
+        a = Selector("$.name")
+        self.assertEqual(a > Selector("$"), False)
+        self.assertEqual(Selector("$.b") > a, False)
+        self.assertEqual(a < Selector("$.b"), False)
+        self.assertEqual(a > Selector("$.b"), False)
+        self.assertEqual(a <= Selector("$.b"), False)
+        self.assertEqual(a > Selector("$.name"), False)
+        self.assertEqual(a >= Selector("$.name"), True)
+        self.assertEqual(a <= Selector("$.name"), True)
+        self.assertEqual(a > Selector("$.name.b"), True)
+        self.assertEqual(a > Selector("$.name[0]"), True)
+        self.assertEqual(Selector("$.name[0]") > Selector("$.name[0]"), False)
+        self.assertEqual(Selector("$.name[0]") > Selector("$.name[1]"), False)
+        self.assertEqual(Selector("$.name[0]") > Selector("$.name.toto"), True)
+        self.assertEqual(Selector("$.name.toto") > Selector("$.name[1]"), False)
+
     def test_empty_selector(self):
         """
         test empty selectors
@@ -86,9 +121,9 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(a.select("$[0:2].i"), ["aa", "bb"])
         self.assertEqual(a.select("$.i"), ["aa", "bb"])
 
-    def test_selector(self):
+    def test_selector_in_dict(self):
         """
-        test selector
+        test a complex selector in a dict
         """
         a = Dict(
             {

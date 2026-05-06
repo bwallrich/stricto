@@ -226,6 +226,10 @@ class TestTuple(unittest.TestCase):
         self.assertEqual(c, (True, 22))
 
         with self.assertRaises(SConstraintError) as e:
+            a.set((True, 32))
+        self.assertEqual(e.exception.to_string(), '$[1]: Must be below Maximal ("32")')
+
+        with self.assertRaises(SConstraintError) as e:
             c.set((True, 32))
         self.assertEqual(e.exception.to_string(), '$[1]: Must be below Maximal ("32")')
 
@@ -257,12 +261,13 @@ class TestTuple(unittest.TestCase):
         """
         a = Tuple((Bool(), Int(max=30)))
         b = Tuple((Bool(), Int(max=10)))
-        none_tuple = Tuple((Bool(), Int(max=10)))
         a.set((True, 22))
         b.set((True, 8))
         c = a + b
         self.assertEqual(c, (True, 22, True, 8))
         self.assertEqual(c[3], 8)
+
+        none_tuple = Tuple((Bool(), Int(max=10)))
         with self.assertRaises(STypeError) as e:
             a = a + ("ee", "aa")
         self.assertEqual(

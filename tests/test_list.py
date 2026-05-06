@@ -425,13 +425,13 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(a[0].get_root(), a)
         self.assertEqual(a[1].get_root(), a)
 
-        a.trigg("event1", id(a))
+        a.trigg("event1")
         self.assertEqual(self.event_name, "event1")
         self.event_name = None
         a.trigg("event1")
         self.assertEqual(self.event_name, "event1")
         self.event_name = None
-        a.trigg("event2", id(a))
+        a.trigg("event2")
         self.assertEqual(self.event_name, "event2")
         self.event_name = None
         a.trigg("event2")

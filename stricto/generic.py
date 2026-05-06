@@ -20,7 +20,8 @@ from .error import (
 )
 from .permissions import Permissions
 from .selector import Selector
-
+from .event import EventManager, StrictoEvent
+from .toolbox import validation_parameters
 
 PREFIX = "MODEL_"
 
@@ -51,12 +52,17 @@ KPARSE_MODEL = {
     "can_read|read": {"type": bool | Callable, "default": None},
     "can_modify|modify|write|can_write": {"type": bool | Callable, "default": None},
     "require|required": {"type": bool, "default": False},
-    "set|compute": Callable,
+    "set|compute": Callable | tuple[Callable, str] | tuple[Callable, list[str]],
     "onchange|onChange|on_change": Callable,
     "union|in|enum": list[Any],
     "transform|trans": Callable,
     "views": {"type": list[str], "default": []},
-    "on": list[tuple],
+    "on": list[
+        tuple[str, Callable]
+        | tuple[str, Callable, str]
+        | tuple[str, Callable, list[str]]
+    ],
+    #    "on": list[ tuple[str, Callable] ],
 }
 
 
@@ -122,23 +128,19 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         # for events
         self._on = options.get("on")
-        self._events = {}
-        self._pushed_events = {}
-        self._trigging_events = False
 
+        # Event manager. Will be discard if not root.
+        self._event_manager = EventManager(self)
         if self._on is not None:
-            l = self._on if isinstance(self._on, list) else [self._on]
-            for event in l:
-                if not isinstance(event, tuple):
-                    continue
-                if not callable(event[1]):
-                    continue
-                if event[0] not in self._events:
-                    self._events[event[0]] = []
-                self._events[event[0]].append(event[1])
-        # transform auto_set in events. adapt with a lambda function
-        if "change" not in self._events:
-            self._events["change"] = []
+            for event in self._on:
+                event_name = event[0]
+                f = event[1]
+                origin_path = "$"
+                if len(event) > 2:
+                    origin_path = event[2] if isinstance(event[2], list) else [event[2]]
+                self._event_manager.register_event(
+                    StrictoEvent(event_name, f, self, origin_path)
+                )
 
         # Set the default value
         self._default = options.get("default")
@@ -158,18 +160,39 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # if options.get("can_modify") is not None:
         self._permissions.add_or_modify_permission("modify", options.get("can_modify"))
 
-        # the  value is computed
-        auto_set = options.get("set")
         # on change trigger
         self._on_change = options.get("onchange")
 
-        self._events["change"].insert(
-            0, lambda event_name, root, self: self._wrap_recheck_value()
-        )
+        # Set a on_change
+        if len(self._constraints) > 0:
+            self._event_manager.register_event(
+                StrictoEvent(
+                    "change",
+                    lambda event_name, root, me, **kwargs: me._wrap_recheck_value(),
+                    self,
+                    "$",
+                )
+            )
+
+        # the  value is computed
+        auto_set = options.get("set")
+
         if auto_set is not None:
-            # Cannot modify a value which is a result of a computation
-            self._events["change"].append(
-                lambda event_name, root, self: self._change_trigg_wrap(root, auto_set)
+            function_to_call = (
+                auto_set if isinstance(auto_set, Callable) else auto_set[0]
+            )
+            selectors_to_listen = "$" if isinstance(auto_set, Callable) else auto_set[1]
+
+            # Set an answer to event "change" to modify this value
+            self._event_manager.register_event(
+                StrictoEvent(
+                    "change",
+                    lambda event_name, root, me, **kwargs: me._change_trigg_wrap(
+                        root, function_to_call, **kwargs
+                    ),
+                    self,
+                    selectors_to_listen,
+                )
             )
 
     def enable_permissions(self) -> None:
@@ -404,7 +427,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         # my_view is ViewType.EXPLICIT_UNKNOWN:
         return (ViewType.NO, None) if final is False else None
 
-    def _change_trigg_wrap(self, root, auto_set: Callable) -> None:
+    def _change_trigg_wrap(self, root, auto_set: Callable, **kwargs) -> None:
         """
         transform a set=... option to an event.
         this function is called by the event and call the set function.
@@ -415,85 +438,32 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         :meta private:
         """
-        a = auto_set(root)
+        a = auto_set(root, **kwargs)
         self.set(a)
 
-    def push_event(self, event_name: str, from_id, **kwargs) -> None:
-        """
-        Add event to the list of events.
-        This is used to avoid calling the same event twice, or calling an event
-        while doing the modifications due to an event.
-        this func fill the dict _pushed_events
+    @validation_parameters
+    def trigg(self, event_name: str, src_object: Self = None, **kwargs) -> None:
+        """Trigg an event
 
-        :param self: Description
-        :param event_name: the name of the event
+        :param event_name: _description_
         :type event_name: str
-        :param from_id: Description
-        :param kwargs: Description
-
-        :meta private:
+        :param src_object: the from object
+        :type src_object: GenericType | None
         """
-        if event_name not in self._pushed_events:
-            self.__dict__["_pushed_events"][event_name] = {
-                "from_id": from_id,
-                "kwargs": kwargs,
-            }
+        if self.am_i_root() is True:
+            if self._event_manager is None:
+                raise SSyntaxError("WTF no event manager for root {0}", type(self))
 
-    def _release_events(self) -> None:
-        """
-        Send all avents. called by root an trigg events.
-        At the end, if some events ar added during modifications to event,
-        trig them again.
+            s = src_object if src_object is not None else self
 
-        :meta private:
-        """
-        # Already triggin events, avoid reccursion
-        if self._trigging_events is True:
-            return
-
-        self.__dict__["_trigging_events"] = True
-
-        events = self._pushed_events.copy()
-        self.__dict__["_pushed_events"] = {}
-
-        for event_name, v in events.items():
             try:
-                self.trigg(event_name, v["from_id"], **v["kwargs"])
+                self._event_manager.trigg(event_name, self, s, **kwargs)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 self.rollback()
-                self.__dict__["_trigging_events"] = False
-                raise e
-
-        self.__dict__["_trigging_events"] = False
-
-        # somme events added during last trigged events, restart
-        if len(self._pushed_events.keys()) != 0:
-            self._release_events()
-
-    def trigg(self, event_name: str, from_id: str, **kwargs) -> None:
-        """
-        trig an event
-        from_id is an id to avoid the event to call itself
-
-
-        :param self: Description
-        :param event_name: the name of the event
-        :type event_name: str
-        :param from_id: the id of the object who trigg the event
-        :type from_id: str
-        :param kwargs: Description
-
-        """
-        # print(f'trigg {event_name} {type(self)} {self.path_name()} {self._value}  {self._events}')
-
-        if self._events is None:
+                raise e from e
             return
-        if id(self) == from_id:
-            return
-        if event_name not in self._events:
-            return
-        for func in self._events[event_name]:
-            func(event_name, self.get_root(), self, **kwargs)
+
+        self.get_root().trigg(event_name, self, **kwargs)
 
     def get_root(self) -> Self:
         """
@@ -840,8 +810,9 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         result.__dict__["_permissions"] = copy.copy(self._permissions)
-        result._parent = None
-        result._attribute_name = "$"
+        result.__dict__["_event_manager"] = copy.copy(self._event_manager)
+        result._parent = self._parent
+        result._attribute_name = self._attribute_name
         return result
 
     def copy(self) -> Self:
@@ -881,11 +852,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             corrected_value = self._transform(corrected_value, root)
         self.check(corrected_value)
 
-        self.set_value_without_checks(corrected_value)
-
-        # Release all events
-        if self.am_i_root():
-            self._release_events()
+        self.set_value_without_checks(corrected_value, True)
 
     def patch_internal(self, op: str, value) -> None:
         """
@@ -941,7 +908,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
 
         return obj.patch_internal(op, value)
 
-    def set_value_without_checks(self, value: Any) -> None:
+    def set_value_without_checks(self, value: Any, trigg_change_event=False) -> bool:
         """
         Set the value without any check.
         Please use carrefully and prefer :py:meth:`set`
@@ -981,15 +948,18 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         if self._old_value == self._value:
             return False
 
-        if callable(self._on_change):
-            self._on_change(self._old_value, self.get_value(), root)
-
-        # Trigd a 'change' event to recompute
-        if not self.am_i_root():
-            root.push_event("change", id(self))
-            # root.trigg("change", id(self))
+        if trigg_change_event is True:
+            self._trigg_change_event()
 
         return True
+
+    def _trigg_change_event(self):
+        if callable(self._on_change):
+            self._on_change(self._old_value, self.get_value(), self.get_root())
+
+        # Trigg a 'change' event to recompute or recheck values
+        # print(f' Trigg change {type(self)} {id(self)} {self.path_name()} root = {self.am_i_root() }')
+        self.trigg("change")
 
     def get_value(self) -> Any:
         """

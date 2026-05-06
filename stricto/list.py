@@ -1,5 +1,7 @@
 """Module providing the List() Class"""
 
+import copy
+
 from .generic import GenericType
 from .list_and_tuple import ListAndTuple
 from .error import STypeError, SConstraintError
@@ -193,20 +195,6 @@ class List(
                 item._attribute_name = f"[{i}]"
                 i = i + 1
 
-    def trigg(self, event_name, from_id=None, **kwargs):
-        """
-        trigg an event
-        """
-        if from_id is None:
-            from_id = id(self)
-
-        v = GenericType.get_value(self)
-        if isinstance(v, list):
-            for item in v:
-                item.trigg(event_name, from_id, **kwargs)
-
-        GenericType.trigg(self, event_name, from_id, **kwargs)
-
     def __repr__(self):
         v = GenericType.get_value(self)
         if v is None:
@@ -308,6 +296,12 @@ class List(
         a = self.duplicate_in_list()
         model = self._type.copy()
         model._parent = self
+
+        # Copy events fron child and drop child event_manager
+        for event in model._event_manager.get_all_events():
+            self._event_manager.register_event(event)
+        model._event_manager = None
+
         model._attribute_name = f"[{key}]"
         model.set(value)
         a.insert(key, model)
@@ -319,6 +313,10 @@ class List(
             self._value = []
 
         self._value.insert(key, model)
+
+        self.reset_attribute_name()
+        # Trigg event "change" to say there is some changements
+        self._trigg_change_event()
 
     def __setitem__(self, key, value):
         """
@@ -333,6 +331,12 @@ class List(
             for v in value:
                 model = self._type.copy()
                 model._parent = self
+
+                # Copy events fron child and drop child event_manager
+                for event in model._event_manager.get_all_events():
+                    self._event_manager.register_event(event)
+                model._event_manager = None
+
                 model._attribute_name = "[slice]"
                 model.set(v)
                 models.append(model)
@@ -344,6 +348,12 @@ class List(
         else:
             model = self._type.copy()
             model._parent = self
+
+            # Copy events fron child and drop child event_manager
+            for event in model._event_manager.get_all_events():
+                self._event_manager.register_event(event)
+            model._event_manager = None
+
             model._attribute_name = f"[{key}]"
             model.set(value)
             a[key].set(value)
@@ -365,6 +375,9 @@ class List(
         self._old_value = self.duplicate_in_list()
         self._value.__delitem__(key)
         self.reset_attribute_name()
+
+        # Trigg event "change" to say there is some changements
+        self._trigg_change_event()
 
     def sort(self, **kwarg):
         """
@@ -398,6 +411,10 @@ class List(
         v = GenericType.get_value(self)
         popped = v.pop(key)
         self.reset_attribute_name()
+
+        # Trigg event "change" to say there is some changements
+        self._trigg_change_event()
+
         return popped
 
     def remove(self, value):
@@ -413,6 +430,10 @@ class List(
         self._old_value = self.duplicate_in_list()
         removed = self._value.remove(value)
         self.reset_attribute_name()
+
+        # Trigg event "change" to say there is some changements
+        self._trigg_change_event()
+
         return removed
 
     def append(self, value):
@@ -422,6 +443,12 @@ class List(
 
         model = self._type.copy()
         model._parent = self
+
+        # Copy events fron child and drop child event_manager
+        for event in model._event_manager.get_all_events():
+            self._event_manager.register_event(event)
+        model._event_manager = None
+
         model._attribute_name = f"[{len(self)}]"
         model.set(value)
 
@@ -436,6 +463,8 @@ class List(
             self._value = []
 
         self._value.append(model)
+        # Trigg event "change" to say there is some changements
+        self._trigg_change_event()
 
     def extend(self, second_list):
         """
@@ -448,6 +477,12 @@ class List(
         for value in second_list:
             model = self._type.copy()
             model._parent = self
+
+            # Copy events fron child and drop child event_manager
+            for event in model._event_manager.get_all_events():
+                self._event_manager.register_event(event)
+            model._event_manager = None
+
             model._attribute_name = f"[{i}]"
             model.set(value)
             a.append(model)
@@ -461,31 +496,44 @@ class List(
             self._value = []
 
         self._value.extend(models)
+        # Trigg event "change" to say there is some changements
+        self._trigg_change_event()
 
-    def set_value_without_checks(self, value):
+    def set_value_without_checks(self, value, trigg_change_event=False) -> bool:
         """
-        @overwrite GenericType.setWithoutcheck
+        @overwrite GenericType.set_value_without_checks
         """
-        if value is None:
-            self._value = None
-            return
 
-        if not isinstance(self._value, list):
-            self._value = []
-
-        self._value.clear()
+        self._old_value = copy.copy(self._value)
+        changed = False
 
         if not isinstance(value, (List, list)):
-            return
+            self._value = value
+            if self._value != self._old_value:
+                changed = True
+        else:
+            i = 0
+            self._value = []
+            for v in value:
+                model = self._type.copy()
+                model._parent = self
 
-        i = 0
-        for v in value:
-            model = self._type.copy()
-            model._parent = self
-            model._attribute_name = f"[{i}]"
-            model.set_value_without_checks(v)
-            self._value.append(model)
-            i = i + 1
+                # Copy events fron child and drop child event_manager
+                for event in model._event_manager.get_all_events():
+                    self._event_manager.register_event(event)
+                model._event_manager = None
+
+                model._attribute_name = f"[{i}]"
+                c = model.set_value_without_checks(v, trigg_change_event)
+                self._value.append(model)
+                if c is True:
+                    changed = True
+                i = i + 1
+
+        if trigg_change_event is True and changed is True:
+            self._trigg_change_event()
+
+        return changed
 
     def check(self, value) -> None:
         GenericType.check(self, value)

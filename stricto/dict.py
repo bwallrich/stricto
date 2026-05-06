@@ -38,6 +38,14 @@ class Dict(GenericType):
             mm = copy.copy(m)
             mm._parent = self
             mm._attribute_name = key
+
+            # Copy events fron child and drop child event_manager
+            if mm._event_manager is not None:
+                for event in mm._event_manager.get_all_events():
+                    event.me = mm
+                    self._event_manager.register_event(event)
+                mm._event_manager = None
+
             setattr(self, key, mm)
             self._keys.append(key)
 
@@ -190,10 +198,9 @@ class Dict(GenericType):
                 self.__dict__[k] = value
             else:
                 v.set(self._get_other_value(value))
-                self._release_events()
             return
 
-        if k in ["root", "_parent", "_attribute_name"]:
+        if k in ["root", "_parent", "_attribute_name", "_event_manager"]:
             self.__dict__[k] = value
             return
 
@@ -215,15 +222,13 @@ class Dict(GenericType):
         replicate all atributes from value, but prefere self attribute first.
         """
 
-        if k == "__getattribute__":
-            return object.__getattribute__(self, "__getattribute__")
+        if k in ["__getattribute__"]:
+            return object.__getattribute__(self, k)
 
-        # if k == "_value":
-        #    raise TypeError(f"dict getattr want {k}")
         try:
             d = object.__getattribute__(self, "_keys")
         except AttributeError:
-            return object.__getattribute__(self, k)
+            d = []
 
         obj = object.__getattribute__(self, k)
         if k in d:
@@ -251,28 +256,8 @@ class Dict(GenericType):
             result.__dict__[key]._parent = result
             result.__dict__[key]._attribute_name = key
 
-        # parent and attribute name are reseted
-        result._parent = None
-        result._attribute_name = "$"
-
         result._locked = True
         return result
-
-    def trigg(self, event_name, from_id=None, **kwargs):
-        """
-        trigg an event
-        """
-        if from_id is None:
-            from_id = id(self)
-
-        if self._keys is not None:
-            for key in self._keys:
-                v = object.__getattribute__(self, key)
-                if v.exists_or_can_read() is False:
-                    continue
-                v.trigg(event_name, from_id, **kwargs)
-
-        GenericType.trigg(self, event_name, from_id, **kwargs)
 
     def __repr__(self):
         a = {}
@@ -502,17 +487,25 @@ class Dict(GenericType):
 
         return None
 
-    def set_value_without_checks(self, value):
+    def set_value_without_checks(self, value, trigg_change_event=False) -> bool:
+        changed = False
+
         if not isinstance(value, (dict, Dict)):
-            return
+            return False
+
         for key in self._keys:
             if key in value:
                 v = value.get(key)
-                self.__dict__[key].set_value_without_checks(v)
+                c = self.__dict__[key].set_value_without_checks(v, trigg_change_event)
+                if c is True:
+                    changed = True
+
+        if trigg_change_event is True and changed is True:
+            self._trigg_change_event()
+
+        return changed
 
     def check(self, value) -> None:
-        # self.check_type(value)
-        # self.check_constraints(value)
         GenericType.check(self, value)
 
         # check reccursively subtypes

@@ -30,11 +30,30 @@ class Tuple(ListAndTuple):
                 raise SSyntaxError('Not a schema ("{schema}")', schema=element_schema)
             mm = copy.copy(element_schema)
             mm._parent = self
+
+            # Copy events fron child and drop child event_manager
+            if mm._event_manager is not None:
+                for event in mm._event_manager.get_all_events():
+                    self._event_manager.register_event(event)
+                mm._event_manager = None
+
             mm._attribute_name = f"[{i}]"
             self._schema.append(mm)
             i = i + 1
 
         self._locked = True
+
+    def __copy__(self):
+        result = GenericType.__copy__(self)
+        result._schema = []
+        i = 0
+        for s in self._schema:
+            new_sub = copy.copy(s)
+            new_sub._attribute_name = f"[{i}]"
+            new_sub._parent = self
+            result._schema.append(new_sub)
+            i = i + 1
+        return result
 
     def get_schema(self):
         """Return meta information for a float
@@ -92,19 +111,6 @@ class Tuple(ListAndTuple):
             return sub_object.get_selectors(None, sel)
 
         return None
-
-    def trigg(self, event_name, from_id=None, **kwargs):
-        """
-        trigg an event
-        """
-        if from_id is None:
-            from_id = id(self)
-
-        if self._schema is not None:
-            for element_schema in self._schema:
-                element_schema.trigg(event_name, from_id, **kwargs)
-
-        GenericType.trigg(self, event_name, from_id, **kwargs)
 
     def get_value(self):
         """
@@ -225,7 +231,9 @@ class Tuple(ListAndTuple):
                 "{0}: Can only concatenate Tuple to Tuple", self.path_name()
             )
 
-        r = Tuple(tuple(self._schema) + tuple(other._schema))
+        a = copy.copy(self._schema)
+        a.extend(other._schema)
+        r = Tuple(tuple(a))
         v = GenericType.get_value(self)
         r._value = v + GenericType.get_value(other)
         return r
@@ -236,30 +244,33 @@ class Tuple(ListAndTuple):
             return None
         return v[index]
 
-    def set_value_without_checks(self, value):
+    def set_value_without_checks(self, value, trigg_change_event=False):
 
-        if self._value is None:
-            self._old_value = None
-        else:
-            self._old_value = self._value.copy()
+        self._old_value = copy.copy(self._value)
 
-        if value is None:
-            self._value = None
-            return
-
-        self._value = []
+        changed = False
 
         if not isinstance(value, (tuple, Tuple, list, List)):
-            return
+            self._value = value
+            changed = self._value == self._old_value
+        else:
+            self._value = []
 
-        i = 0
-        for element in value:
-            mm = copy.copy(self._schema[i])
-            mm.set_value_without_checks(element)
-            mm._parent = self
-            mm._attribute_name = f"[{i}]"
-            self._value.append(mm)
-            i = i + 1
+            i = 0
+            for element in value:
+                mm = copy.copy(self._schema[i])
+                c = mm.set_value_without_checks(element, trigg_change_event)
+                if c is True:
+                    changed = True
+                mm._parent = self
+                mm._attribute_name = f"[{i}]"
+                self._value.append(mm)
+                i = i + 1
+
+        if trigg_change_event is True and changed is True:
+            self._trigg_change_event()
+
+        return changed
 
     def check(self, value) -> None:
         GenericType.check(self, value)
