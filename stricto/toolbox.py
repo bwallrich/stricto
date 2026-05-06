@@ -10,7 +10,7 @@ from functools import wraps
 from .error import SSyntaxError
 
 
-def check_value_type(  # pylint: disable=too-many-return-statements, too-many-return-statements
+def check_value_type(  # pylint: disable=too-many-return-statements, too-many-return-statements, too-many-branches
     value, target_type
 ) -> bool:
     """Check if the value given is type target_type
