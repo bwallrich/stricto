@@ -46,7 +46,7 @@ class ViewType(Enum):
 
 KPARSE_MODEL = {
     "constraints|constraint": {"type": list[Callable] | Callable, "default": []},
-    "default": Any,
+    "default": Any | Callable,
     "description|desc": str,
     "exists": {"type": bool | Callable, "default": True},
     "can_read|read": {"type": bool | Callable, "default": None},
@@ -114,7 +114,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         self._value = None
         self._old_value = None
         self._transform = None
-        self._default_value = None
         self._description = options.get("description")
         self._views = options.get("views").copy()
         self._not_none = options.get("require")
@@ -127,12 +126,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         )
 
         # for events
-        self._on = options.get("on")
+        on_events = options.get("on")
 
         # Event manager. Will be discard if not root.
         self._event_manager = EventManager(self)
-        if self._on is not None:
-            for event in self._on:
+        if on_events is not None:
+            for event in on_events:
                 event_name = event[0]
                 f = event[1]
                 origin_path = "$"
@@ -141,15 +140,6 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 self._event_manager.register_event(
                     StrictoEvent(event_name, f, self, origin_path)
                 )
-
-        # Set the default value
-        self._default = options.get("default")
-
-        self._default_value = self._default
-        # self.check(self._default)
-        # if self._default is not None:
-        #     self.set_value_without_checks(self._default)
-        #     self._old_value = self._value
 
         # transformation of the value before setting
         self._transform = options.get("transform")
@@ -174,7 +164,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 )
             )
 
-        # the  value is computed
+        # the  value is computed. Set the event "changed" for that
         auto_set = options.get("set")
 
         if auto_set is not None:
@@ -195,6 +185,27 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
                 )
             )
 
+        # Set the default value
+        # the value is with a default as a function. Set the event "copied" for that
+        self._default = options.get("default")
+        self._need_to_run_default_function = False
+        if self._default is not None:
+            if not callable(self._default):
+                self._value = self._default
+                self._old_value = self._default
+            else:
+                self._event_manager.register_event(
+                    StrictoEvent(
+                        "copied",
+                        lambda event_name, root, me, **kwargs: me._change_trigg_wrap(
+                            root, me._default, **kwargs
+                        ),
+                        self,
+                        "$",
+                    )
+                )
+                self._need_to_run_default_function = True
+
     def enable_permissions(self) -> None:
         """set permissions to on"""
         self._permissions.enable()
@@ -204,6 +215,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         set permissions to off
         """
         self._permissions.disable()
+
+    def _set_default(self) -> None:
+        """
+        Set the default value
+        used at initialisation and each copy.
+        """
 
     def _wrap_recheck_value(self) -> None:
         """
@@ -813,6 +830,12 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         result.__dict__["_event_manager"] = copy.copy(self._event_manager)
         result._parent = self._parent
         result._attribute_name = self._attribute_name
+        result._default = self._default
+
+        # Trigg the "copied" event (used by default)
+        if self.am_i_root():
+            self.trigg("copied", self)
+
         return result
 
     def copy(self) -> Self:
@@ -943,7 +966,7 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             corrected_value = self._transform(corrected_value, root)
 
         self._old_value = self._value
-        self._value = self._default if corrected_value is None else corrected_value
+        self._value = corrected_value  # self._default if corrected_value is None else corrected_value
 
         if self._old_value == self._value:
             return False
@@ -970,11 +993,10 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         :rtype: Any
 
         """
-        if self._default_value is not None and self._value is None:
-            if callable(self._default_value):
-                self._value = self._default_value(self.get_root())
-            else:
-                self._value = self._default_value
+        if self._need_to_run_default_function is True:
+            self._value = self._default(self.get_root())
+            self._old_value = self._value
+            self._need_to_run_default_function = False
 
         return self._value
 

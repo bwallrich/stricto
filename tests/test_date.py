@@ -68,7 +68,7 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         """
         Test default value
         """
-        now = datetime.now()
+        now = datetime.now().replace(microsecond=0)
         a = Datetime()
         self.assertEqual(a, None)
         a = Datetime(default=now)

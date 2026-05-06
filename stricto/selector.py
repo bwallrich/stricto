@@ -99,7 +99,7 @@ class Selector:
     def __ne__(self, other: Self) -> bool:
         return not self.__eq__(other)
 
-    def __gt__(self, other: Self) -> bool: # pylint: disable=too-many-return-statements
+    def __gt__(self, other: Self) -> bool:  # pylint: disable=too-many-return-statements
         """Greater than
 
         > means for Selector match more things

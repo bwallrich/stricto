@@ -51,6 +51,24 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
             self.assertEqual(a.d, None)
         self.assertEqual(e.exception.args[0], "'Dict' object has no attribute 'd'")
 
+    def test_copy(self):
+        """test copy"""
+        a = Dict({"b": Int(default=3), "c": String()})
+        self.assertEqual(a.b, 3)
+        b = a.copy()
+        self.assertEqual(b.b, 3)
+
+        self.i = 0
+
+        def my_default(o):
+            self.i = self.i + 1
+            return self.i
+
+        a = Dict({"b": Int(default=my_default), "c": String()})
+        self.assertEqual(a.b, 2)
+        b = a.copy()
+        self.assertEqual(b.b, 3)
+
     def test_set_error(self):
         """
         test set with error
@@ -369,10 +387,11 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         a = Dict(
             {
                 "b": Int(default=12, set=my_set),
-                "c": Int(default=0),
+                "c": Int(default=1),
             }
         )
         self.assertEqual(a.b, 12)
+        self.assertEqual(a.c, 1)
         a.set({"c": 2})
         self.assertEqual(a.b, 3)
         a.c = 33

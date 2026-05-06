@@ -200,7 +200,7 @@ class Dict(GenericType):
                 v.set(self._get_other_value(value))
             return
 
-        if k in ["root", "_parent", "_attribute_name", "_event_manager"]:
+        if k in ["root", "_parent", "_attribute_name", "_event_manager", "_default"]:
             self.__dict__[k] = value
             return
 

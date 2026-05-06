@@ -130,7 +130,7 @@ Commonly available options for any type are:
 | - | - | - |
 | ```required=True\|False``` | False | Check whether the field must have a value. |
 | ```description="whatever you want"``` | None | Set a description for the item |
-| ```default=666``` | None | set a default value |
+| ```default=666\|func``` | None | set a default value |
 | ```in=[ 1, 2, 3, 5 ]\|func``` | None | Value must be in the list or pass the function check. |
 | ```union=[ 1, 2, 3, 5 ]\|func``` | None | Alias for ```in```  |
 | ```transform=func``` | None | Set a [function](#functions) that [transforms](#transform) the value before assignment. |
@@ -311,7 +311,11 @@ print(company.name) # -> "WORLDCOMPAGNY"
 It allows to define a function that will compute the field's value.
 
 This computed field is read-only.
+the usage is
 
+| | Usage |
+|--|--|
+| 
 #### Example
 ```python
 # example
@@ -319,7 +323,7 @@ from stricto import Dict, Int, String
 
 a=Dict({
     "b" : Int( default = 0, set=lambda o: o.c+1 ),
-    "d" : Int( default = 0, set=lambda o: o.b+1 ),
+    "d" : Int( default = 0, set=(lambda o: o.b+1, '$.b') ), 
     "c" : Int( ),
 })
 
