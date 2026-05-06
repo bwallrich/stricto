@@ -32,7 +32,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
         init this tests
         """
         super().__init__(*args, **kwargs)
-
+        self.i = 0
         self.event_name = None
 
     def test_simple_type(self):
@@ -60,7 +60,7 @@ class TestDict(unittest.TestCase):  # pylint: disable=too-many-public-methods
 
         self.i = 0
 
-        def my_default(o):
+        def my_default(o): #pylint: disable=unused-argument
             self.i = self.i + 1
             return self.i
 
