@@ -353,22 +353,20 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         with self.assertRaises(TypeError) as e:
             f = SFilter("$.a", Operator.CONTAINS, "aa")
         self.assertEqual(
-            e.exception.args[0], "Operator Operator.CONTAINS need a list of Filter"
+            e.exception.args[0], "Operator Operator.CONTAINS needs a Filter"
         )
         with self.assertRaises(TypeError) as e:
             f = SFilter("$.a", Operator.NOT, "aa")
-        self.assertEqual(
-            e.exception.args[0], "Operator Operator.NOT need a list of Filter"
-        )
+        self.assertEqual(e.exception.args[0], "Operator Operator.NOT needs a Filter")
         with self.assertRaises(TypeError) as e:
             f = SFilter("$.a", Operator.AND, "aa")
         self.assertEqual(
-            e.exception.args[0], "Operator Operator.AND need a list of Filter"
+            e.exception.args[0], "Operator Operator.AND needs a list of Filter"
         )
         with self.assertRaises(TypeError) as e:
             f = SFilter("$.a", Operator.OR, "aa")
         self.assertEqual(
-            e.exception.args[0], "Operator Operator.OR need a list of Filter"
+            e.exception.args[0], "Operator Operator.OR needs a list of Filter"
         )
 
         f = SFilter("$.b.c", Operator.GT, 22)
@@ -397,4 +395,100 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         f = SFilter("$.b.l", Operator.CONTAINS, SFilter("@.i", Operator.EQ, "fir"))
         self.assertEqual(f.check(a), True)
         f = SFilter("$.b.l", Operator.ALL, SFilter("@.i", Operator.EQ, "fir"))
+        self.assertEqual(f.check(a), False)
+
+    def test_auto_filter(self):
+        """test filter with the simplified syntax
+
+        No need to explicitly specify SFilter for operators that require
+        filters as values.
+        """
+        a = Dict(
+            {
+                "a": Int(default=1),
+                "c": Int(default=1),
+                "b": Dict(
+                    {
+                        "c": Int(default=1),
+                        "l": List(Dict({"i": String()})),
+                        "t": Tuple((Int(), String())),
+                        "tt": Tuple((Int(), Dict({"i": String()}))),
+                    }
+                ),
+            }
+        )
+        a.set(
+            {
+                "a": 12,
+                "c": 22,
+                "b": {
+                    "c": 33,
+                    "l": [
+                        {"i": "fir"},
+                        {"i": "sec"},
+                    ],
+                },
+            }
+        )
+        f = SFilter("$.a", Operator.CONTAINS, ("@.i", Operator.EQ, "fir"))
+        self.assertEqual(f.check(a), False)
+
+        with self.assertRaises(TypeError):
+            # Ensures a regular TypeError is raised when an argument is missing
+            f = SFilter("$.a", Operator.CONTAINS, ("@.i", Operator.EQ))
+
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.CONTAINS, "aa")
+        self.assertEqual(
+            e.exception.args[0], "Operator Operator.CONTAINS needs a Filter"
+        )
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.NOT, "aa")
+        self.assertEqual(e.exception.args[0], "Operator Operator.NOT needs a Filter")
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.ALL, "aa")
+        self.assertEqual(e.exception.args[0], "Operator Operator.ALL needs a Filter")
+
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.AND, "aa")
+        self.assertEqual(
+            e.exception.args[0], "Operator Operator.AND needs a list of Filter"
+        )
+
+        # Ensures regular TypeError are raised if a list if provided but with
+        # invalid SFilter arguments
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.AND, ["aa"])
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.AND, ["aa"])
+
+        with self.assertRaises(TypeError) as e:
+            f = SFilter("$.a", Operator.OR, "aa")
+        self.assertEqual(
+            e.exception.args[0], "Operator Operator.OR needs a list of Filter"
+        )
+
+        f = SFilter(None, Operator.NOT, ("$.a", Operator.EQ, 12))
+        self.assertEqual(f.check(a), False)
+        f = SFilter(
+            None,
+            Operator.AND,
+            [("$.a", Operator.EQ, 12), ("$.c", Operator.EQ, 22)],
+        )
+        self.assertEqual(f.check(a), True)
+        self.assertEqual(
+            repr(f),
+            'SFilter("None" Operator.AND [SFilter("$.a" Operator.EQ 12), SFilter("$.c" Operator.EQ 22)])',
+        )
+        f = SFilter(
+            None,
+            Operator.OR,
+            [("$.a", Operator.EQ, 12), ("$.c", Operator.EQ, 22)],
+        )
+        self.assertEqual(f.check(a), True)
+        f = SFilter(None, Operator.NOT, ("$.a", Operator.GT, 12))
+        self.assertEqual(f.check(a), True)
+        f = SFilter("$.b.l", Operator.CONTAINS, ("@.i", Operator.EQ, "fir"))
+        self.assertEqual(f.check(a), True)
+        f = SFilter("$.b.l", Operator.ALL, ("@.i", Operator.EQ, "fir"))
         self.assertEqual(f.check(a), False)

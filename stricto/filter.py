@@ -6,6 +6,8 @@ from typing import Self, Any
 from .generic import GenericType
 from .list_and_tuple import ListAndTuple
 
+type SFilterArgs = tuple[str, Operator, Any]
+
 
 class Operator(Enum):
     """List of Operators
@@ -45,7 +47,12 @@ class SFilter:
     _path: str = None
     """ The path to find in the object"""
 
-    def __init__(self, path: str, operator: Operator, value: Any | list[Self] | Self):
+    def __init__(
+        self,
+        path: str,
+        operator: Operator,
+        value: Any | list[Self] | Self | list[SFilterArgs] | SFilterArgs,
+    ):
         """Generator"""
         if operator in [
             Operator.EQ,
@@ -58,22 +65,26 @@ class SFilter:
             Operator.SIZE,
         ]:
             if isinstance(value, (list, SFilter)):
-                raise TypeError(f"Operator {operator} need a value")
+                raise TypeError(f"Operator {operator} needs a value")
 
         if operator == Operator.REG:
             if not isinstance(value, (str, re.Pattern)):
-                raise TypeError(f"Operator {operator} need a str or a Pattern")
+                raise TypeError(f"Operator {operator} needs a str or a Pattern")
 
-        if operator in [Operator.AND, Operator.OR]:
+        elif operator in [Operator.AND, Operator.OR]:
             if not isinstance(value, list):
-                raise TypeError(f"Operator {operator} need a list of Filter")
-            for v in value:
-                if not isinstance(v, SFilter):
-                    raise TypeError(f"Operator {operator} need a list of Filter")
+                raise TypeError(f"Operator {operator} needs a list of Filter")
+            for (i, v) in enumerate(value):
+                if isinstance(v, tuple):
+                    value[i] = SFilter(*v)
+                elif not isinstance(v, SFilter):
+                    raise TypeError(f"Operator {operator} needs a list of Filter")
 
-        if not isinstance(value, SFilter):
-            if operator in [Operator.NOT, Operator.CONTAINS, Operator.ALL]:
-                raise TypeError(f"Operator {operator} need a list of Filter")
+        elif operator in [Operator.NOT, Operator.CONTAINS, Operator.ALL]:
+            if isinstance(value, tuple):
+                value = SFilter(*value)
+            elif not isinstance(value, SFilter):
+                raise TypeError(f"Operator {operator} needs a Filter")
 
         self._path = path
         self._operator = operator
