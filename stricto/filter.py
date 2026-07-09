@@ -29,6 +29,7 @@ class Operator(Enum):
     AND = "$and"
     OR = "$or"
     NOT = "$not"
+    TRUE = "$true"  # operator which return always true
 
 
 class SFilter:
@@ -47,7 +48,7 @@ class SFilter:
     _path: str = None
     """ The path to find in the object"""
 
-    def __init__(
+    def __init__(  # pylint: disable= too-many-branches
         self,
         path: str,
         operator: Operator,
@@ -74,7 +75,7 @@ class SFilter:
         elif operator in [Operator.AND, Operator.OR]:
             if not isinstance(value, list):
                 raise TypeError(f"Operator {operator} needs a list of Filter")
-            for (i, v) in enumerate(value):
+            for i, v in enumerate(value):
                 if isinstance(v, tuple):
                     value[i] = SFilter(*v)
                 elif not isinstance(v, SFilter):
@@ -86,15 +87,49 @@ class SFilter:
             elif not isinstance(value, SFilter):
                 raise TypeError(f"Operator {operator} needs a Filter")
 
-        self._path = path
+        if operator == Operator.TRUE:
+            self._path = None
+            self._value = None
+        else:
+            self._path = path
+            self._value = value
         self._operator = operator
-        self._value = value
 
-    def check(
+    def merge_and(self, other: Self | None) -> Self:
+        """
+        make a and with another SFilter
+
+        :param other: the SFilter to and
+        :type other: SFilter
+        :return: a new SFilter
+        :rtype: SFilter
+        """
+        if other is None:
+            return self
+        if self._operator == Operator.TRUE:
+            return other
+        if other._operator == Operator.TRUE:
+            return self
+
+        return SFilter(None, Operator.AND, [self, other])
+
+    def merge_on(self, other: Self | None) -> Self:
+        """
+        make a or with another SFilter
+
+        :param other: the SFilter to and
+        :type other: SFilter
+        :return: a new SFilter
+        :rtype: SFilter
+        """
+        if other is None:
+            return self
+
+        return SFilter(None, Operator.OR, [self, other])
+
+    def check(  # pylint: disable=too-many-return-statements, too-many-branches, broad-exception-caught
         self, obj: GenericType
-    ) -> (
-        bool
-    ):  # pylint: disable=too-many-return-statements, too-many-branches, broad-exception-caught
+    ) -> bool:
         """Check if the objct match the filter
 
         :param obj: an object (usually a Dict)
@@ -102,6 +137,10 @@ class SFilter:
         :return: True if match
         :rtype: bool
         """
+
+        # --- TRUE
+        if self._operator == Operator.TRUE:
+            return True
 
         # --- AND
         if self._operator == Operator.AND:
@@ -168,7 +207,7 @@ class SFilter:
                 return value <= self._value
             if self._operator == Operator.REG:
                 if isinstance(value, str):
-                    return re.match(self._value, value)
+                    return bool(re.match(self._value, value))
                 return False
         except Exception:  # pylint: disable=broad-exception-caught
             # ignore type exception and return False
