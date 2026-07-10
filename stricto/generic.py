@@ -7,6 +7,7 @@ This class must not be used directly
 
 import copy
 import re
+
 from enum import Enum, auto
 from typing import Any, Callable, Self
 from .kparse import Kparse

@@ -513,59 +513,58 @@ a.multi_select( [ "$.a", "$.c" ] ) # [ 12 , ( 22, "h") ]
 
 You can match an object with some kind of filters. 
 
-Matching is done with ```match( dict )``` method.
+Matching is done with ```SFilter``` class. You must first create a SFilter and apply it.
 
+example :
+
+```python
+from stricto import SFilter, Operator, Int, List, String, Dict
+
+obj = Dict(
+    {
+        "a": Int(default=1),
+        "b": Dict({
+            "l" : List( Dict({
+                "i" : String()
+            }) )
+        }),
+    }
+)
+obj.set({ "a" : 12, "b" : { "l" : [ { "i" : "fir"}, { "i" : "sec"}, ] } })
+
+# set the filter ( in this example $.a > 11 )
+f= SFilter( "$.a", Operator.GT, 11)
+f.check( obj ) # -> True
+
+# more complex
+# $.a > 11 anm $.b.l has one element with i == "sec"
+f= SFilter( None. Operator.AND, [ 
+     SFilter( "$.a", Operator.GT, 11), 
+     SFilter( "$.b.l", Operator.CONTAINS, SFilter( "@.i", Operator.EQ, "sec") )
+    ])
+f.check( obj ) # -> True
+
+```
 Available operators are :
 
 | operator | syntax | example | description |
 | - | - | - | - |
-| $and | ( "$and", [ condition, condition ] ) | ( "\$and", [ ( "\$gt", 1 ), ( "\$lt" : 2 )]) | Do an *and* on conditions |
-| $or | ( "$or", [ condition, condition ] ) |  ( "\$or", [ ( "\$gt", 10 ), ( "$eq" : 0 )]) | Do an *or* on conditions |
-| $eq | ( "$eq", value ) |  ( "\$eq", "toto" ) | Equality |
-| $ne | ( "$ne", value ) |  ( "\$ne", "toto" ) | Not equal |
-| $lt | ( "$lt", value ) |  ( "\$lt", 1 ) | Less than |
-| $lte | ( "$lte", value ) |  ( "\$lte", 1 ) | Less than or equal |
-| $gt | ( "$gt", value ) |  ( "\$gt", 1 ) | Greater than |
-| $gte | ( "$gte", value ) |  ( "\$gte", 1 ) | Greater than or equal |
-| $not | ( "$not", condition ) |  ( "\$not", ... ) | Not |
-| $reg | ( "$reg", regexp ) |  ( "\$reg", r'Jo' ) | A regular expression; match only on strings (match "start with Jo" in this example.) |
-| $contains | ( "$contains", condition ) |  ( "\$contains", ( "$reg", r'^Jo' ) ) | a list contains one or more elements matching the condition |
+| Operator.AND | SFilter( None, Operator.AND, [ SFilter( )... ]) |  | Do an *and* on conditions |
+| Operator.OR | SFilter( None, Operator.OR, [ SFilter( )... ]) |   | Do an *or* on conditions |
+| Operator.EQ | SFilter( path, Operator.EQ, value) |  SFilter( "$.a", Operator.EQ, "toto") | Equality |
+| Operator.NE | SFilter( path, Operator.NE, value) |  SFilter( "$.a", Operator.NE, 11) | Not equal |
+| Operator.LT | SFilter( path, Operator.LT, value) |  SFilter( "$.a", Operator.LT, 11) | Less than |
+| Operator.LTE | SFilter( path, Operator.LTE, value) |  SFilter( "$.a", Operator.LTE, 11) | Less than or equal |
+| Operator.GT | SFilter( path, Operator.GT, value) |  SFilter( "$.a", Operator.GT, 11) | Greater than |
+| Operator.GTE | SFilter( path, Operator.GTE, value) |  SFilter( "$.a", Operator.GTE, 11) | Greater than or equal |
+| Operator.NOT | SFilter( None. Operator.NOT, SFilter()) | | Not |
+| Operator.REG | SFilter( path, Operator.REG, regexp) |  SFilter( "$.a", Operator.GTE, r'Jo' ) | A regular expression; match only on strings (match "start with Jo" in this example.) |
+| Operator.CONTAINS | SFilter( None. Operator.CONTAINS, SFilter()) |  SFilter( "$.names". Operator.CONTAINS, SFilter( "@", Operator.GTE, r'Jo' ))  | a list contains one or more elements matching the condition |
 
-
-
-### Example
-
-```python
-from stricto import Int, List, String, Dict, Error
-
-a = Dict(
-    {
-        "name"    : String()
-        "surname" : String()
-        "incomes" : Dict({
-                "salary" : Int(),
-                "royalties" : Int(),
-                
-        }),
-    }
-)
-
-a.set( { "name" : "John", "surname" : "Doe", "incomes" : { "salary" : 50000 }})
-
-# Match with equality 
-a.match( { "surname" : "Doe" } ) -> return True
-a.match( { "incomes" : { "salary" : 20000 } } ) -> return False
-
-# Match with operators
-a.match( { "incomes" : { "salary" : ( "$gt", 20000 ) } } ) -> return True
-
-# Match with $or
-a.match( ( "$or", [ ( "surname", "Doe" ), ( "salary" : ( "$gt", 60000 ) ) ]) ) -> return True
-```
 
 ## patch
 
-You can patch object in the sense of https://datatracker.ietf.org/doc/html/rfc6902, but with a merge of [selectors]](#selectors).
+You can patch object in the sense of https://datatracker.ietf.org/doc/html/rfc6902, but with a merge of [selectors](#selectors).
 
 ### Example
 ```python

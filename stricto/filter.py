@@ -54,7 +54,35 @@ class SFilter:
         operator: Operator,
         value: Any | list[Self] | Self | list[SFilterArgs] | SFilterArgs,
     ):
-        """Generator"""
+        """
+        Creation of a filter on an object with a path, an operaton...
+        Example
+
+        .. highlight:: python
+        .. code-block:: python
+
+            f= SFilter( "$.a", Operator.GT, 11)
+            f.check( obj ) # -> True
+
+            # more complex
+            # $.a > 11 anm $.b.l has one element with i == "sec"
+            f= SFilter( None. Operator.AND, [
+                 SFilter( "$.a", Operator.GT, 11),
+                 SFilter( "$.b.l", Operator.CONTAINS, SFilter( "@.i", Operator.EQ, "sec") )
+                ])
+            f.check( obj ) # -> True
+
+
+        :param path: The path to check
+        :type path: str
+        :param operator: The operator to apply on the path
+        :type operator: Operator
+        :param value: The comparison value
+        :type value: Any | list[Self] | Self | list[SFilterArgs] | SFilterArgs
+        :raises TypeError: In case of error in the definition of the filter
+
+
+        """
         if operator in [
             Operator.EQ,
             Operator.NE,

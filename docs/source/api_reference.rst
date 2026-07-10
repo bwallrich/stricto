@@ -48,3 +48,11 @@ References
 .. autoclass:: Ipaddress
    :members:
    :show-inheritance: 
+
+
+Filtering
+--------------
+
+.. autoclass:: SFilter
+   :members:
+   :show-inheritance: 
