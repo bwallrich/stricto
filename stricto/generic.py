@@ -599,6 +599,23 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
             return other.get_value()
         return other
 
+    def _get_other_value_with_json_decode(self, other: Self | Any) -> Any:
+        """
+        return the value of the other object if GenericType
+
+        :param self: Description
+        :param other: the object we want the value
+        :type other: Self | Any
+        :return: the value
+        :rtype: Any
+
+        :meta private:
+        """
+        other_value = self._get_other_value(other)
+        if isinstance(other_value, str):
+            return self.__json_decode__(other_value)
+        return other_value
+
     def __add__(self, other: Self | Any) -> Self:
         """
         Magic method for ``+`` operator
@@ -610,109 +627,110 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         :rtype: Self
 
         """
-        return self.get_value() + self._get_other_value(other)
+        return self.get_value() + self._get_other_value_with_json_decode(other)
 
     def __sub__(self, other: Self | Any) -> Self:
         """
         sub two objects
         """
-        return self.get_value() - self._get_other_value(other)
+        return self.get_value() - self._get_other_value_with_json_decode(other)
 
     def __mul__(self, other: Self | Any) -> Self:
         """
         mul two objects
         """
-        return self.get_value() * self._get_other_value(other)
+        return self.get_value() * self._get_other_value_with_json_decode(other)
 
     def __truediv__(self, other: Self | Any) -> Self:
         """
         div two objects
         """
-        return self.get_value() / self._get_other_value(other)
+        return self.get_value() / self._get_other_value_with_json_decode(other)
 
     def __floordiv__(self, other: Self | Any) -> Self:
         """
         floordiv two objects
         """
-        return self.get_value() // self._get_other_value(other)
+        return self.get_value() // self._get_other_value_with_json_decode(other)
 
     def __pow__(self, other: Self | Any) -> Self:
         """
         pow two objects
         """
-        return self.get_value() ** self._get_other_value(other)
+        return self.get_value() ** self._get_other_value_with_json_decode(other)
 
     def __mod__(self, other: Self | Any) -> Self:
         """
         mod two objects
         """
-        return self.get_value() % self._get_other_value(other)
+        return self.get_value() % self._get_other_value_with_json_decode(other)
 
     def __rshift__(self, other: Self | Any) -> Self:
         """
         __rshift__ two objects
         """
-        return self.get_value() >> self._get_other_value(other)
+        return self.get_value() >> self._get_other_value_with_json_decode(other)
 
     def __lshift__(self, other: Self | Any) -> Self:
         """
         __lshift__ two objects
         """
-        return self.get_value() << self._get_other_value(other)
+        return self.get_value() << self._get_other_value_with_json_decode(other)
 
     def __and__(self, other: Self | Any) -> Self:
         """
         __and__ two objects
         """
-        return self.get_value() & self._get_other_value(other)
+        return self.get_value() & self._get_other_value_with_json_decode(other)
 
     def __or__(self, other: Self | Any) -> Self:
         """
         __or__ two objects
         """
-        return self.get_value() | self._get_other_value(other)
+        return self.get_value() | self._get_other_value_with_json_decode(other)
 
     def __xor__(self, other: Self | Any) -> Self:
         """
         __xor__ two objects
         """
-        return self.get_value() ^ self._get_other_value(other)
+        return self.get_value() ^ self._get_other_value_with_json_decode(other)
 
     def __eq__(self, other: Self | Any) -> bool:
         """
         equality test two objects
         """
-        return self.get_value() == self._get_other_value(other)
+
+        return self.get_value() == self._get_other_value_with_json_decode(other)
 
     def __ne__(self, other: Self | Any) -> bool:
         """
         ne test two objects
         """
-        return self.get_value() != self._get_other_value(other)
+        return self.get_value() != self._get_other_value_with_json_decode(other)
 
     def __lt__(self, other: Self | Any) -> bool:
         """
         lt test two objects
         """
-        return self.get_value() < self._get_other_value(other)
+        return self.get_value() < self._get_other_value_with_json_decode(other)
 
     def __le__(self, other: Self | Any) -> bool:
         """
         le test two objects
         """
-        return self.get_value() <= self._get_other_value(other)
+        return self.get_value() <= self._get_other_value_with_json_decode(other)
 
     def __gt__(self, other: Self | Any) -> bool:
         """
         gt test two objects
         """
-        return self.get_value() > self._get_other_value(other)
+        return self.get_value() > self._get_other_value_with_json_decode(other)
 
     def __ge__(self, other: Self | Any) -> bool:
         """
         ge test two objects
         """
-        return self.get_value() >= self._get_other_value(other)
+        return self.get_value() >= self._get_other_value_with_json_decode(other)
 
     def __copy__(self) -> Self:
         cls = self.__class__

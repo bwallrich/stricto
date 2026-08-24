@@ -83,6 +83,7 @@ class SFilter:
 
 
         """
+
         if operator in [
             Operator.EQ,
             Operator.NE,
@@ -93,6 +94,9 @@ class SFilter:
             Operator.REG,
             Operator.SIZE,
         ]:
+            if not isinstance(path, str):
+                raise TypeError("Path must be a str")
+
             if isinstance(value, (list, SFilter)):
                 raise TypeError(f"Operator {operator} needs a value")
 
@@ -219,21 +223,21 @@ class SFilter:
         if selected_object is None:
             return False
 
-        value = selected_object.get_value()
         try:
             if self._operator == Operator.EQ:
-                return value == self._value
+                return selected_object == self._value
             if self._operator == Operator.NE:
-                return value != self._value
+                return selected_object != self._value
             if self._operator == Operator.GT:
-                return value > self._value
+                return selected_object > self._value
             if self._operator == Operator.GTE:
-                return value >= self._value
+                return selected_object >= self._value
             if self._operator == Operator.LT:
-                return value < self._value
+                return selected_object < self._value
             if self._operator == Operator.LTE:
-                return value <= self._value
+                return selected_object <= self._value
             if self._operator == Operator.REG:
+                value = selected_object.get_value()
                 if isinstance(value, str):
                     return bool(re.match(self._value, value))
                 return False

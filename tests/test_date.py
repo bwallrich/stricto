@@ -5,6 +5,7 @@ test for Datetime()
 
 import unittest
 import json
+import time
 
 from datetime import datetime, timedelta
 from stricto import (
@@ -13,6 +14,9 @@ from stricto import (
     STypeError,
     SConstraintError,
     SError,
+    Dict,
+    SFilter,
+    Operator,
 )
 
 
@@ -196,3 +200,29 @@ class TestDate(unittest.TestCase):  # pylint: disable=too-many-public-methods
         sa = json.dumps(a, cls=StrictoEncoder)
         b.set(json.loads(sa))
         self.assertEqual(b, a)
+
+    def test_filter(self):
+        """
+        Test filter on Date
+        """
+        a = Dict({"d": Datetime()})
+
+        now = datetime.now()
+        now_no_micro = now.replace(microsecond=0)
+
+        a.set({"d": now})
+
+        my_filter = SFilter("$.d", Operator.EQ, now_no_micro)
+        rep = my_filter.check(a)
+        self.assertTrue(rep)
+
+        time.sleep(1)
+        new_now = datetime.now()
+        new_now_no_micro = new_now.replace(microsecond=0)
+        my_filter = SFilter("$.d", Operator.LT, new_now_no_micro)
+        rep = my_filter.check(a)
+        self.assertTrue(rep)
+
+        my_filter = SFilter("$.d", Operator.LT, str(new_now_no_micro))
+        rep = my_filter.check(a)
+        self.assertTrue(rep)
