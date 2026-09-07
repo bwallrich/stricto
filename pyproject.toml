@@ -23,6 +23,14 @@ dev = [
     "pylint",
 ]
 
+doc = [
+  "sphinx==8.2.3",
+  "myst-parser==4.0.1",
+  "sphinx_rtd_theme",
+  "sphinxcontrib-mermaid==1.2.3",
+  "toml"
+]
+
 [project.urls]
 GitHub = "https://github.com/backo-stricto/stricto"
 Homepage = "https://github.com/backo-stricto/stricto"
