@@ -541,3 +541,13 @@ class TestList(unittest.TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(repr(a.bb), "['titi']")
         a.aa = 1
         self.assertEqual(repr(a.bb), "['titi']")
+
+    def test_patch(self):
+        """
+        test a patch
+        """
+        a = Dict({"bb": List(String())})
+        a.set({"bb": ["hey"]})
+        self.assertEqual(len(a.bb), 1)
+        a.patch("replace", "$.bb", ["hey", "gros"])
+        self.assertEqual(len(a.bb), 2)

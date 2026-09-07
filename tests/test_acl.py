@@ -5,12 +5,12 @@ test for ACL()
 
 import unittest
 
-from stricto import ACL
+from stricto import RegexAccessControlItem
 
 
 class TestACL(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """
-    Test on ACL
+    Test on AccessControlItem
     """
 
     def __init__(self, *args, **kwargs):
@@ -23,53 +23,37 @@ class TestACL(unittest.TestCase):  # pylint: disable=too-many-public-methods
         Test ACL initialization with invalid pattern
         """
         with self.assertRaises(ValueError) as e:
-            ACL(r"invalid_pattern((", False)
+            RegexAccessControlItem(r"invalid_pattern((", False)
         self.assertEqual(str(e.exception), "Invalid regex pattern: invalid_pattern((")
 
     def test_acl_init_with_valid_pattern(self):
         """
         Test ACL initialization with valid pattern
         """
-        a = ACL(r"valid_pattern", True)
-        self.assertIsInstance(a, ACL)
-
-    def test_acl_is_a_whitelist(self):
-        """
-        Test ACL is_a_whitelist method
-        """
-        a = ACL(r"pattern", True)
-        self.assertTrue(a.is_a_whitelist())
-        b = ACL(r"pattern", False)
-        self.assertFalse(b.is_a_whitelist())
+        a = RegexAccessControlItem(r"valid_pattern", True)
+        self.assertIsInstance(a, RegexAccessControlItem)
 
     def test_acl_accept(self):
         """
         Test ACL accept method
         """
-        a = ACL(r"^example\.com$", True)
-        self.assertTrue(a.accept("example.com"))
-        self.assertFalse(a.accept("test.com"))
-        b = ACL(r"^example\.com$", False)
-        self.assertFalse(b.accept("example.com"))
-        self.assertTrue(b.accept("test.com"))
-
-    def test_acl_is_equal(self):
-        """
-        Test ACL is_equal method
-        """
-        a = ACL(r"^example\.com$", True)
-        self.assertTrue(a.is_equal(r"^example\.com$", True))
-        self.assertFalse(a.is_equal(r"^example\.com$", False))
-        self.assertFalse(a.is_equal(r"^test\.com$", True))
+        a = RegexAccessControlItem(r"^example\.com$")
+        self.assertEqual(a.accept("example.com"), (True, False))
+        self.assertEqual(a.accept("test.com"), (False, True))
+        b = RegexAccessControlItem(r"^example\.com$", "YESMAN")
+        self.assertEqual(b.accept("example.com"), ("YESMAN", False))
+        self.assertEqual(b.accept("test.com"), (False, True))
 
     def test_acl_str_and_repr(self):
         """
-        Test ACL __str__ and __repr__ methods
+        Test RegexAccessControlItem __str__ and __repr__ methods
         """
-        a = ACL(r"^example\.com$", True)
+        a = RegexAccessControlItem(r"^example\.com$")
         self.assertEqual(
-            str(a), "ACL(pattern=re.compile('^example\\\\.com$'), is_whitelist=True)"
+            str(a),
+            "RegexAccessControlItem(return_value=(True, False) continue=(False, True))",
         )
         self.assertEqual(
-            repr(a), "ACL(pattern=re.compile('^example\\\\.com$'), is_whitelist=True)"
+            repr(a),
+            "RegexAccessControlItem(return_value=(True, False) continue=(False, True))",
         )

@@ -8,6 +8,7 @@ from .list import List
 from .list_and_tuple import ListAndTuple
 from .error import STypeError, SSyntaxError
 from .selector import Selector
+from .model import Model
 from .toolbox import validation_parameters
 
 
@@ -61,6 +62,23 @@ class Tuple(ListAndTuple):
         m._parent = self
         m.set_value(value)
         return m
+
+    def get_model(self) -> Model:
+        """
+        Return a Model for this object
+
+        :param self: Description
+        :return: the schema as a object
+        :rtype: Model
+
+        Return a schema for this object
+        """
+        a = GenericType.get_model(self)
+        l = []
+        for schema in self._schema:
+            l.append(schema.get_model())
+        a.add_tuple_models(l)
+        return a
 
     def get_schema(self):
         """Return meta information for a float

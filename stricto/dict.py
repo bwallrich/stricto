@@ -5,6 +5,7 @@ from typing import Any, Self
 from .generic import GenericType, ViewType
 from .error import SSyntaxError, STypeError, SAttributeError, SError
 from .selector import Selector
+from .model import Model
 from .toolbox import validation_parameters
 
 
@@ -68,6 +69,24 @@ class Dict(GenericType):
         delattr(self, key)
         self._keys.remove(key)
         self.__dict__["_locked"] = True
+
+    def get_model(self) -> Model:
+        """
+        Return a Model for this object
+
+        :param self: Description
+        :return: the schema as a object
+        :rtype: Model
+
+        Return a schema for this object
+        """
+        a = GenericType.get_model(self)
+        sub = {}
+        for key in self._keys:
+            v = object.__getattribute__(self, key)
+            sub[key] = v.get_model()
+        a.add_dict_model(sub)
+        return a
 
     def get_schema(self):
         """Return meta information for a float

@@ -250,6 +250,10 @@ class TestSelectors(unittest.TestCase):  # pylint: disable=too-many-public-metho
         self.assertEqual(len(a.b.l), 2)
         a.patch("remove", "$.b.l", 1)
         self.assertEqual(len(a.b.l), 1)
+        a.patch("replace", "$.b.l", [])
+        self.assertEqual(len(a.b.l), 0)
+        a.patch("replace", "$.b.l", [{"i": "tres"}])
+        self.assertEqual(len(a.b.l), 1)
 
     def test_multi_selection_basic(self):
         """

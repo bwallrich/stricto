@@ -37,8 +37,8 @@ from .selector import Selector
 from .kparse import Kparse
 from .filter import Operator, SFilter
 from .event import EVENT_MANAGER
-from .acl import ACL
-from .acls import ACLS
+from .acl import AccessControlItem, RegexAccessControlItem, AccessControlList
+from .model import Model
 
 ALL_TYPES = [
     Dict,

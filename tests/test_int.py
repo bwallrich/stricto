@@ -168,7 +168,7 @@ class TestInt(unittest.TestCase):  # pylint: disable=too-many-public-methods
             Int(constraint="coucou")
         self.assertEqual(
             e.exception.args[0],
-            'key "constraints" must be typing.Union[list[typing.Callable], typing.Callable]',
+            'key "constraints" must be list[typing.Callable] | typing.Callable',
         )
 
     def test_singleton_comparison(self):

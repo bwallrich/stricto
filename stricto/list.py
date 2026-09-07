@@ -5,6 +5,7 @@ from .generic import GenericType
 from .list_and_tuple import ListAndTuple
 from .error import STypeError, SConstraintError
 from .selector import Selector
+from .model import Model
 from .toolbox import validation_parameters, get_content
 from .kparse import Kparse
 
@@ -37,6 +38,20 @@ class List(
 
         ListAndTuple.__init__(self, **kwargs)
         self._json_path_separator = ""
+
+    def get_model(self) -> Model:
+        """
+        Return a Model for this object
+
+        :param self: Description
+        :return: the schema as a object
+        :rtype: Model
+
+        Return a schema for this object
+        """
+        a = GenericType.get_model(self)
+        a.add_list_model(self._type.get_model())
+        return a
 
     def get_schema(self):
         """Return meta information for a float

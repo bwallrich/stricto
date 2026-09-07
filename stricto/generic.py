@@ -22,6 +22,7 @@ from .error import (
 from .permissions import Permissions
 from .selector import Selector
 from .event import EVENT_MANAGER
+from .model import Model
 from .toolbox import validation_parameters, get_class_names_hierachie, get_content
 
 PREFIX = "MODEL_"
@@ -250,6 +251,30 @@ class GenericType:  # pylint: disable=too-many-instance-attributes, too-many-pub
         Called by the specific JSONDecoder
         """
         return value
+
+    def get_model(self) -> Model:
+        """
+        Return a Model for this object
+
+        :param self: Description
+        :return: the schema as a object
+        :rtype: Model
+
+        Return a schema for this object
+        """
+        return Model(
+            type(self),
+            self._description,
+            self._not_none,
+            self._union,
+            self._constraints,
+            self._default,
+            self._transform,
+            self._auto_set,
+            self._exists,
+            self._permissions.get_as_dict_of_strings(),
+            self.path_name(),
+        )
 
     def get_schema(self) -> dict:
         """

@@ -233,7 +233,7 @@ class TestToolbox(unittest.TestCase):
             f("zaza")
         self.assertEqual(
             e.exception.to_string(),
-            'In function "f", the parameter "a" must be type typing.Union[bool, typing.Callable]',
+            'In function "f", the parameter "a" must be type bool | typing.Callable',
         )
 
     def test_valid_call_in_object(self):

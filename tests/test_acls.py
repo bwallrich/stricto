@@ -1,110 +1,132 @@
 "test module acls"
 
 import unittest
-from stricto import ACLS, ACL
+from stricto import AccessControlList, RegexAccessControlItem
 
 
 class TestACLS(unittest.TestCase):
-    """class of test ACLS"""
+    """class of test AccessControlList"""
 
     def __init__(self, *args, **kwargs):
-        "init test ACLs"
+        "init test AccessControlList"
         super().__init__(*args, **kwargs)
 
     def test_authorize_is_a_whitelist_and_default_is_false(self):
-        """*test if ACL is a whitelist et result equal true so accept a domain"""
+        """*test if RegexAccessControlItem is a whitelist et result equal true so accept a domain"""
 
-        l = ACLS(
+        l = AccessControlList(
             [
-                ACL("toto.titi@mail.com", True),
-                ACL("fifi.com", True),
-                ACL("fofo.org", True),
+                RegexAccessControlItem("toto.titi@mail.com", True),
+                RegexAccessControlItem("fifi.com", True),
+                RegexAccessControlItem("fofo.org", True),
             ],
             default=False,
         )
 
-        self.assertTrue(l.authorize("fifi.com"))
+        self.assertTrue(l.accept("fifi.com"))
 
     def test_authorize_is_a_not_whitelist_and_default_true(self):
-        """list ACLS that return False"""
-        l = ACLS(
+        """list AccessControlList that return False"""
+        l = AccessControlList(
             [
-                ACL("example.fr", False),
-                ACL("coctiti.com", False),
-                ACL("fifi.org", False),
+                RegexAccessControlItem("example.fr", False),
+                RegexAccessControlItem("coctiti.com", False),
+                RegexAccessControlItem("fifi.org", False),
             ],
             default=True,
         )
 
-        self.assertFalse(l.authorize("fifi.org"))
+        self.assertFalse(l.accept("fifi.org"))
 
     def test_authorize_is_whitelist_and_is_not_whitelist_not_accept(self):
-        """list ACLS who authorize if acls is not whitelist and not accept"""
-        l = ACLS(
+        """list AccessControlList who accept if acls is not whitelist and not accept"""
+        l = AccessControlList(
             [
-                ACL("tootio.titi.fr", True),
-                ACL("caprice@gmail.org", False),
-                ACL("titi.fr", False),
-                ACL(r".*\.captivee.com", True),
-                ACL("captivif.fr", True),
+                RegexAccessControlItem("tootio.titi.fr", True),
+                RegexAccessControlItem("caprice@gmail.org", False),
+                RegexAccessControlItem("titi.fr", False),
+                RegexAccessControlItem(r".*\.captivee.com", True),
+                RegexAccessControlItem("captivif.fr", True),
             ],
             default=False,
         )
-        self.assertFalse(l.authorize("titi.fr"))
+        self.assertFalse(l.accept("titi.fr"))
 
     def test_authorize_is_whitelist_ant_is_not_whitlist_is_accept(self):
-        """list acls who authorize if donmain is accept and not whitelist"""
+        """list acls who accept if donmain is accept and not whitelist"""
 
-        l = ACLS(
+        l = AccessControlList(
             [
-                ACL("tootio.titi.fr", True),
-                ACL("caprice@gmail.org", False),
-                ACL("titifine.fr", True),
-                ACL(r".*\.captivee.com", True),
-                ACL("titifine.fr", True),
+                RegexAccessControlItem("tootio.titi.fr", True),
+                RegexAccessControlItem("caprice@gmail.org", False),
+                RegexAccessControlItem("titifine.fr", True),
+                RegexAccessControlItem(r".*\.captivee.com", True),
+                RegexAccessControlItem("titifine.fr", True),
             ],
             default=False,
         )
-        self.assertTrue(l.authorize("titifine.fr"))
+        self.assertTrue(l.accept("titifine.fr"))
 
     def test_not_math_and_is_whitelist(self):
         """not math"""
 
-        l = ACLS(
+        l = AccessControlList(
             [
-                ACL("coctiti.com", False),
-                ACL("foutooo.org", True),
-                ACL("pipooo.org", False),
-                ACL("tooo.org", True),
+                RegexAccessControlItem("coctiti.com", False),
+                RegexAccessControlItem("foutooo.org", True),
+                RegexAccessControlItem("pipooo.org", False),
+                RegexAccessControlItem("tooo.org", True),
             ],
             default=True,
         )
-        self.assertTrue(l.authorize("foutooou.org"))
+        self.assertTrue(l.accept("foutooou.org"))
 
     def test_math_and_is_not_whitelist(self):
         """match and is not whitelist"""
 
-        l = ACLS(
+        l = AccessControlList(
             [
-                ACL("toiti.fr", True),
-                ACL("gogo.com", False),
-                ACL("nanotooi.fr", True),
-                ACL("gogo.com", True),
+                RegexAccessControlItem("toiti.fr", True),
+                RegexAccessControlItem("gogo.com", False),
+                RegexAccessControlItem("nanotooi.fr", True),
+                RegexAccessControlItem("gogo.com", True),
             ],
             default=True,
         )
-        self.assertFalse(l.authorize("gogo.com"))
+        self.assertFalse(l.accept("gogo.com"))
 
-    def test_not_math_and_is_not_whitelist(self):
+    def test_not_match_and_is_not_whitelist(self):
         """notch and not whitelist"""
 
-        l = ACLS(
+        l = AccessControlList(
             [
-                ACL("toiti.fr", True),
-                ACL("gogo.com", False),
-                ACL("nanotooi.fr", True),
-                ACL("gogo.com", True),
+                RegexAccessControlItem(r".*toto\.fr", True),
+                RegexAccessControlItem(r".*fr", False),
+                RegexAccessControlItem(r".*gogo\.com", True),
             ],
             default=False,
         )
-        self.assertFalse(l.authorize("gogoco.com"))
+        self.assertFalse(l.accept("gogoco.com"))
+        self.assertTrue(l.accept("gogo.com"))
+        self.assertTrue(l.accept("toto.fr"))
+        self.assertTrue(l.accept("titi.toto.fr"))
+        self.assertFalse(l.accept("tata.fr"))
+
+    def test_acl_with_values(self):
+        """notch and not whitelist"""
+
+        l = AccessControlList(
+            [
+                RegexAccessControlItem(r".*toto\.fr", "JAVA"),
+                RegexAccessControlItem(r".*\.fr", "PYTHON"),
+                RegexAccessControlItem(r".*gogo\.com", "RUBY"),
+                RegexAccessControlItem(r".*.com", "C"),
+            ],
+            default="PERL",
+        )
+        self.assertEqual(l.accept("gogoco.com"), "C")
+        self.assertEqual(l.accept("gogo.com"), "RUBY")
+        self.assertEqual(l.accept("toto.fr"), "JAVA")
+        self.assertEqual(l.accept("titi.toto.fr"), "JAVA")
+        self.assertEqual(l.accept("tata.fr"), "PYTHON")
+        self.assertEqual(l.accept("tata.eu"), "PERL")
